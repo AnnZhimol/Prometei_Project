@@ -36,7 +36,7 @@ public class User implements UserDetails {
     private String residenceCity;
     private String internationalPassportNum;
     private Date internationalPassportDate;
-    private UserRole role = UserRole.UNAUTHORIZED;
+    private final UserRole role = UserRole.UNAUTHORIZED; //заглушка
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Purchase> purchases;

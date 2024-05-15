@@ -3,6 +3,7 @@ package com.example.prometei.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
@@ -20,6 +21,8 @@ public class Purchase {
     private Double totalCost;
     @Column(nullable = false)
     private String paymentMethod; //make enum?
+    @Column(nullable = false)
+    private OffsetDateTime createDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

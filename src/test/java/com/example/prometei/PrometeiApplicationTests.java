@@ -9,5 +9,4 @@ class PrometeiApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
