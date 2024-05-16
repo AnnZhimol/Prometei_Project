@@ -3,6 +3,15 @@
 
     <property name="DEV_HOME" value="logs" />
 
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} -
+                %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
     <appender name="FILE-INFO"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -58,6 +67,7 @@
     <logger name="com.example.prometei" level="all"
             additivity="false">
         <appender-ref ref="FILE-INFO"/>
+        <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE-ERROR" />
     </logger>
 

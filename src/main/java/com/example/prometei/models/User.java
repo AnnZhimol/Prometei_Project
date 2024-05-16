@@ -14,7 +14,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table
+@Table(name="users")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -36,7 +36,7 @@ public class User implements UserDetails {
     private String residenceCity;
     private String internationalPassportNum;
     private Date internationalPassportDate;
-    private final UserRole role = UserRole.UNAUTHORIZED; //заглушка
+    private UserRole role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Purchase> purchases;
