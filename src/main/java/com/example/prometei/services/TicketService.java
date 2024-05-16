@@ -1,49 +1,162 @@
 package com.example.prometei.services;
 
-import com.example.prometei.models.Ticket;
+import com.example.prometei.models.*;
+import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class TicketService implements BasicService<Ticket> {
-
     TicketRepository ticketRepository;
+    AdditionalFavorRepository additionalFavorRepository;
+    Logger log = LoggerFactory.getLogger(TicketService.class);
 
-    public TicketService(TicketRepository ticketRepository){
-        this.ticketRepository=ticketRepository;
+    public TicketService(TicketRepository ticketRepository, AdditionalFavorRepository additionalFavorRepository){
+        this.ticketRepository = ticketRepository;
+        this.additionalFavorRepository = additionalFavorRepository;
     }
 
     @Override
     public void add(Ticket entity) {
         if (entity != null) {
             ticketRepository.save(entity);
+            log.info("Ticket with id = {} successfully added", entity.getId());
+        }
+        else {
+            log.error("Error adding ticket. Ticket = null");
         }
     }
 
     @Override
     public void delete(Ticket entity) {
-
+        if (entity != null) {
+            ticketRepository.delete(entity);
+            log.info("Ticket with id = {} successfully delete", entity.getId());
+        }
+        else {
+            log.error("Error deleting ticket. Ticket = null");
+        }
     }
 
     @Override
     public List<Ticket> getAll() {
-        return null;
+        log.info("Get list of tickets");
+        return ticketRepository.findAll();
     }
 
     @Override
     public void deleteAll() {
-
+        log.info("Deleting all tickets");
+        ticketRepository.deleteAll();
     }
 
     @Override
-    public void edit(Ticket entity) {
+    public void edit(Long id, Ticket entity) {
+        Ticket currentTicket = getById(id);
 
+        if (currentTicket == null) {
+            log.error("Ticket with id = {} not found", id);
+        }
+        else {
+            currentTicket = Ticket.builder()
+                    .ticketType(entity.getTicketType())
+                    .build();
+            ticketRepository.save(currentTicket);
+            log.info("Ticket with id = {} successfully edit", id);
+        }
     }
 
     @Override
     public Ticket getById(Long id) {
-        return null;
+        try {
+            Ticket ticket = ticketRepository.getReferenceById(id);
+            log.info("Ticket with id = {} successfully find", id);
+            return ticket;
+        }
+        catch (EntityNotFoundException ex) {
+            log.error("Search ticket with id = {} failed", id);
+            return null;
+        }
+    }
+
+    public void addFlightToTicket(Ticket ticket, Flight flight) {
+        if (flight == null) {
+            log.error("Adding flight to the ticket failed. Flight == null");
+        }
+        else if (ticket == null) {
+            log.error("Adding flight to the ticket failed. Ticket == null");
+        }
+        else {
+            ticket.setFlight(flight);
+            ticketRepository.save(ticket);
+            log.info("Adding flight to the ticket with id = {} was completed successfully", ticket.getId());
+        }
+    }
+
+    public void addPurchaseToTicket(Ticket ticket, Purchase purchase) {
+        if (purchase == null) {
+            log.error("Adding purchase to the ticket failed. Purchase == null");
+        }
+        else if (ticket == null) {
+            log.error("Adding purchase to the ticket failed. Ticket == null");
+        }
+        else {
+            ticket.setPurchase(purchase);
+            ticketRepository.save(ticket);
+            log.info("Adding purchase to the ticket with id = {} was completed successfully", ticket.getId());
+        }
+    }
+
+    public void addUserToTicket(Ticket ticket, User user) {
+        if (ticket == null) {
+            log.error("Adding user to the ticket failed. Ticket == null");
+        }
+        else if (user == null) {
+            log.error("Adding user to the ticket failed. User == null");
+        }
+        else {
+            ticket.setUser(user);
+            ticketRepository.save(ticket);
+            log.info("Adding user to the ticket with id = {} was completed successfully", ticket.getId());
+        }
+    }
+
+    public void addFlightFavorToAdditionalFavor(AdditionalFavor additionalFavor, FlightFavor flightFavor) {
+        if (additionalFavor == null) {
+            log.error("Adding flightFavor to the additionalFavor failed. AdditionalFavor == null");
+        }
+        else if (flightFavor == null) {
+            log.error("Adding flightFavor to the additionalFavor failed. FlightFavor == null");
+        }
+        else {
+            additionalFavor.setFlightFavor(flightFavor);
+            additionalFavorRepository.save(additionalFavor);
+            log.info("Adding flightFavor to the additionalFavor with id = {} was completed successfully", additionalFavor.getId());
+        }
+    }
+
+    public void addAdditionalFavorsToTicket(Ticket ticket, List<AdditionalFavor> additionalFavors) {
+        if (ticket == null) {
+            log.error("Adding additionalFavors to the ticket failed. Ticket == null");
+        }
+        else if (additionalFavors == null) {
+            log.error("Adding additionalFavors to the ticket failed. AdditionalFavors == null");
+        }
+        else {
+            ticket.setAdditionalFavors(additionalFavors);
+
+            for (AdditionalFavor additionalFavor : additionalFavors) {
+                additionalFavor.setTicket(ticket);
+                additionalFavorRepository.save(additionalFavor);
+            }
+
+            ticketRepository.save(ticket);
+            log.info("Adding additionalFavors to the ticket with id = {} was completed successfully", ticket.getId());
+        }
     }
 }

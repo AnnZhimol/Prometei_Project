@@ -20,7 +20,7 @@ public class Purchase {
     @Column(nullable = false)
     private Double totalCost;
     @Column(nullable = false)
-    private String paymentMethod; //make enum?
+    private PaymentMethod paymentMethod;
     @Column(nullable = false)
     private OffsetDateTime createDate;
 

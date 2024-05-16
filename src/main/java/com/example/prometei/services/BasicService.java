@@ -7,6 +7,6 @@ public interface BasicService<T> {
     void delete(T entity);
     List<T> getAll();
     void deleteAll();
-    void edit(T entity);
+    void edit(Long id, T entity);
     T getById(Long id);
 }
