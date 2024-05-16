@@ -3,19 +3,25 @@ package com.example.prometei.services;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.models.User;
+import com.example.prometei.models.UserRole;
 import com.example.prometei.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class UserService implements BasicService<User> {
+public class UserService implements BasicService<User>, UserDetailsService {
     UserRepository userRepository;
     TicketService ticketService;
     PurchaseService purchaseService;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
     Logger log = LoggerFactory.getLogger(UserService.class);
 
     public UserService(UserRepository userRepository, PurchaseService purchaseService, TicketService ticketService) {
@@ -26,13 +32,17 @@ public class UserService implements BasicService<User> {
 
     @Override
     public void add(User entity) {
-        if (entity != null) {
-            userRepository.save(entity);
-            log.info("User with id = {} successfully added", entity.getId());
+        User user = userRepository.findUserByEmail(entity.getUsername());
+
+        if (user != null) {
+            log.error("User already exist");
         }
-        else {
-            log.error("Error adding user. User = null");
-        }
+
+        entity.setRole(UserRole.AUTHORIZED);
+        entity.setPassword(bCryptPasswordEncoder.encode(entity.getPassword()));
+
+        userRepository.save(entity);
+        log.info("User with id = {} successfully added", entity.getId());
     }
 
     @Override
@@ -134,5 +144,16 @@ public class UserService implements BasicService<User> {
             userRepository.save(user);
             log.info("Adding tickets to the user with id = {} was completed successfully", user.getId());
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findUserByEmail(email);
+
+        if (user == null) {
+            log.error("User not found");
+        }
+
+        return user;
     }
 }
