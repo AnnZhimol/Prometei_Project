@@ -24,9 +24,6 @@ public class TestServices {
     }
 
     @Autowired
-    UserService userService;
-
-    @Autowired
     TicketService ticketService;
 
     @Autowired
@@ -34,6 +31,9 @@ public class TestServices {
 
     @Autowired
     PurchaseService purchaseService;
+
+    @Autowired
+    UserService userService;
 
     @Test
     void createFlight() {
@@ -81,10 +81,9 @@ public class TestServices {
                 .email("aaa@mu.ru")
                 .firstName("Petr")
                 .lastName("Kolohov")
-                .phoneNumber("983929856389")
+                .phoneNumber("9839298565389")
                 .residenceCity("Moscow")
                 .password("kfjijfdghtde")
-                .role(UserRole.UNAUTHORIZED)
                 .passport("9999 999999")
                 .internationalPassportNum("8374783")
                 .internationalPassportDate(LocalDate.of(2024,1,15))
@@ -103,13 +102,13 @@ public class TestServices {
                 .lastName("Kolohov")
                 .phoneNumber("983929856389")
                 .residenceCity("Moscow")
-                .password("kfjijfdghtde")
+                .password("апиетрьтгониавк434")
                 .passport("5559 999382")
                 .internationalPassportNum("8374784443")
                 .internationalPassportDate(LocalDate.of(2022,1,15))
                 .build();
 
-        userService.edit(152L, user);
+        userService.edit(1L, user);
     }
 
     @Test

@@ -21,10 +21,11 @@ public class UserService implements BasicService<User>, UserDetailsService {
     BCryptPasswordEncoder bCryptPasswordEncoder;
     Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository, PurchaseService purchaseService, TicketService ticketService) {
+    public UserService(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository, PurchaseService purchaseService, TicketService ticketService) {
         this.userRepository = userRepository;
         this.ticketService = ticketService;
         this.purchaseService = purchaseService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
         }
 
         entity.setRole(UserRole.AUTHORIZED);
-        //entity.setPassword(bCryptPasswordEncoder.encode(entity.getPassword()));
+        entity.setPassword(bCryptPasswordEncoder.encode(entity.getPassword()));
 
         userRepository.save(entity);
         log.info("User with id = {} successfully added", entity.getId());
@@ -85,7 +86,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
                     .internationalPassportDate(entity.getInternationalPassportDate())
                     .internationalPassportNum(entity.getInternationalPassportNum())
                     .lastName(entity.getLastName())
-                    .password(entity.getPassword())
+                    .password(bCryptPasswordEncoder.encode(entity.getPassword()))
                     .phoneNumber(entity.getPhoneNumber())
                     .passport(entity.getPassport())
                     .role(currentUser.getRole())

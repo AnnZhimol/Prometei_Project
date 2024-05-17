@@ -24,7 +24,7 @@ public class User implements UserDetails {
     @Size(min = 5, max = 256)
     private String email;
     @Column(nullable = false)
-    @Size(min = 10, max = 30)
+    @Size(min = 10)
     private String password;
     private UserGender gender;
     private String firstName;
@@ -64,21 +64,21 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }
