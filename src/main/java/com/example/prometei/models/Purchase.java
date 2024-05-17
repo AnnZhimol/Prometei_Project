@@ -3,7 +3,7 @@ package com.example.prometei.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -22,7 +22,7 @@ public class Purchase {
     @Column(nullable = false)
     private PaymentMethod paymentMethod;
     @Column(nullable = false)
-    private OffsetDateTime createDate;
+    private LocalDate createDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

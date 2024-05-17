@@ -1,9 +1,6 @@
 package com.example.prometei.services;
 
-import com.example.prometei.models.Purchase;
-import com.example.prometei.models.Ticket;
-import com.example.prometei.models.User;
-import com.example.prometei.models.UserRole;
+import com.example.prometei.models.*;
 import com.example.prometei.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -36,10 +33,11 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
         if (user != null) {
             log.error("User already exist");
+            throw new IllegalArgumentException("The user is already exist.");
         }
 
         entity.setRole(UserRole.AUTHORIZED);
-        entity.setPassword(bCryptPasswordEncoder.encode(entity.getPassword()));
+        //entity.setPassword(bCryptPasswordEncoder.encode(entity.getPassword()));
 
         userRepository.save(entity);
         log.info("User with id = {} successfully added", entity.getId());
@@ -53,6 +51,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
         }
         else {
             log.error("Error deleting user. User = null");
+            throw new NullPointerException();
         }
     }
 
@@ -74,9 +73,11 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
         if (currentUser == null) {
             log.error("User with id = {} not found", id);
+            throw new EntityNotFoundException();
         }
         else {
             currentUser = User.builder()
+                    .id(currentUser.getId())
                     .birthDate(entity.getBirthDate())
                     .email(entity.getEmail())
                     .firstName(entity.getFirstName())
@@ -87,6 +88,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
                     .password(entity.getPassword())
                     .phoneNumber(entity.getPhoneNumber())
                     .passport(entity.getPassport())
+                    .role(currentUser.getRole())
                     .residenceCity(entity.getResidenceCity())
                     .build();
 
@@ -97,12 +99,13 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
     @Override
     public User getById(Long id) {
-        try {
-            User user = userRepository.getReferenceById(id);
+        User user = userRepository.findById(id).orElse(null);
+
+        if(user != null) {
             log.info("User with id = {} successfully find", id);
             return user;
         }
-        catch (EntityNotFoundException ex) {
+        else {
             log.error("Search user with id = {} failed", id);
             return null;
         }
@@ -111,9 +114,11 @@ public class UserService implements BasicService<User>, UserDetailsService {
     public void addPurchasesToUser(User user, List<Purchase> purchases) {
         if (user == null) {
             log.error("Adding purchases to the user failed. User == null");
+            throw new NullPointerException();
         }
         else if (purchases == null) {
             log.error("Adding purchases to the user failed. Purchases == null");
+            throw new NullPointerException();
         }
         else {
             user.setPurchases(purchases);
@@ -130,9 +135,11 @@ public class UserService implements BasicService<User>, UserDetailsService {
     public void addTicketsToUser(User user, List<Ticket> tickets) {
         if (user == null) {
             log.error("Adding tickets to the user failed. User == null");
+            throw new NullPointerException();
         }
         else if (tickets == null) {
             log.error("Adding tickets to the user failed. Tickets == null");
+            throw new NullPointerException();
         }
         else {
             user.setTickets(tickets);
@@ -152,6 +159,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
         if (user == null) {
             log.error("User not found");
+            throw new EntityNotFoundException();
         }
 
         return user;

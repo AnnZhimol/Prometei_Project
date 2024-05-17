@@ -1,8 +1,6 @@
 package com.example.prometei.services;
 
-import com.example.prometei.models.Purchase;
-import com.example.prometei.models.Ticket;
-import com.example.prometei.models.User;
+import com.example.prometei.models.*;
 import com.example.prometei.repositories.PurchaseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -30,6 +28,7 @@ public class PurchaseService implements BasicService<Purchase> {
         }
         else {
             log.error("Error adding purchase. Purchase = null");
+            throw new NullPointerException();
         }
     }
 
@@ -41,6 +40,7 @@ public class PurchaseService implements BasicService<Purchase> {
         }
         else {
             log.error("Error deleting purchase. Purchase = null");
+            throw new NullPointerException();
         }
     }
 
@@ -62,9 +62,11 @@ public class PurchaseService implements BasicService<Purchase> {
 
         if (currentPurchase == null) {
             log.error("Purchase with id = {} not found", id);
+            throw new EntityNotFoundException();
         }
         else {
             currentPurchase = Purchase.builder()
+                    .id(currentPurchase.getId())
                     .totalCost(entity.getTotalCost())
                     .paymentMethod(entity.getPaymentMethod())
                     .createDate(entity.getCreateDate())
@@ -77,12 +79,13 @@ public class PurchaseService implements BasicService<Purchase> {
 
     @Override
     public Purchase getById(Long id) {
-        try {
-            Purchase purchase = purchaseRepository.getReferenceById(id);
+        Purchase purchase = purchaseRepository.findById(id).orElse(null);
+
+        if (purchase != null) {
             log.info("Purchase with id = {} successfully find", id);
             return purchase;
         }
-        catch (EntityNotFoundException ex) {
+        else {
             log.error("Search purchase with id = {} failed", id);
             return null;
         }
@@ -91,17 +94,26 @@ public class PurchaseService implements BasicService<Purchase> {
     public void addTicketsToPurchase(Purchase purchase, List<Ticket> tickets) {
         if (purchase == null) {
             log.error("Adding tickets to the purchase failed. Purchase == null");
+            throw new NullPointerException();
         }
         else if (tickets == null) {
             log.error("Adding tickets to the purchase failed. Tickets == null");
+            throw new NullPointerException();
         }
         else {
             purchase.setTickets(tickets);
 
+            Double cost = 0.0;
             for (Ticket ticket : tickets) {
                 ticketService.addPurchaseToTicket(ticket, purchase);
+                if (ticket.getTicketType() == TicketType.BUSINESS)
+                    cost+=ticket.getFlight().getBusinessCost();
+                if (ticket.getTicketType() == TicketType.ECONOMIC)
+                    cost+=ticket.getFlight().getEconomyCost();
+
             }
 
+            purchase.setTotalCost(cost);
             purchaseRepository.save(purchase);
             log.info("Adding tickets to the purchase with id = {} was completed successfully", purchase.getId());
         }
@@ -110,9 +122,11 @@ public class PurchaseService implements BasicService<Purchase> {
     public void addUserToPurchase(Purchase purchase, User user) {
         if (purchase == null) {
             log.error("Adding user to the purchase failed. Purchase == null");
+            throw new NullPointerException();
         }
         else if (user == null) {
             log.error("Adding user to the purchase failed. User == null");
+            throw new NullPointerException();
         }
         else {
             purchase.setUser(user);

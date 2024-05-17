@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Getter
@@ -25,17 +26,17 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Size(min = 10, max = 30)
     private String password;
-    private String gender;
+    private UserGender gender;
     private String firstName;
     private String lastName;
     @Column(unique = true)
     @Size(min = 11)
     private String phoneNumber;
-    private Date birthDate;
+    private LocalDate birthDate;
     private String passport;
     private String residenceCity;
     private String internationalPassportNum;
-    private Date internationalPassportDate;
+    private LocalDate internationalPassportDate;
     private UserRole role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)

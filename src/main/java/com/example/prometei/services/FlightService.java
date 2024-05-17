@@ -34,6 +34,7 @@ public class FlightService implements BasicService<Flight> {
         }
         else {
             log.error("Error adding flight. Flight = null");
+            throw new NullPointerException();
         }
     }
 
@@ -45,6 +46,7 @@ public class FlightService implements BasicService<Flight> {
         }
         else {
             log.error("Error deleting flight. Flight = null");
+            throw new NullPointerException();
         }
     }
 
@@ -66,9 +68,11 @@ public class FlightService implements BasicService<Flight> {
 
         if (currentFlight == null) {
             log.error("Flight with id = {} not found", id);
+            throw new EntityNotFoundException();
         }
         else {
             currentFlight = Flight.builder()
+                    .id(currentFlight.getId())
                     .departurePoint(entity.getDeparturePoint())
                     .destinationPoint(entity.getDestinationPoint())
                     .destinationTime(entity.getDestinationTime())
@@ -86,12 +90,13 @@ public class FlightService implements BasicService<Flight> {
 
     @Override
     public Flight getById(Long id) {
-        try {
-            Flight flight = flightRepository.getReferenceById(id);
+        Flight flight = flightRepository.findById(id).orElse(null);
+
+        if(flight != null) {
             log.info("Flight with id = {} successfully find", id);
             return flight;
         }
-        catch (EntityNotFoundException ex) {
+        else {
             log.error("Search flight with id = {} failed", id);
             return null;
         }
@@ -100,9 +105,11 @@ public class FlightService implements BasicService<Flight> {
     public void addFlightFavorsToFlight(Flight flight, List<FlightFavor> flightFavors) {
         if (flight == null) {
             log.error("Adding flightFavors to the flight failed. Flight == null");
+            throw new NullPointerException();
         }
         else if (flightFavors == null) {
             log.error("Adding flightFavors to the flight failed. FlightFavors == null");
+            throw new NullPointerException();
         }
         else {
             flight.setFlightFavors(flightFavors);
@@ -120,9 +127,11 @@ public class FlightService implements BasicService<Flight> {
     public void addTicketsToFlight(Flight flight, List<Ticket> tickets) {
         if (flight == null) {
             log.error("Adding tickets to the flight failed. Flight == null");
+            throw new NullPointerException();
         }
         else if (tickets == null) {
             log.error("Adding tickets to the flight failed. Tickets == null");
+            throw new NullPointerException();
         }
         else {
             flight.setTickets(tickets);
@@ -139,9 +148,11 @@ public class FlightService implements BasicService<Flight> {
     public void addAdditionalFavorsToFlightFavor(FlightFavor flightFavor, List<AdditionalFavor> additionalFavors) {
         if (flightFavor == null) {
             log.error("Adding additionalFavors to the flightFavor failed. FlightFavor == null");
+            throw new NullPointerException();
         }
         else if (additionalFavors == null) {
             log.error("Adding additionalFavors to the flightFavor failed. AdditionalFavors == null");
+            throw new NullPointerException();
         }
         else {
             flightFavor.setAdditionalFavors(additionalFavors);

@@ -25,7 +25,7 @@ public class Ticket {
     @ManyToOne(fetch = FetchType.LAZY)
     private Purchase purchase;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Flight flight;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)

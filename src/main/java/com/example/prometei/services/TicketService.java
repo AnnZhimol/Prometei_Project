@@ -29,6 +29,7 @@ public class TicketService implements BasicService<Ticket> {
         }
         else {
             log.error("Error adding ticket. Ticket = null");
+            throw new NullPointerException();
         }
     }
 
@@ -40,6 +41,7 @@ public class TicketService implements BasicService<Ticket> {
         }
         else {
             log.error("Error deleting ticket. Ticket = null");
+            throw new NullPointerException();
         }
     }
 
@@ -61,9 +63,11 @@ public class TicketService implements BasicService<Ticket> {
 
         if (currentTicket == null) {
             log.error("Ticket with id = {} not found", id);
+            throw new EntityNotFoundException();
         }
         else {
             currentTicket = Ticket.builder()
+                    .id(currentTicket.getId())
                     .ticketType(entity.getTicketType())
                     .build();
             ticketRepository.save(currentTicket);
@@ -73,12 +77,13 @@ public class TicketService implements BasicService<Ticket> {
 
     @Override
     public Ticket getById(Long id) {
-        try {
-            Ticket ticket = ticketRepository.getReferenceById(id);
+        Ticket ticket = ticketRepository.findById(id).orElse(null);
+
+        if (ticket != null) {
             log.info("Ticket with id = {} successfully find", id);
             return ticket;
         }
-        catch (EntityNotFoundException ex) {
+        else {
             log.error("Search ticket with id = {} failed", id);
             return null;
         }
@@ -87,9 +92,11 @@ public class TicketService implements BasicService<Ticket> {
     public void addFlightToTicket(Ticket ticket, Flight flight) {
         if (flight == null) {
             log.error("Adding flight to the ticket failed. Flight == null");
+            throw new NullPointerException();
         }
         else if (ticket == null) {
             log.error("Adding flight to the ticket failed. Ticket == null");
+            throw new NullPointerException();
         }
         else {
             ticket.setFlight(flight);
@@ -101,9 +108,11 @@ public class TicketService implements BasicService<Ticket> {
     public void addPurchaseToTicket(Ticket ticket, Purchase purchase) {
         if (purchase == null) {
             log.error("Adding purchase to the ticket failed. Purchase == null");
+            throw new NullPointerException();
         }
         else if (ticket == null) {
             log.error("Adding purchase to the ticket failed. Ticket == null");
+            throw new NullPointerException();
         }
         else {
             ticket.setPurchase(purchase);
@@ -115,9 +124,11 @@ public class TicketService implements BasicService<Ticket> {
     public void addUserToTicket(Ticket ticket, User user) {
         if (ticket == null) {
             log.error("Adding user to the ticket failed. Ticket == null");
+            throw new NullPointerException();
         }
         else if (user == null) {
             log.error("Adding user to the ticket failed. User == null");
+            throw new NullPointerException();
         }
         else {
             ticket.setUser(user);
@@ -129,9 +140,11 @@ public class TicketService implements BasicService<Ticket> {
     public void addFlightFavorToAdditionalFavor(AdditionalFavor additionalFavor, FlightFavor flightFavor) {
         if (additionalFavor == null) {
             log.error("Adding flightFavor to the additionalFavor failed. AdditionalFavor == null");
+            throw new NullPointerException();
         }
         else if (flightFavor == null) {
             log.error("Adding flightFavor to the additionalFavor failed. FlightFavor == null");
+            throw new NullPointerException();
         }
         else {
             additionalFavor.setFlightFavor(flightFavor);
@@ -143,9 +156,11 @@ public class TicketService implements BasicService<Ticket> {
     public void addAdditionalFavorsToTicket(Ticket ticket, List<AdditionalFavor> additionalFavors) {
         if (ticket == null) {
             log.error("Adding additionalFavors to the ticket failed. Ticket == null");
+            throw new NullPointerException();
         }
         else if (additionalFavors == null) {
             log.error("Adding additionalFavors to the ticket failed. AdditionalFavors == null");
+            throw new NullPointerException();
         }
         else {
             ticket.setAdditionalFavors(additionalFavors);
