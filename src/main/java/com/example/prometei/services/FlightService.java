@@ -1,9 +1,6 @@
 package com.example.prometei.services;
 
-import com.example.prometei.models.AdditionalFavor;
-import com.example.prometei.models.Flight;
-import com.example.prometei.models.FlightFavor;
-import com.example.prometei.models.Ticket;
+import com.example.prometei.models.*;
 import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.FlightRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,14 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
 public class FlightService implements BasicService<Flight> {
-    FlightRepository flightRepository;
-    FlightFavorRepository flightFavorRepository;
-    TicketService ticketService;
-    Logger log = LoggerFactory.getLogger(FlightService.class);
+    private final FlightRepository flightRepository;
+    private final FlightFavorRepository flightFavorRepository;
+    private final TicketService ticketService;
+    private final Logger log = LoggerFactory.getLogger(FlightService.class);
 
     public FlightService(FlightRepository flightRepository, FlightFavorRepository flightFavorRepository, TicketService ticketService) {
         this.flightRepository = flightRepository;
@@ -56,6 +54,11 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findAll();
     }
 
+    public List<Flight> getSearchResult(String departurePoint, String destinationPoint, OffsetDateTime departureTime) {
+        log.info("Get list of sorted flights");
+        return flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureTime);
+    }
+
     @Override
     public void deleteAll() {
         log.info("Deleting all flights");
@@ -77,7 +80,8 @@ public class FlightService implements BasicService<Flight> {
                     .destinationPoint(entity.getDestinationPoint())
                     .destinationTime(entity.getDestinationTime())
                     .departureTime(entity.getDepartureTime())
-                    .seatsCount(entity.getSeatsCount())
+                    .businessSeats(entity.getBusinessSeats())
+                    .economSeats(entity.getEconomSeats())
                     .economyCost(entity.getEconomyCost())
                     .businessCost(entity.getBusinessCost())
                     .airplaneNumber(entity.getAirplaneNumber())
@@ -143,6 +147,29 @@ public class FlightService implements BasicService<Flight> {
             flightRepository.save(flight);
             log.info("Adding tickets to the flight with id = {} was completed successfully", flight.getId());
         }
+    }
+
+    public void createTicketsByFlight(Flight flight) {
+        if (flight == null) {
+            log.error("Create tickets by the flight failed. Flight == null");
+            throw new NullPointerException();
+        }
+        else {
+            for (int i = 0; i < flight.getEconomSeats(); i++) {
+                ticketService.add(Ticket.builder()
+                                .ticketType(TicketType.ECONOMIC)
+                                .flight(flight)
+                                .build());
+            }
+
+            for (int i = 0; i < flight.getBusinessSeats(); i++) {
+                ticketService.add(Ticket.builder()
+                        .ticketType(TicketType.BUSINESS)
+                        .flight(flight)
+                        .build());
+            }
+        }
+        log.info("Creating tickets by the flight with id = {} was completed successfully", flight.getId());
     }
 
     public void addAdditionalFavorsToFlightFavor(FlightFavor flightFavor, List<AdditionalFavor> additionalFavors) {

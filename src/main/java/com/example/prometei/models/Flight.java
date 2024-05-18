@@ -26,7 +26,9 @@ public class Flight {
     @Column(nullable = false)
     private OffsetDateTime departureTime;
     @Column(nullable = false)
-    private Integer seatsCount;
+    private Integer economSeats;
+    @Column(nullable = false)
+    private Integer businessSeats;
     @Column(nullable = false)
     private Double economyCost;
     @Column(nullable = false)

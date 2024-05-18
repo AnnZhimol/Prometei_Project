@@ -11,9 +11,9 @@ import java.util.List;
 
 @Service
 public class PurchaseService implements BasicService<Purchase> {
-    PurchaseRepository purchaseRepository;
-    TicketService ticketService;
-    Logger log = LoggerFactory.getLogger(PurchaseService.class);
+    private final PurchaseRepository purchaseRepository;
+    private final TicketService ticketService;
+    private final Logger log = LoggerFactory.getLogger(PurchaseService.class);
 
     public PurchaseService(PurchaseRepository purchaseRepository, TicketService ticketService) {
         this.purchaseRepository = purchaseRepository;
@@ -48,6 +48,11 @@ public class PurchaseService implements BasicService<Purchase> {
     public List<Purchase> getAll() {
         log.info("Get list of purchases");
         return purchaseRepository.findAll();
+    }
+
+    public List<Purchase> getPurchasesByUser(User user) {
+        log.info("Get list of purchases by user with id = {}", user.getId());
+        return purchaseRepository.findPurchasesByUser(user);
     }
 
     @Override

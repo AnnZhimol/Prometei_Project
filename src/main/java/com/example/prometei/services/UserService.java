@@ -15,11 +15,11 @@ import java.util.List;
 
 @Service
 public class UserService implements BasicService<User>, UserDetailsService {
-    UserRepository userRepository;
-    TicketService ticketService;
-    PurchaseService purchaseService;
-    BCryptPasswordEncoder bCryptPasswordEncoder;
-    Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserRepository userRepository;
+    private final TicketService ticketService;
+    private final PurchaseService purchaseService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
 
     public UserService(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository, PurchaseService purchaseService, TicketService ticketService) {
         this.userRepository = userRepository;
@@ -160,7 +160,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
         if (user == null) {
             log.error("User not found");
-            throw new EntityNotFoundException();
+            throw new UsernameNotFoundException("User with"+ email + "not found");
         }
 
         return user;

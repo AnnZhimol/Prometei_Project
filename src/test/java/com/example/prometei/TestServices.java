@@ -46,7 +46,8 @@ public class TestServices {
                 .departureTime(departureTime)
                 .destinationTime(destinationTime)
                 .airplaneNumber(100029302)
-                .seatsCount(120)
+                .businessSeats(30)
+                .economSeats(60)
                 .businessCost(129899.80)
                 .economyCost(53900.83)
                 .build();
@@ -65,7 +66,8 @@ public class TestServices {
                 .departureTime(departureTime)
                 .destinationTime(destinationTime)
                 .airplaneNumber(100029302)
-                .seatsCount(80)
+                .businessSeats(20)
+                .economSeats(60)
                 .businessCost(129899.80)
                 .economyCost(53900.83)
                 .build();

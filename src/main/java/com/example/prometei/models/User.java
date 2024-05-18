@@ -1,6 +1,7 @@
 package com.example.prometei.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +23,7 @@ public class User implements UserDetails {
     private long id;
     @Column(nullable = false, unique = true)
     @Size(min = 5, max = 256)
+    @Pattern(regexp = "^(.+)@(.+)$")
     private String email;
     @Column(nullable = false)
     @Size(min = 10)
@@ -48,7 +50,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         HashSet<UserRole> roles = new HashSet<>();
-        roles.add(UserRole.ADMIN);
+        roles.add(role);
         return roles;
     }
 

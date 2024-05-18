@@ -12,9 +12,9 @@ import java.util.List;
 
 @Service
 public class TicketService implements BasicService<Ticket> {
-    TicketRepository ticketRepository;
-    AdditionalFavorRepository additionalFavorRepository;
-    Logger log = LoggerFactory.getLogger(TicketService.class);
+    private final TicketRepository ticketRepository;
+    private final AdditionalFavorRepository additionalFavorRepository;
+    private final Logger log = LoggerFactory.getLogger(TicketService.class);
 
     public TicketService(TicketRepository ticketRepository, AdditionalFavorRepository additionalFavorRepository){
         this.ticketRepository = ticketRepository;
@@ -49,6 +49,21 @@ public class TicketService implements BasicService<Ticket> {
     public List<Ticket> getAll() {
         log.info("Get list of tickets");
         return ticketRepository.findAll();
+    }
+
+    public List<Ticket> getTicketsByFlight(Flight flight) {
+        log.info("Get list of sorted tickets by flight with id = {}", flight.getId());
+        return ticketRepository.findTicketsByFlight(flight);
+    }
+
+    public List<Ticket> getTicketsByUser(User user) {
+        log.info("Get list of sorted tickets by user with id = {}", user.getId());
+        return ticketRepository.findTicketsByUser(user);
+    }
+
+    public List<Ticket> getTicketsByPurchase(Purchase purchase) {
+        log.info("Get list of sorted tickets purchase with id = {}", purchase.getId());
+        return ticketRepository.findTicketsByPurchase(purchase);
     }
 
     @Override
