@@ -1,9 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.models.Flight;
-import com.example.prometei.models.Purchase;
-import com.example.prometei.models.Ticket;
-import com.example.prometei.models.User;
+import com.example.prometei.models.*;
 import com.example.prometei.services.TicketService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +48,13 @@ public class TicketController {
     @PostMapping("/create")
     public void addTicket(@RequestBody Ticket ticket) {
         ticketService.add(ticket);
+    }
+
+    //привязка к билету услуг (пользователь выбрал перечень услуг, на их основе создались AdditionalFavors и привязались к билету)
+    @PostMapping("/addAdditionalFavors")
+    public void addAdditionalFavors(@RequestBody Ticket ticket,
+                                    @RequestBody List<FlightFavor> flightFavors) {
+        ticketService.addAdditionalFavorsToTicket(ticket, ticketService.createAdditionalFavorsByFlightFavor(flightFavors));
     }
 
     @PatchMapping("/edit")

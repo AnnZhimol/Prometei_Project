@@ -17,14 +17,14 @@ import java.util.List;
 public class UserService implements BasicService<User>, UserDetailsService {
     private final UserRepository userRepository;
     private final TicketService ticketService;
-    private final PurchaseService purchaseService;
+    //private final PurchaseService purchaseService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository, PurchaseService purchaseService, TicketService ticketService) {
+    public UserService(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository, TicketService ticketService) {
         this.userRepository = userRepository;
         this.ticketService = ticketService;
-        this.purchaseService = purchaseService;
+        //this.purchaseService = purchaseService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
@@ -112,7 +112,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
         }
     }
 
-    public void addPurchasesToUser(User user, List<Purchase> purchases) {
+    /*public void addPurchasesToUser(User user, List<Purchase> purchases) {
         if (user == null) {
             log.error("Adding purchases to the user failed. User == null");
             throw new NullPointerException();
@@ -122,7 +122,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
             throw new NullPointerException();
         }
         else {
-            user.setPurchases(purchases);
+            user.getPurchases().addAll(purchases);
 
             for (Purchase purchase : purchases) {
                 purchaseService.addUserToPurchase(purchase, user);
@@ -131,7 +131,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
             userRepository.save(user);
             log.info("Adding purchases to the user with id = {} was completed successfully", user.getId());
         }
-    }
+    }*/
 
     public void addTicketsToUser(User user, List<Ticket> tickets) {
         if (user == null) {
@@ -143,7 +143,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
             throw new NullPointerException();
         }
         else {
-            user.setTickets(tickets);
+            user.getTickets().addAll(tickets);
 
             for (Ticket ticket : tickets) {
                 ticketService.addUserToTicket(ticket, user);

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -106,7 +107,8 @@ public class FlightService implements BasicService<Flight> {
         }
     }
 
-    public void addFlightFavorsToFlight(Flight flight, List<FlightFavor> flightFavors) {
+    public void addFlightFavorsToFlight(Long id, List<FlightFavor> flightFavors) {
+        Flight flight = flightRepository.findById(id).orElse(null);
         if (flight == null) {
             log.error("Adding flightFavors to the flight failed. Flight == null");
             throw new NullPointerException();
@@ -155,19 +157,26 @@ public class FlightService implements BasicService<Flight> {
             throw new NullPointerException();
         }
         else {
+            List<Ticket> listTickets = new ArrayList<>();
             for (int i = 0; i < flight.getEconomSeats(); i++) {
-                ticketService.add(Ticket.builder()
-                                .ticketType(TicketType.ECONOMIC)
-                                .flight(flight)
-                                .build());
+                Ticket ticket = Ticket.builder()
+                        .ticketType(TicketType.ECONOMIC)
+                        .flight(flight)
+                        .build();
+                listTickets.add(ticket);
+                ticketService.add(ticket);
             }
 
             for (int i = 0; i < flight.getBusinessSeats(); i++) {
-                ticketService.add(Ticket.builder()
+                Ticket ticket = Ticket.builder()
                         .ticketType(TicketType.BUSINESS)
                         .flight(flight)
-                        .build());
+                        .build();
+                listTickets.add(ticket);
+                ticketService.add(ticket);
             }
+
+            flight.setTickets(listTickets);
         }
         log.info("Creating tickets by the flight with id = {} was completed successfully", flight.getId());
     }

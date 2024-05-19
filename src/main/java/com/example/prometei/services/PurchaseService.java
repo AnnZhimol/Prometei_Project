@@ -13,11 +13,13 @@ import java.util.List;
 public class PurchaseService implements BasicService<Purchase> {
     private final PurchaseRepository purchaseRepository;
     private final TicketService ticketService;
+    private final UserService userService;
     private final Logger log = LoggerFactory.getLogger(PurchaseService.class);
 
-    public PurchaseService(PurchaseRepository purchaseRepository, TicketService ticketService) {
+    public PurchaseService(PurchaseRepository purchaseRepository, TicketService ticketService, UserService userService) {
         this.purchaseRepository = purchaseRepository;
         this.ticketService = ticketService;
+        this.userService = userService;
     }
 
     @Override
@@ -111,11 +113,15 @@ public class PurchaseService implements BasicService<Purchase> {
             Double cost = 0.0;
             for (Ticket ticket : tickets) {
                 ticketService.addPurchaseToTicket(ticket, purchase);
+
                 if (ticket.getTicketType() == TicketType.BUSINESS)
                     cost+=ticket.getFlight().getBusinessCost();
                 if (ticket.getTicketType() == TicketType.ECONOMIC)
                     cost+=ticket.getFlight().getEconomyCost();
 
+                for (AdditionalFavor additionalFavor : ticket.getAdditionalFavors()) {
+                    cost += additionalFavor.getFlightFavor().getCost();
+                }
             }
 
             purchase.setTotalCost(cost);
@@ -135,6 +141,12 @@ public class PurchaseService implements BasicService<Purchase> {
         }
         else {
             purchase.setUser(user);
+            for(Ticket ticket : purchase.getTickets()) {
+                ticket.setUser(user);
+                ticketService.edit(ticket.getId(), ticket);
+            }
+            user.getPurchases().add(purchase);
+            userService.edit(user.getId(), user);
             purchaseRepository.save(purchase);
             log.info("Adding user to the purchase with id = {} was completed successfully", purchase.getId());
         }

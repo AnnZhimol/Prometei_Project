@@ -1,6 +1,7 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.models.Purchase;
+import com.example.prometei.models.Ticket;
 import com.example.prometei.models.User;
 import com.example.prometei.services.PurchaseService;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,18 @@ public class PurchaseController {
     @PostMapping("/create")
     public void addPurchase(@RequestBody Purchase purchase) {
         purchaseService.add(purchase);
+    }
+
+    @PostMapping("/addTickets")
+    public void addTickets(@RequestBody Purchase purchase,
+                           @RequestBody List<Ticket> tickets) {
+        purchaseService.addTicketsToPurchase(purchase, tickets);
+    }
+
+    @PostMapping("/addUser")
+    public void addUser(@RequestBody Purchase purchase,
+                        @RequestBody User user) {
+        purchaseService.addUserToPurchase(purchase, user);
     }
 
     @PatchMapping("/edit")

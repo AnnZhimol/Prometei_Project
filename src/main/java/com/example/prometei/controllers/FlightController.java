@@ -41,6 +41,7 @@ public class FlightController {
         return new ResponseEntity<>(flightService.getAll(),HttpStatus.OK);
     }
 
+    // создание билетов вместе с полетом
     @PostMapping("/create")
     public void addFlight(@RequestBody Flight flight) {
         flightService.add(flight);
@@ -48,9 +49,9 @@ public class FlightController {
     }
 
     @PostMapping("/addFlightFavors")
-    public void addFlightFavors(@RequestBody Flight flight,
+    public void addFlightFavors(@RequestParam Long id,
                                 @RequestBody List<FlightFavor> flightFavors) {
-        flightService.addFlightFavorsToFlight(flight, flightFavors);
+        flightService.addFlightFavorsToFlight(id, flightFavors);
     }
 
     @PatchMapping("/edit")

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -165,6 +166,27 @@ public class TicketService implements BasicService<Ticket> {
             additionalFavor.setFlightFavor(flightFavor);
             additionalFavorRepository.save(additionalFavor);
             log.info("Adding flightFavor to the additionalFavor with id = {} was completed successfully", additionalFavor.getId());
+        }
+    }
+
+    public List<AdditionalFavor> createAdditionalFavorsByFlightFavor(List<FlightFavor> flightFavors) {
+        if (flightFavors == null) {
+            log.error("Creating additionalFavor by flightFavor failed. FlightFavors == null");
+            throw new NullPointerException();
+        }
+        else {
+            List<AdditionalFavor> additionalFavorList= new ArrayList<>();
+            for (FlightFavor flightFavor : flightFavors) {
+                AdditionalFavor additionalFavor = AdditionalFavor.builder()
+                        .flightFavor(flightFavor)
+                        .build();
+                additionalFavorList.add(additionalFavor);
+                flightFavor.getAdditionalFavors().add(additionalFavor);
+                additionalFavorRepository.save(additionalFavor);
+            }
+
+            log.info("Creating additionalFavors by the flightFavors was completed successfully");
+            return additionalFavorList;
         }
     }
 
