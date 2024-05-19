@@ -46,14 +46,13 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
     @Override
     public void delete(User entity) {
-        if (entity != null) {
-            userRepository.delete(entity);
-            log.info("User with id = {} successfully delete", entity.getId());
-        }
-        else {
+        if (entity == null) {
             log.error("Error deleting user. User = null");
             throw new NullPointerException();
         }
+
+        userRepository.delete(entity);
+        log.info("User with id = {} successfully delete", entity.getId());
     }
 
     @Override
@@ -76,26 +75,25 @@ public class UserService implements BasicService<User>, UserDetailsService {
             log.error("User with id = {} not found", id);
             throw new EntityNotFoundException();
         }
-        else {
-            currentUser = User.builder()
-                    .id(currentUser.getId())
-                    .birthDate(entity.getBirthDate())
-                    .email(entity.getEmail())
-                    .firstName(entity.getFirstName())
-                    .gender(entity.getGender())
-                    .internationalPassportDate(entity.getInternationalPassportDate())
-                    .internationalPassportNum(entity.getInternationalPassportNum())
-                    .lastName(entity.getLastName())
-                    .password(bCryptPasswordEncoder.encode(entity.getPassword()))
-                    .phoneNumber(entity.getPhoneNumber())
-                    .passport(entity.getPassport())
-                    .role(currentUser.getRole())
-                    .residenceCity(entity.getResidenceCity())
-                    .build();
 
-            userRepository.save(currentUser);
-            log.info("User with id = {} successfully edit", id);
-        }
+        currentUser = User.builder()
+                .id(currentUser.getId())
+                .birthDate(entity.getBirthDate())
+                .email(entity.getEmail())
+                .firstName(entity.getFirstName())
+                .gender(entity.getGender())
+                .internationalPassportDate(entity.getInternationalPassportDate())
+                .internationalPassportNum(entity.getInternationalPassportNum())
+                .lastName(entity.getLastName())
+                .password(bCryptPasswordEncoder.encode(entity.getPassword()))
+                .phoneNumber(entity.getPhoneNumber())
+                .passport(entity.getPassport())
+                .role(currentUser.getRole())
+                .residenceCity(entity.getResidenceCity())
+                .build();
+
+        userRepository.save(currentUser);
+        log.info("User with id = {} successfully edit", id);
     }
 
     @Override
@@ -106,10 +104,9 @@ public class UserService implements BasicService<User>, UserDetailsService {
             log.info("User with id = {} successfully find", id);
             return user;
         }
-        else {
-            log.error("Search user with id = {} failed", id);
-            return null;
-        }
+
+        log.error("Search user with id = {} failed", id);
+        return null;
     }
 
     /*public void addPurchasesToUser(User user, List<Purchase> purchases) {
@@ -138,20 +135,20 @@ public class UserService implements BasicService<User>, UserDetailsService {
             log.error("Adding tickets to the user failed. User == null");
             throw new NullPointerException();
         }
-        else if (tickets == null) {
+
+        if (tickets == null) {
             log.error("Adding tickets to the user failed. Tickets == null");
             throw new NullPointerException();
         }
-        else {
-            user.getTickets().addAll(tickets);
 
-            for (Ticket ticket : tickets) {
-                ticketService.addUserToTicket(ticket, user);
-            }
+        user.getTickets().addAll(tickets);
 
-            userRepository.save(user);
-            log.info("Adding tickets to the user with id = {} was completed successfully", user.getId());
+        for (Ticket ticket : tickets) {
+            ticketService.addUserToTicket(ticket, user);
         }
+
+        userRepository.save(user);
+        log.info("Adding tickets to the user with id = {} was completed successfully", user.getId());
     }
 
     @Override

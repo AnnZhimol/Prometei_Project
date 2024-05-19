@@ -24,26 +24,24 @@ public class TicketService implements BasicService<Ticket> {
 
     @Override
     public void add(Ticket entity) {
-        if (entity != null) {
-            ticketRepository.save(entity);
-            log.info("Ticket with id = {} successfully added", entity.getId());
-        }
-        else {
+        if (entity == null) {
             log.error("Error adding ticket. Ticket = null");
             throw new NullPointerException();
         }
+
+        ticketRepository.save(entity);
+        log.info("Ticket with id = {} successfully added", entity.getId());
     }
 
     @Override
     public void delete(Ticket entity) {
-        if (entity != null) {
-            ticketRepository.delete(entity);
-            log.info("Ticket with id = {} successfully delete", entity.getId());
-        }
-        else {
+        if (entity == null) {
             log.error("Error deleting ticket. Ticket = null");
             throw new NullPointerException();
         }
+
+        ticketRepository.delete(entity);
+        log.info("Ticket with id = {} successfully delete", entity.getId());
     }
 
     @Override
@@ -81,14 +79,13 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Ticket with id = {} not found", id);
             throw new EntityNotFoundException();
         }
-        else {
-            currentTicket = Ticket.builder()
-                    .id(currentTicket.getId())
-                    .ticketType(entity.getTicketType())
-                    .build();
-            ticketRepository.save(currentTicket);
-            log.info("Ticket with id = {} successfully edit", id);
-        }
+
+        currentTicket = Ticket.builder()
+                .id(currentTicket.getId())
+                .ticketType(entity.getTicketType())
+                .build();
+        ticketRepository.save(currentTicket);
+        log.info("Ticket with id = {} successfully edit", id);
     }
 
     @Override
@@ -99,10 +96,9 @@ public class TicketService implements BasicService<Ticket> {
             log.info("Ticket with id = {} successfully find", id);
             return ticket;
         }
-        else {
-            log.error("Search ticket with id = {} failed", id);
-            return null;
-        }
+
+        log.error("Search ticket with id = {} failed", id);
+        return null;
     }
 
     public void addFlightToTicket(Ticket ticket, Flight flight) {
@@ -110,15 +106,15 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Adding flight to the ticket failed. Flight == null");
             throw new NullPointerException();
         }
-        else if (ticket == null) {
+
+        if (ticket == null) {
             log.error("Adding flight to the ticket failed. Ticket == null");
             throw new NullPointerException();
         }
-        else {
-            ticket.setFlight(flight);
-            ticketRepository.save(ticket);
-            log.info("Adding flight to the ticket with id = {} was completed successfully", ticket.getId());
-        }
+
+        ticket.setFlight(flight);
+        ticketRepository.save(ticket);
+        log.info("Adding flight to the ticket with id = {} was completed successfully", ticket.getId());
     }
 
     public void addPurchaseToTicket(Ticket ticket, Purchase purchase) {
@@ -126,15 +122,15 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Adding purchase to the ticket failed. Purchase == null");
             throw new NullPointerException();
         }
-        else if (ticket == null) {
+
+        if (ticket == null) {
             log.error("Adding purchase to the ticket failed. Ticket == null");
             throw new NullPointerException();
         }
-        else {
-            ticket.setPurchase(purchase);
-            ticketRepository.save(ticket);
-            log.info("Adding purchase to the ticket with id = {} was completed successfully", ticket.getId());
-        }
+
+        ticket.setPurchase(purchase);
+        ticketRepository.save(ticket);
+        log.info("Adding purchase to the ticket with id = {} was completed successfully", ticket.getId());
     }
 
     public void addUserToTicket(Ticket ticket, User user) {
@@ -142,15 +138,15 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Adding user to the ticket failed. Ticket == null");
             throw new NullPointerException();
         }
-        else if (user == null) {
+
+        if (user == null) {
             log.error("Adding user to the ticket failed. User == null");
             throw new NullPointerException();
         }
-        else {
-            ticket.setUser(user);
-            ticketRepository.save(ticket);
-            log.info("Adding user to the ticket with id = {} was completed successfully", ticket.getId());
-        }
+
+        ticket.setUser(user);
+        ticketRepository.save(ticket);
+        log.info("Adding user to the ticket with id = {} was completed successfully", ticket.getId());
     }
 
     public void addFlightFavorToAdditionalFavor(AdditionalFavor additionalFavor, FlightFavor flightFavor) {
@@ -158,15 +154,15 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Adding flightFavor to the additionalFavor failed. AdditionalFavor == null");
             throw new NullPointerException();
         }
-        else if (flightFavor == null) {
+
+        if (flightFavor == null) {
             log.error("Adding flightFavor to the additionalFavor failed. FlightFavor == null");
             throw new NullPointerException();
         }
-        else {
-            additionalFavor.setFlightFavor(flightFavor);
-            additionalFavorRepository.save(additionalFavor);
-            log.info("Adding flightFavor to the additionalFavor with id = {} was completed successfully", additionalFavor.getId());
-        }
+
+        additionalFavor.setFlightFavor(flightFavor);
+        additionalFavorRepository.save(additionalFavor);
+        log.info("Adding flightFavor to the additionalFavor with id = {} was completed successfully", additionalFavor.getId());
     }
 
     public List<AdditionalFavor> createAdditionalFavorsByFlightFavor(List<FlightFavor> flightFavors) {
@@ -174,20 +170,19 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Creating additionalFavor by flightFavor failed. FlightFavors == null");
             throw new NullPointerException();
         }
-        else {
-            List<AdditionalFavor> additionalFavorList= new ArrayList<>();
-            for (FlightFavor flightFavor : flightFavors) {
-                AdditionalFavor additionalFavor = AdditionalFavor.builder()
-                        .flightFavor(flightFavor)
-                        .build();
-                additionalFavorList.add(additionalFavor);
-                flightFavor.getAdditionalFavors().add(additionalFavor);
-                additionalFavorRepository.save(additionalFavor);
-            }
 
-            log.info("Creating additionalFavors by the flightFavors was completed successfully");
-            return additionalFavorList;
+        List<AdditionalFavor> additionalFavorList= new ArrayList<>();
+        for (FlightFavor flightFavor : flightFavors) {
+            AdditionalFavor additionalFavor = AdditionalFavor.builder()
+                    .flightFavor(flightFavor)
+                    .build();
+            additionalFavorList.add(additionalFavor);
+            flightFavor.getAdditionalFavors().add(additionalFavor);
+            additionalFavorRepository.save(additionalFavor);
         }
+
+        log.info("Creating additionalFavors by the flightFavors was completed successfully");
+        return additionalFavorList;
     }
 
     public void addAdditionalFavorsToTicket(Ticket ticket, List<AdditionalFavor> additionalFavors) {
@@ -195,20 +190,20 @@ public class TicketService implements BasicService<Ticket> {
             log.error("Adding additionalFavors to the ticket failed. Ticket == null");
             throw new NullPointerException();
         }
-        else if (additionalFavors == null) {
+
+        if (additionalFavors == null) {
             log.error("Adding additionalFavors to the ticket failed. AdditionalFavors == null");
             throw new NullPointerException();
         }
-        else {
-            ticket.setAdditionalFavors(additionalFavors);
 
-            for (AdditionalFavor additionalFavor : additionalFavors) {
-                additionalFavor.setTicket(ticket);
-                additionalFavorRepository.save(additionalFavor);
-            }
+        ticket.setAdditionalFavors(additionalFavors);
 
-            ticketRepository.save(ticket);
-            log.info("Adding additionalFavors to the ticket with id = {} was completed successfully", ticket.getId());
+        for (AdditionalFavor additionalFavor : additionalFavors) {
+            additionalFavor.setTicket(ticket);
+            additionalFavorRepository.save(additionalFavor);
         }
+
+        ticketRepository.save(ticket);
+        log.info("Adding additionalFavors to the ticket with id = {} was completed successfully", ticket.getId());
     }
 }
