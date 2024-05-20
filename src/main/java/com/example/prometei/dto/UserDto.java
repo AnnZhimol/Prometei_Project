@@ -2,7 +2,7 @@ package com.example.prometei.dto;
 
 import com.example.prometei.models.UserGender;
 import com.example.prometei.models.UserRole;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Value;
 
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class UserDto implements Serializable {
     long id;
     @Size(min = 5, max = 256)
-    @Pattern(regexp = "^(.+)@(.+)$")
+    @Email
     String email;
     @Size(min = 10)
     String password;

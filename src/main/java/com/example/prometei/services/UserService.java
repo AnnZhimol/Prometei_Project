@@ -6,41 +6,53 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class UserService implements BasicService<User>, UserDetailsService {
+public class UserService implements BasicService<User>{
     private final UserRepository userRepository;
     private final TicketService ticketService;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository, TicketService ticketService) {
+    public UserService(UserRepository userRepository, TicketService ticketService) {
         this.userRepository = userRepository;
         this.ticketService = ticketService;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
     public void add(User entity) {
-        User user = userRepository.findUserByEmail(entity.getUsername());
-
-        if (user != null) {
+        if (userRepository.existsByEmail(entity.getEmail())) {
             log.error("User already exist");
             throw new IllegalArgumentException("The user is already exist.");
         }
 
-        entity.setRole(UserRole.CLIENT);
-        entity.setPassword(bCryptPasswordEncoder.encode(entity.getPassword()));
-
         userRepository.save(entity);
         log.info("User with id = {} successfully added", entity.getId());
+    }
+
+    public User getByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    public UserDetailsService userDetailsService() {
+        return this::getByEmail;
+    }
+
+    public User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getByEmail(email);
+    }
+
+    @Deprecated
+    public void getAdmin(){
+        User user = getCurrentUser();
+        user.setRole(UserRole.ADMIN);
+        userRepository.save(user);
     }
 
     @Override
@@ -76,7 +88,7 @@ public class UserService implements BasicService<User>, UserDetailsService {
         }
 
         entity.setId(id);
-        entity.setPassport(bCryptPasswordEncoder.encode(entity.getPassword()));
+        //entity.setPassport(bCryptPasswordEncoder.encode(entity.getPassword()));
         entity.setRole(currentUser.getRole());
 
         userRepository.save(currentUser);
@@ -121,17 +133,5 @@ public class UserService implements BasicService<User>, UserDetailsService {
 
         userRepository.save(user);
         log.info("Adding tickets to the user with id = {} was completed successfully", user.getId());
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findUserByEmail(email);
-
-        if (user == null) {
-            log.error("User not found");
-            throw new UsernameNotFoundException("User with"+ email + "not found");
-        }
-
-        return user;
     }
 }
