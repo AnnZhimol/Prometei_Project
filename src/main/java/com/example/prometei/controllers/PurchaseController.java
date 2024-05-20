@@ -43,15 +43,15 @@ public class PurchaseController {
     }
 
     @PostMapping("/addTickets")
-    public void addTickets(@RequestBody Purchase purchase,
+    public void addTickets(@RequestParam Long id,
                            @RequestBody List<Ticket> tickets) {
-        purchaseService.addTicketsToPurchase(purchase, tickets);
+        purchaseService.addTicketsToPurchase(id, tickets);
     }
 
     @PostMapping("/addUser")
-    public void addUser(@RequestBody Purchase purchase,
+    public void addUser(@RequestParam Long id,
                         @RequestBody User user) {
-        purchaseService.addUserToPurchase(purchase, user);
+        purchaseService.addUserToPurchase(id, user);
     }
 
     @PatchMapping("/edit")

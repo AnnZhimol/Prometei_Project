@@ -4,6 +4,7 @@ import com.example.prometei.models.*;
 import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.FlightRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,10 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findAll();
     }
 
-    public List<Flight> getSearchResult(String departurePoint, String destinationPoint, OffsetDateTime departureTime) {
+    @Deprecated
+    public List<Flight> getSearchResult(String departurePoint,
+                                        String destinationPoint,
+                                        OffsetDateTime departureTime) {
         log.info("Get list of sorted flights");
         return flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureTime);
     }
@@ -73,20 +77,9 @@ public class FlightService implements BasicService<Flight> {
             throw new EntityNotFoundException();
         }
 
-        currentFlight = Flight.builder()
-                .id(currentFlight.getId())
-                .departurePoint(entity.getDeparturePoint())
-                .destinationPoint(entity.getDestinationPoint())
-                .destinationTime(entity.getDestinationTime())
-                .departureTime(entity.getDepartureTime())
-                .businessSeats(entity.getBusinessSeats())
-                .economSeats(entity.getEconomSeats())
-                .economyCost(entity.getEconomyCost())
-                .businessCost(entity.getBusinessCost())
-                .airplaneNumber(entity.getAirplaneNumber())
-                .build();
+        entity.setId(id);
 
-        flightRepository.save(currentFlight);
+        flightRepository.save(entity);
         log.info("Flight with id = {} successfully edit", id);
     }
 
@@ -103,6 +96,7 @@ public class FlightService implements BasicService<Flight> {
         return null;
     }
 
+    @Transactional
     public void addFlightFavorsToFlight(Long id, List<FlightFavor> flightFavors) {
         Flight flight = flightRepository.findById(id).orElse(null);
 
@@ -119,6 +113,11 @@ public class FlightService implements BasicService<Flight> {
         flight.setFlightFavors(flightFavors);
 
         for (FlightFavor flightFavor : flightFavors) {
+            if (flightFavor == null) {
+                log.error("Adding flightFavors to the flight with id = {} failed. FlightFavor == null", flight.getId());
+                throw new NullPointerException();
+            }
+
             flightFavor.setFlight(flight);
             flightFavorRepository.save(flightFavor);
         }
@@ -127,6 +126,8 @@ public class FlightService implements BasicService<Flight> {
         log.info("Adding flightFavors to the flight with id = {} was completed successfully", flight.getId());
     }
 
+    @Deprecated
+    @Transactional
     public void addTicketsToFlight(Flight flight, List<Ticket> tickets) {
         if (flight == null) {
             log.error("Adding tickets to the flight failed. Flight == null");
@@ -141,6 +142,11 @@ public class FlightService implements BasicService<Flight> {
         flight.setTickets(tickets);
 
         for (Ticket ticket : tickets) {
+            if(ticket == null) {
+                log.error("Adding tickets to the flight with id = {} failed. Ticket == null", flight.getId());
+                throw new NullPointerException();
+            }
+
             ticketService.addFlightToTicket(ticket, flight);
         }
 
@@ -178,6 +184,7 @@ public class FlightService implements BasicService<Flight> {
         log.info("Creating tickets by the flight with id = {} was completed successfully", flight.getId());
     }
 
+    @Deprecated
     public void addAdditionalFavorsToFlightFavor(FlightFavor flightFavor, List<AdditionalFavor> additionalFavors) {
         if (flightFavor == null) {
             log.error("Adding additionalFavors to the flightFavor failed. FlightFavor == null");

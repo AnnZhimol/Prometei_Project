@@ -3,6 +3,7 @@ package com.example.prometei.services;
 import com.example.prometei.models.*;
 import com.example.prometei.repositories.PurchaseRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -70,12 +71,7 @@ public class PurchaseService implements BasicService<Purchase> {
             throw new EntityNotFoundException();
         }
 
-        currentPurchase = Purchase.builder()
-                .id(currentPurchase.getId())
-                .totalCost(entity.getTotalCost())
-                .paymentMethod(entity.getPaymentMethod())
-                .createDate(entity.getCreateDate())
-                .build();
+        entity.setId(id);
 
         purchaseRepository.save(currentPurchase);
         log.info("Purchase with id = {} successfully edit", id);
@@ -94,7 +90,10 @@ public class PurchaseService implements BasicService<Purchase> {
         return null;
     }
 
-    public void addTicketsToPurchase(Purchase purchase, List<Ticket> tickets) {
+    @Transactional
+    public void addTicketsToPurchase(Long id, List<Ticket> tickets) {
+        Purchase purchase = purchaseRepository.findById(id).orElse(null);
+
         if (purchase == null) {
             log.error("Adding tickets to the purchase failed. Purchase == null");
             throw new NullPointerException();
@@ -109,6 +108,11 @@ public class PurchaseService implements BasicService<Purchase> {
 
         Double cost = 0.0;
         for (Ticket ticket : tickets) {
+            if (ticket == null) {
+                log.error("Adding tickets to the purchase failed. Ticket == null");
+                throw new NullPointerException();
+            }
+
             ticketService.addPurchaseToTicket(ticket, purchase);
 
             if (ticket.getTicketType() == TicketType.BUSINESS)
@@ -126,7 +130,10 @@ public class PurchaseService implements BasicService<Purchase> {
         log.info("Adding tickets to the purchase with id = {} was completed successfully", purchase.getId());
     }
 
-    public void addUserToPurchase(Purchase purchase, User user) {
+    @Transactional
+    public void addUserToPurchase(Long id, User user) {
+        Purchase purchase = purchaseRepository.findById(id).orElse(null);
+
         if (purchase == null) {
             log.error("Adding user to the purchase failed. Purchase == null");
             throw new NullPointerException();
@@ -138,13 +145,20 @@ public class PurchaseService implements BasicService<Purchase> {
         }
 
         purchase.setUser(user);
+
         for(Ticket ticket : purchase.getTickets()) {
+            if (ticket == null) {
+                log.error("Adding user to tickets failed. Ticket == null");
+                throw new NullPointerException();
+            }
             ticket.setUser(user);
             ticketService.edit(ticket.getId(), ticket);
         }
+
         user.getPurchases().add(purchase);
         userService.edit(user.getId(), user);
         purchaseRepository.save(purchase);
+
         log.info("Adding user to the purchase with id = {} was completed successfully", purchase.getId());
     }
 }

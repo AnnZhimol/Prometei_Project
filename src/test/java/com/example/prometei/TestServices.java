@@ -61,18 +61,18 @@ public class TestServices {
         OffsetDateTime destinationTime = OffsetDateTime.of(2024, 3, 5, 22, 15, 0, 0, ZoneOffset.ofHours(+9));
 
         Flight flight = Flight.builder()
-                .departurePoint("Москва")
-                .destinationPoint("Чита")
+                .departurePoint("Минеральные Воды")
+                .destinationPoint("Ереван")
                 .departureTime(departureTime)
                 .destinationTime(destinationTime)
                 .airplaneNumber(100029302)
-                .businessSeats(20)
-                .economSeats(60)
+                .businessSeats(2)
+                .economSeats(10)
                 .businessCost(129899.80)
                 .economyCost(53900.83)
                 .build();
 
-        flightService.edit(302L, flight);
+        flightService.edit(2L, flight);
     }
 
     @Test
@@ -150,27 +150,13 @@ public class TestServices {
     }
 
     @Test
-    void addPurchasesToUser(){
-        List<Purchase> purchases = new ArrayList<>();
-
-        purchases.add(purchaseService.getById(52L));
-        purchases.add(Purchase.builder()
-                .createDate(LocalDate.now())
-                .paymentMethod(PaymentMethod.BANKCARD)
-                .totalCost(0.0)
-                .build());
-
-        userService.addPurchasesToUser(userService.getById(152L),purchases);
-    }
-
-    @Test
     void addPurchaseToTicket(){
         List<Ticket> tickets = new ArrayList<>();
 
         tickets.add(ticketService.getById(102L));
         tickets.add(ticketService.getById(103L));
 
-        purchaseService.addTicketsToPurchase(purchaseService.getById(52L),tickets);
+        purchaseService.addTicketsToPurchase(52L,tickets);
     }
 
     @Test
@@ -191,11 +177,12 @@ public class TestServices {
                                     .name("Обед 1")
                                     .cost(2399.45)
                                     .build());
+        flightFavors.add(null);
         flightFavors.add(FlightFavor.builder()
                                     .name("Обед 2")
                                     .cost(2399.45)
                                     .build());
 
-        flightService.addFlightFavorsToFlight(flightService.getById(302L),flightFavors);
+        flightService.addFlightFavorsToFlight(2L,flightFavors);
     }
 }

@@ -4,10 +4,12 @@ import com.example.prometei.models.*;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +52,14 @@ public class TicketService implements BasicService<Ticket> {
         return ticketRepository.findAll();
     }
 
+    public List<Ticket> getSearchResult(String departurePoint,
+                                        String destinationPoint,
+                                        OffsetDateTime departureTime,
+                                        TicketType ticketType) {
+        log.info("Get list of sorted tickets");
+        return ticketRepository.findTicketsForSearch(departurePoint, destinationPoint, departureTime, ticketType);
+    }
+
     public List<Ticket> getTicketsByFlight(Flight flight) {
         log.info("Get list of sorted tickets by flight with id = {}", flight.getId());
         return ticketRepository.findTicketsByFlight(flight);
@@ -80,10 +90,8 @@ public class TicketService implements BasicService<Ticket> {
             throw new EntityNotFoundException();
         }
 
-        currentTicket = Ticket.builder()
-                .id(currentTicket.getId())
-                .ticketType(entity.getTicketType())
-                .build();
+        entity.setId(id);
+
         ticketRepository.save(currentTicket);
         log.info("Ticket with id = {} successfully edit", id);
     }
@@ -165,6 +173,7 @@ public class TicketService implements BasicService<Ticket> {
         log.info("Adding flightFavor to the additionalFavor with id = {} was completed successfully", additionalFavor.getId());
     }
 
+    @Transactional
     public List<AdditionalFavor> createAdditionalFavorsByFlightFavor(List<FlightFavor> flightFavors) {
         if (flightFavors == null) {
             log.error("Creating additionalFavor by flightFavor failed. FlightFavors == null");
@@ -172,10 +181,17 @@ public class TicketService implements BasicService<Ticket> {
         }
 
         List<AdditionalFavor> additionalFavorList= new ArrayList<>();
+
         for (FlightFavor flightFavor : flightFavors) {
+            if (flightFavor == null) {
+                log.error("Creating additionalFavor by flightFavor failed. FlightFavor == null");
+                throw new NullPointerException();
+            }
+
             AdditionalFavor additionalFavor = AdditionalFavor.builder()
                     .flightFavor(flightFavor)
                     .build();
+
             additionalFavorList.add(additionalFavor);
             flightFavor.getAdditionalFavors().add(additionalFavor);
             additionalFavorRepository.save(additionalFavor);
@@ -185,7 +201,10 @@ public class TicketService implements BasicService<Ticket> {
         return additionalFavorList;
     }
 
-    public void addAdditionalFavorsToTicket(Ticket ticket, List<AdditionalFavor> additionalFavors) {
+    @Transactional
+    public void addAdditionalFavorsToTicket(Long id, List<AdditionalFavor> additionalFavors) {
+        Ticket ticket = ticketRepository.findById(id).orElse(null);
+
         if (ticket == null) {
             log.error("Adding additionalFavors to the ticket failed. Ticket == null");
             throw new NullPointerException();
@@ -199,6 +218,11 @@ public class TicketService implements BasicService<Ticket> {
         ticket.setAdditionalFavors(additionalFavors);
 
         for (AdditionalFavor additionalFavor : additionalFavors) {
+            if (additionalFavor == null) {
+                log.error("Adding additionalFavors to the ticket failed. AdditionalFavor == null");
+                throw new NullPointerException();
+            }
+
             additionalFavor.setTicket(ticket);
             additionalFavorRepository.save(additionalFavor);
         }

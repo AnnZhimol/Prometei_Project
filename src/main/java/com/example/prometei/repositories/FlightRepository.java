@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface FlightRepository extends JpaRepository<Flight, Long> {
+    @Deprecated
     @Query("SELECT f FROM Flight f " +
             "WHERE f.departurePoint = :departurePoint " +
             "AND f.destinationPoint = :destinationPoint " +

@@ -2,10 +2,12 @@ package com.example.prometei.controllers;
 
 import com.example.prometei.models.*;
 import com.example.prometei.services.TicketService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -35,6 +37,15 @@ public class TicketController {
         return new ResponseEntity<>(ticketService.getTicketsByFlight(flight), HttpStatus.OK);
     }
 
+    @GetMapping("/searchResult")
+    public ResponseEntity<List<Ticket>> getSearchResult(@RequestParam String departurePoint,
+                                                        @RequestParam String destinationPoint,
+                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime departureTime,
+                                                        @RequestParam TicketType ticketType) {
+        return new ResponseEntity<>(ticketService.getSearchResult(departurePoint,
+                destinationPoint, departureTime, ticketType), HttpStatus.OK);
+    }
+
     @GetMapping("/getByPurchase")
     public ResponseEntity<List<Ticket>> getTicketsByPurchase(@RequestBody Purchase purchase) {
         return new ResponseEntity<>(ticketService.getTicketsByPurchase(purchase), HttpStatus.OK);
@@ -52,9 +63,9 @@ public class TicketController {
 
     //привязка к билету услуг (пользователь выбрал перечень услуг, на их основе создались AdditionalFavors и привязались к билету)
     @PostMapping("/addAdditionalFavors")
-    public void addAdditionalFavors(@RequestBody Ticket ticket,
+    public void addAdditionalFavors(@RequestParam Long id,
                                     @RequestBody List<FlightFavor> flightFavors) {
-        ticketService.addAdditionalFavorsToTicket(ticket, ticketService.createAdditionalFavorsByFlightFavor(flightFavors));
+        ticketService.addAdditionalFavorsToTicket(id, ticketService.createAdditionalFavorsByFlightFavor(flightFavors));
     }
 
     @PatchMapping("/edit")

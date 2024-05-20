@@ -28,6 +28,7 @@ public class FlightController {
                 : new ResponseEntity<>(flight, HttpStatus.OK);
     }
 
+    @Deprecated
     @GetMapping("/search")
     public ResponseEntity<List<Flight>> searchFlights(@RequestParam String departurePoint,
                                                       @RequestParam String destinationPoint,
