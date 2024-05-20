@@ -26,6 +26,12 @@ public class FlightService implements BasicService<Flight> {
         this.ticketService = ticketService;
     }
 
+    /**
+     * Добавляет новую сущность рейса в базу данных.
+     *
+     * @param entity сущность рейса, которую необходимо добавить
+     * @throws NullPointerException если указанная сущность равна null
+     */
     @Override
     public void add(Flight entity) {
         if (entity == null) {
@@ -37,6 +43,12 @@ public class FlightService implements BasicService<Flight> {
         log.info("Flight with id = {} successfully added", entity.getId());
     }
 
+    /**
+     * Удаляет сущность рейса из базы данных.
+     *
+     * @param entity сущность рейса, которую необходимо удалить
+     * @throws NullPointerException если указанная сущность равна null
+     */
     @Override
     public void delete(Flight entity) {
         if (entity == null) {
@@ -48,6 +60,11 @@ public class FlightService implements BasicService<Flight> {
         log.info("Flight with id = {} successfully delete", entity.getId());
     }
 
+    /**
+     * Получает список всех рейсов из базы данных.
+     *
+     * @return список всех рейсов
+     */
     @Override
     public List<Flight> getAll() {
         log.info("Get list of flights");
@@ -62,12 +79,22 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureTime);
     }
 
+    /**
+     * Удаляет все рейсы из базы данных.
+     */
     @Override
     public void deleteAll() {
         log.info("Deleting all flights");
         flightRepository.deleteAll();
     }
 
+    /**
+     * Редактирует информацию о рейсе по его идентификатору.
+     *
+     * @param id идентификатор рейса, который требуется отредактировать
+     * @param entity новая информация о рейсе
+     * @throws EntityNotFoundException если рейс с указанным идентификатором не найден
+     */
     @Override
     public void edit(Long id, Flight entity) {
         Flight currentFlight = getById(id);
@@ -83,6 +110,12 @@ public class FlightService implements BasicService<Flight> {
         log.info("Flight with id = {} successfully edit", id);
     }
 
+    /**
+     * Получает информацию о рейсе по его идентификатору.
+     *
+     * @param id идентификатор рейса, который требуется найти
+     * @return объект класса Flight с информацией о рейсе, или null, если рейс не найден
+     */
     @Override
     public Flight getById(Long id) {
         Flight flight = flightRepository.findById(id).orElse(null);
@@ -96,6 +129,13 @@ public class FlightService implements BasicService<Flight> {
         return null;
     }
 
+    /**
+     * Добавляет список доступных услуг к рейсу по его идентификатору.
+     *
+     * @param id идентификатор рейса, к которому необходимо добавить доступные услуги
+     * @param flightFavors список доступных услуг, которые нужно добавить
+     * @throws NullPointerException если рейс или список доступных услуг равны null
+     */
     @Transactional
     public void addFlightFavorsToFlight(Long id, List<FlightFavor> flightFavors) {
         Flight flight = flightRepository.findById(id).orElse(null);
@@ -154,6 +194,12 @@ public class FlightService implements BasicService<Flight> {
         log.info("Adding tickets to the flight with id = {} was completed successfully", flight.getId());
     }
 
+    /**
+     * Создает билеты для рейса на основе заданного рейса.
+     *
+     * @param flight рейс, для которого необходимо создать билеты
+     * @throws NullPointerException если рейс равен null
+     */
     public void createTicketsByFlight(Flight flight) {
         if (flight == null) {
             log.error("Create tickets by the flight failed. Flight == null");

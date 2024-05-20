@@ -23,6 +23,12 @@ public class PurchaseService implements BasicService<Purchase> {
         this.userService = userService;
     }
 
+    /**
+     * Добавляет покупку в базу данных.
+     *
+     * @param entity объект покупки для добавления
+     * @throws NullPointerException если переданный объект покупки равен null
+     */
     @Override
     public void add(Purchase entity) {
         if (entity != null) {
@@ -34,6 +40,12 @@ public class PurchaseService implements BasicService<Purchase> {
         throw new NullPointerException();
     }
 
+    /**
+     * Удаляет покупку из базы данных.
+     *
+     * @param entity объект покупки для удаления
+     * @throws NullPointerException если переданный объект покупки равен null
+     */
     @Override
     public void delete(Purchase entity) {
         if (entity == null) {
@@ -45,23 +57,44 @@ public class PurchaseService implements BasicService<Purchase> {
         log.info("Purchase with id = {} successfully delete", entity.getId());
     }
 
+    /**
+     * Получает список всех покупок.
+     *
+     * @return список всех покупок
+     */
     @Override
     public List<Purchase> getAll() {
         log.info("Get list of purchases");
         return purchaseRepository.findAll();
     }
 
+    /**
+     * Получает список покупок по пользователю.
+     *
+     * @param user объект пользователя
+     * @return список покупок пользователя
+     */
     public List<Purchase> getPurchasesByUser(User user) {
         log.info("Get list of purchases by user with id = {}", user.getId());
         return purchaseRepository.findPurchasesByUser(user);
     }
 
+    /**
+     * Удаляет все покупки из базы данных.
+     */
     @Override
     public void deleteAll() {
         log.info("Deleting all purchases");
         purchaseRepository.deleteAll();
     }
 
+    /**
+     * Редактирует существующую покупку в базе данных.
+     *
+     * @param id идентификатор покупки, которую необходимо отредактировать
+     * @param entity объект покупки с обновленными данными
+     * @throws EntityNotFoundException если покупка с указанным id не найдена
+     */
     @Override
     public void edit(Long id, Purchase entity) {
         Purchase currentPurchase = getById(id);
@@ -77,6 +110,12 @@ public class PurchaseService implements BasicService<Purchase> {
         log.info("Purchase with id = {} successfully edit", id);
     }
 
+    /**
+     * Получает покупку по идентификатору.
+     *
+     * @param id идентификатор покупки для поиска
+     * @return найденный объект покупки или null, если покупка не найдена
+     */
     @Override
     public Purchase getById(Long id) {
         Purchase purchase = purchaseRepository.findById(id).orElse(null);
@@ -90,6 +129,13 @@ public class PurchaseService implements BasicService<Purchase> {
         return null;
     }
 
+    /**
+     * Добавляет билеты к существующей покупке в базе данных. Считает итоговую сумму покупки
+     *
+     * @param id идентификатор покупки, к которой необходимо добавить билеты
+     * @param tickets список билетов для добавления
+     * @throws NullPointerException если покупка или список билетов равны null
+     */
     @Transactional
     public void addTicketsToPurchase(Long id, List<Ticket> tickets) {
         Purchase purchase = purchaseRepository.findById(id).orElse(null);
@@ -130,6 +176,13 @@ public class PurchaseService implements BasicService<Purchase> {
         log.info("Adding tickets to the purchase with id = {} was completed successfully", purchase.getId());
     }
 
+    /**
+     * Добавляет пользователя к покупке.
+     *
+     * @param id идентификатор покупки, к которой необходимо добавить пользователя
+     * @param user пользователь, который добавляется к покупке
+     * @throws NullPointerException если покупка или пользователь равны null
+     */
     @Transactional
     public void addUserToPurchase(Long id, User user) {
         Purchase purchase = purchaseRepository.findById(id).orElse(null);

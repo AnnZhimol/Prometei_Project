@@ -24,6 +24,11 @@ public class UserService implements BasicService<User>{
         this.ticketService = ticketService;
     }
 
+    /**
+     * Добавляет нового пользователя в систему.
+     *
+     * @param entity новый пользователь, которого необходимо добавить
+     */
     @Override
     public void add(User entity) {
         if (userRepository.existsByEmail(entity.getEmail())) {
@@ -35,14 +40,31 @@ public class UserService implements BasicService<User>{
         log.info("User with id = {} successfully added", entity.getId());
     }
 
+    /**
+     * Получает пользователя по его электронной почте.
+     *
+     * @param email электронная почта пользователя
+     * @return найденный пользователь
+     * @throws UsernameNotFoundException если пользователь не найден
+     */
     public User getByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
+    /**
+     * Возвращает интерфейс UserDetailsService, используемый для получения пользователя по электронной почте.
+     *
+     * @return UserDetailsService для получения пользователя
+     */
     public UserDetailsService userDetailsService() {
         return this::getByEmail;
     }
 
+    /**
+     * Получает текущего авторизованного пользователя.
+     *
+     * @return текущий пользователь
+     */
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return getByEmail(email);
@@ -55,6 +77,12 @@ public class UserService implements BasicService<User>{
         userRepository.save(user);
     }
 
+    /**
+     * Удаляет пользователя из системы.
+     *
+     * @param entity пользователь, которого необходимо удалить
+     * @throws NullPointerException если пользователь равен null
+     */
     @Override
     public void delete(User entity) {
         if (entity == null) {
@@ -66,18 +94,33 @@ public class UserService implements BasicService<User>{
         log.info("User with id = {} successfully delete", entity.getId());
     }
 
+    /**
+     * Получает список всех пользователей.
+     *
+     * @return список всех пользователей
+     */
     @Override
     public List<User> getAll() {
         log.info("Get list of users");
         return userRepository.findAll();
     }
 
+    /**
+     * Удаляет всех пользователей из системы.
+     */
     @Override
     public void deleteAll() {
         log.info("Deleting all users");
         userRepository.deleteAll();
     }
 
+    /**
+     * Редактирует данные пользователя.
+     *
+     * @param id идентификатор пользователя, которого необходимо отредактировать
+     * @param entity новые данные пользователя
+     * @throws EntityNotFoundException если пользователь с указанным id не найден
+     */
     @Override
     public void edit(Long id, User entity) {
         User currentUser = getById(id);
@@ -88,13 +131,18 @@ public class UserService implements BasicService<User>{
         }
 
         entity.setId(id);
-        //entity.setPassport(bCryptPasswordEncoder.encode(entity.getPassword()));
         entity.setRole(currentUser.getRole());
 
         userRepository.save(currentUser);
         log.info("User with id = {} successfully edit", id);
     }
 
+    /**
+     * Получает пользователя по идентификатору.
+     *
+     * @param id идентификатор пользователя
+     * @return найденный пользователь или null, если пользователь не найден
+     */
     @Override
     public User getById(Long id) {
         User user = userRepository.findById(id).orElse(null);
