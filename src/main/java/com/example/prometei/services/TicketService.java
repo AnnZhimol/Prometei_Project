@@ -2,6 +2,7 @@ package com.example.prometei.services;
 
 import com.example.prometei.models.*;
 import com.example.prometei.repositories.AdditionalFavorRepository;
+import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -89,34 +90,34 @@ public class TicketService implements BasicService<Ticket> {
     /**
      * Получает отсортированный список билетов по заданному рейсу.
      *
-     * @param flight рейс, по которому необходимо получить список билетов
+     * @param id идентификатор рейса, по которому необходимо получить список билетов
      * @return отсортированный список билетов
      */
-    public List<Ticket> getTicketsByFlight(Flight flight) {
-        log.info("Get list of sorted tickets by flight with id = {}", flight.getId());
-        return ticketRepository.findTicketsByFlight(flight);
+    public List<Ticket> getTicketsByFlight(Long id) {
+        log.info("Get list of sorted tickets by flight with id = {}", id);
+        return ticketRepository.findTicketsByFlight(id);
     }
 
     /**
      * Получает отсортированный список билетов по заданному пользователю.
      *
-     * @param user пользователь, по которому необходимо получить список билетов
+     * @param id идентификатор пользователя, по которому необходимо получить список билетов
      * @return отсортированный список билетов
      */
-    public List<Ticket> getTicketsByUser(User user) {
-        log.info("Get list of sorted tickets by user with id = {}", user.getId());
-        return ticketRepository.findTicketsByUser(user);
+    public List<Ticket> getTicketsByUser(Long id) {
+        log.info("Get list of sorted tickets by user with id = {}", id);
+        return ticketRepository.findTicketsByUser(id);
     }
 
     /**
      * Получает отсортированный список билетов по заданной покупке.
      *
-     * @param purchase покупка, по которой необходимо получить список билетов
+     * @param id идентификатор покупки, по которой необходимо получить список билетов
      * @return отсортированный список билетов
      */
-    public List<Ticket> getTicketsByPurchase(Purchase purchase) {
-        log.info("Get list of sorted tickets purchase with id = {}", purchase.getId());
-        return ticketRepository.findTicketsByPurchase(purchase);
+    public List<Ticket> getTicketsByPurchase(Long id) {
+        log.info("Get list of sorted tickets purchase with id = {}", id);
+        return ticketRepository.findTicketsByPurchase(id);
     }
 
     /**
@@ -145,8 +146,9 @@ public class TicketService implements BasicService<Ticket> {
         }
 
         entity.setId(id);
+        entity.setFlight(currentTicket.getFlight());
 
-        ticketRepository.save(currentTicket);
+        ticketRepository.save(entity);
         log.info("Ticket with id = {} successfully edit", id);
     }
 
@@ -260,17 +262,25 @@ public class TicketService implements BasicService<Ticket> {
     /**
      * Создает список выбранных услуг на основе списка услуг рейса.
      *
+     * @param id идентификатор билета
      * @param flightFavors список услуг рейса, на основе которых создаются выбранные услуги
      * @return список созданных выбранных услуг
      */
     @Transactional
-    public List<AdditionalFavor> createAdditionalFavorsByFlightFavor(List<FlightFavor> flightFavors) {
+    public List<AdditionalFavor> createAdditionalFavorsByFlightFavor(Long id, List<FlightFavor> flightFavors) {
         if (flightFavors == null) {
             log.error("Creating additionalFavor by flightFavor failed. FlightFavors == null");
             throw new NullPointerException();
         }
 
-        List<AdditionalFavor> additionalFavorList= new ArrayList<>();
+        Ticket ticket = getById(id);
+
+        if (ticket == null) {
+            log.error("Creating additionalFavor by flightFavor failed. Ticket == null");
+            throw new NullPointerException();
+        }
+
+        List<AdditionalFavor> additionalFavorList = new ArrayList<>();
 
         for (FlightFavor flightFavor : flightFavors) {
             if (flightFavor == null) {
@@ -278,13 +288,14 @@ public class TicketService implements BasicService<Ticket> {
                 throw new NullPointerException();
             }
 
-            AdditionalFavor additionalFavor = AdditionalFavor.builder()
-                    .flightFavor(flightFavor)
-                    .build();
+            if (ticket.getFlight().getFlightFavors().stream().anyMatch(x -> x.getId() == flightFavor.getId())) {
+                AdditionalFavor additionalFavor = AdditionalFavor.builder()
+                        .flightFavor(flightFavor)
+                        .build();
 
-            additionalFavorList.add(additionalFavor);
-            flightFavor.getAdditionalFavors().add(additionalFavor);
-            additionalFavorRepository.save(additionalFavor);
+                additionalFavorList.add(additionalFavor);
+                additionalFavorRepository.save(additionalFavor);
+            }
         }
 
         log.info("Creating additionalFavors by the flightFavors was completed successfully");

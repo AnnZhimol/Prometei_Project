@@ -1,5 +1,8 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.FlightFavorDto;
+import com.example.prometei.dto.SearchDto;
+import com.example.prometei.dto.TicketDto;
 import com.example.prometei.models.*;
 import com.example.prometei.services.TicketService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -8,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -20,62 +24,76 @@ public class TicketController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Ticket> getTicket(@RequestParam Long id) {
+    public ResponseEntity<TicketDto> getTicket(@RequestParam Long id) {
         Ticket ticket = ticketService.getById(id);
         return ticket == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(ticket, HttpStatus.OK);
+                : new ResponseEntity<>(new TicketDto(ticket), HttpStatus.OK);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Ticket>> getAllTickets() {
-        return new ResponseEntity<>(ticketService.getAll(), HttpStatus.OK);
+    public ResponseEntity<List<TicketDto>> getAllTickets() {
+        return new ResponseEntity<>(ticketService.getAll()
+                                    .stream()
+                                    .map(TicketDto::new)
+                                    .toList(),
+                                    HttpStatus.OK);
     }
 
     @GetMapping("/getByFlight")
-    public ResponseEntity<List<Ticket>> getTicketsByFlight(@RequestBody Flight flight) {
-        return new ResponseEntity<>(ticketService.getTicketsByFlight(flight), HttpStatus.OK);
+    public ResponseEntity<List<TicketDto>> getTicketsByFlight(@RequestParam Long flightId) {
+        return new ResponseEntity<>(ticketService.getTicketsByFlight(flightId)
+                                    .stream()
+                                    .map(TicketDto::new)
+                                    .toList(),
+                                    HttpStatus.OK);
     }
 
     @GetMapping("/searchResult")
-    public ResponseEntity<List<Ticket>> getSearchResult(@RequestParam String departurePoint,
-                                                        @RequestParam String destinationPoint,
-                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime departureTime,
-                                                        @RequestParam TicketType ticketType) {
+    public ResponseEntity<List<SearchDto>> getSearchResult(@RequestParam String departurePoint,
+                                                           @RequestParam String destinationPoint,
+                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime departureTime,
+                                                           @RequestParam TicketType ticketType) {
         return new ResponseEntity<>(ticketService.getSearchResult(departurePoint,
-                destinationPoint, departureTime, ticketType), HttpStatus.OK);
+                destinationPoint, departureTime, ticketType).stream().map(SearchDto::new).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/getByPurchase")
-    public ResponseEntity<List<Ticket>> getTicketsByPurchase(@RequestBody Purchase purchase) {
-        return new ResponseEntity<>(ticketService.getTicketsByPurchase(purchase), HttpStatus.OK);
+    public ResponseEntity<List<TicketDto>> getTicketsByPurchase(@RequestParam Long purchaseId) {
+        return new ResponseEntity<>(ticketService.getTicketsByPurchase(purchaseId).stream().map(TicketDto::new).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/getByUser")
-    public ResponseEntity<List<Ticket>> getTicketsByUser(@RequestBody User user) {
-        return new ResponseEntity<>(ticketService.getTicketsByUser(user), HttpStatus.OK);
+    public ResponseEntity<List<TicketDto>> getTicketsByUser(@RequestParam Long userId) {
+        return new ResponseEntity<>(ticketService.getTicketsByUser(userId).stream().map(TicketDto::new).toList(), HttpStatus.OK);
     }
 
     @PostMapping("/create")
-    public void addTicket(@RequestBody Ticket ticket) {
-        ticketService.add(ticket);
+    public void addTicket(@RequestBody TicketDto ticketDto) {
+        ticketService.add(ticketDto.dtoToEntity());
     }
 
     //привязка к билету услуг (пользователь выбрал перечень услуг, на их основе создались AdditionalFavors и привязались к билету)
     @PostMapping("/addAdditionalFavors")
     public void addAdditionalFavors(@RequestParam Long id,
-                                    @RequestBody List<FlightFavor> flightFavors) {
-        ticketService.addAdditionalFavorsToTicket(id, ticketService.createAdditionalFavorsByFlightFavor(flightFavors));
+                                    @RequestBody List<FlightFavorDto> flightFavorsDto) {
+        List<FlightFavor> listFavors = new ArrayList<>();
+
+        for(FlightFavorDto flightFavorDto : flightFavorsDto) {
+            listFavors.add(flightFavorDto.dtoToEntity());
+        }
+
+        ticketService.addAdditionalFavorsToTicket(id, ticketService.createAdditionalFavorsByFlightFavor(id, listFavors));
     }
 
     @PatchMapping("/edit")
     public void editTicket(@RequestParam Long id,
-                           @RequestBody Ticket ticket) {
-        ticketService.edit(id, ticket);
+                           @RequestBody TicketDto ticketDto) {
+        ticketService.edit(id, ticketDto.dtoToEntity());
     }
 
     @DeleteMapping("/delete")
-    public void deleteTicket(@RequestBody Ticket ticket) {
-        ticketService.delete(ticket);
+    public void deleteTicket(@RequestBody TicketDto ticketDto) {
+        ticketService.delete(ticketDto.dtoToEntity());
     }
 }

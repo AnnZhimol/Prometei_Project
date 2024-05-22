@@ -35,6 +35,8 @@ public class Flight {
     private Double businessCost;
     @Column(nullable = false)
     private Integer airplaneNumber;
+    @Column(nullable = false)
+    private AirplaneModel airplaneModel;
 
     @OneToMany(mappedBy = "flight", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Ticket> tickets;

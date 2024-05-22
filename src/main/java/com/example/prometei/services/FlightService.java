@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class FlightService implements BasicService<Flight> {
@@ -40,6 +41,7 @@ public class FlightService implements BasicService<Flight> {
         }
 
         flightRepository.save(entity);
+        createTicketsByFlight(entity);
         log.info("Flight with id = {} successfully added", entity.getId());
     }
 
@@ -95,6 +97,7 @@ public class FlightService implements BasicService<Flight> {
      * @param entity новая информация о рейсе
      * @throws EntityNotFoundException если рейс с указанным идентификатором не найден
      */
+    @Transactional
     @Override
     public void edit(Long id, Flight entity) {
         Flight currentFlight = getById(id);
@@ -106,6 +109,21 @@ public class FlightService implements BasicService<Flight> {
 
         entity.setId(id);
 
+        if (entity.getEconomSeats() == null || entity.getBusinessSeats() == null) {
+            log.error("Can not edit flight");
+            throw new NullPointerException();
+        }
+
+        if ((!Objects.equals(currentFlight.getBusinessSeats(), entity.getBusinessSeats())
+                || !Objects.equals(currentFlight.getEconomSeats(), entity.getEconomSeats()))) {
+            for (Ticket ticket : ticketService.getTicketsByFlight(id)) {
+                ticketService.delete(ticket);
+            }
+        }
+
+        currentFlight.getTickets().clear();
+
+        createTicketsByFlight(entity);
         flightRepository.save(entity);
         log.info("Flight with id = {} successfully edit", id);
     }
@@ -149,6 +167,8 @@ public class FlightService implements BasicService<Flight> {
             log.error("Adding flightFavors to the flight failed. FlightFavors == null");
             throw new NullPointerException();
         }
+
+        flightFavorRepository.deleteAll(flightFavorRepository.findFlightFavorsByFlight(id));
 
         flight.setFlightFavors(flightFavors);
 
@@ -200,6 +220,7 @@ public class FlightService implements BasicService<Flight> {
      * @param flight рейс, для которого необходимо создать билеты
      * @throws NullPointerException если рейс равен null
      */
+    @Transactional
     public void createTicketsByFlight(Flight flight) {
         if (flight == null) {
             log.error("Create tickets by the flight failed. Flight == null");
@@ -207,6 +228,11 @@ public class FlightService implements BasicService<Flight> {
         }
 
         List<Ticket> listTickets = new ArrayList<>();
+
+        if (flight.getEconomSeats() == null || flight.getBusinessSeats() == null) {
+            log.error("Create tickets by the flight failed. No seats.");
+            throw new NullPointerException();
+        }
 
         for (int i = 0; i < flight.getEconomSeats(); i++) {
             Ticket ticket = Ticket.builder()

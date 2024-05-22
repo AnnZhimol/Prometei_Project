@@ -1,5 +1,7 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.FlightDto;
+import com.example.prometei.dto.FlightFavorDto;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
 import com.example.prometei.services.FlightService;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -21,11 +24,11 @@ public class FlightController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Flight> getFlight(@RequestParam Long id) {
+    public ResponseEntity<FlightDto> getFlight(@RequestParam Long id) {
         Flight flight = flightService.getById(id);
         return flight == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(flight, HttpStatus.OK);
+                : new ResponseEntity<>(new FlightDto(flight), HttpStatus.OK);
     }
 
     @Deprecated
@@ -38,31 +41,40 @@ public class FlightController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Flight>> getAllFlights() {
-        return new ResponseEntity<>(flightService.getAll(),HttpStatus.OK);
+    public ResponseEntity<List<FlightDto>> getAllFlights() {
+        return new ResponseEntity<>(flightService.getAll()
+                                    .stream()
+                                    .map(FlightDto::new)
+                                    .toList(),
+                                    HttpStatus.OK);
     }
 
     // создание билетов вместе с полетом
     @PostMapping("/create")
-    public void addFlight(@RequestBody Flight flight) {
-        flightService.add(flight);
-        flightService.createTicketsByFlight(flight);
+    public void addFlight(@RequestBody FlightDto flightDto) {
+        flightService.add(flightDto.dtoToEntity());
     }
 
     @PostMapping("/addFlightFavors")
     public void addFlightFavors(@RequestParam Long id,
-                                @RequestBody List<FlightFavor> flightFavors) {
-        flightService.addFlightFavorsToFlight(id, flightFavors);
+                                @RequestBody List<FlightFavorDto> flightFavorsDto) {
+        List<FlightFavor> listFavors = new ArrayList<>();
+
+        for(FlightFavorDto flightFavorDto : flightFavorsDto) {
+            listFavors.add(flightFavorDto.dtoToEntity());
+        }
+
+        flightService.addFlightFavorsToFlight(id, listFavors);
     }
 
     @PatchMapping("/edit")
     public void editFlight(@RequestParam Long id,
-                           @RequestBody Flight flight) {
-        flightService.edit(id, flight);
+                           @RequestBody FlightDto flightDto) {
+        flightService.edit(id, flightDto.dtoToEntity());
     }
 
     @DeleteMapping("/delete")
-    public void deleteFlight(@RequestBody Flight flight) {
-        flightService.delete(flight);
+    public void deleteFlight(@RequestBody FlightDto flightDto) {
+        flightService.delete(flightDto.dtoToEntity());
     }
 }

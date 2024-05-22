@@ -132,8 +132,10 @@ public class UserService implements BasicService<User>{
 
         entity.setId(id);
         entity.setRole(currentUser.getRole());
+        entity.setPassword(currentUser.getPassword());
+        entity.setEmail(currentUser.getEmail());
 
-        userRepository.save(currentUser);
+        userRepository.save(entity);
         log.info("User with id = {} successfully edit", id);
     }
 

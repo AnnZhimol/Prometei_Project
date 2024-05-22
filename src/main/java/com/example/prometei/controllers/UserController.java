@@ -1,5 +1,6 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.UserDto;
 import com.example.prometei.models.User;
 import com.example.prometei.services.UserService;
 import org.springframework.http.HttpStatus;
@@ -18,31 +19,35 @@ public class UserController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<User> getUser(@RequestParam Long id) {
+    public ResponseEntity<UserDto> getUser(@RequestParam Long id) {
         User user = userService.getById(id);
         return user == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(user, HttpStatus.OK);
+                : new ResponseEntity<>(new UserDto(user), HttpStatus.OK);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return new ResponseEntity<>(userService.getAll(), HttpStatus.OK);
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return new ResponseEntity<>(userService.getAll()
+                                    .stream()
+                                    .map(UserDto::new)
+                                    .toList(),
+                                    HttpStatus.OK);
     }
 
     @PostMapping("/create")
-    public void addUser(@RequestBody User user) {
-        userService.add(user);
+    public void addUser(@RequestBody UserDto userDto) {
+        userService.add(userDto.dtoToEntity());
     }
 
     @PatchMapping("/edit")
     public void editUser(@RequestParam Long id,
-                         @RequestBody User user) {
-        userService.edit(id, user);
+                         @RequestBody UserDto userDto) {
+        userService.edit(id, userDto.dtoToEntity());
     }
 
     @DeleteMapping("/delete")
-    public void deleteUser(@RequestBody User user) {
-        userService.delete(user);
+    public void deleteUser(@RequestBody UserDto userDto) {
+        userService.delete(userDto.dtoToEntity());
     }
 }

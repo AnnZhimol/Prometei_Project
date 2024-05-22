@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("SELECT t FROM Ticket t " +
-            "WHERE t.flight = :flight ")
-    List<Ticket> findTicketsByFlight(Flight flight);
+            "WHERE t.flight.id = :id ")
+    List<Ticket> findTicketsByFlight(Long id);
 
     @Query("SELECT t FROM Ticket t " +
             "WHERE t.flight.departurePoint = :departurePoint " +
@@ -22,10 +22,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findTicketsForSearch(String departurePoint, String destinationPoint, OffsetDateTime departureTime, TicketType ticketType);
 
     @Query("SELECT t FROM Ticket t " +
-            "WHERE t.user = :user")
-    List<Ticket> findTicketsByUser(User user);
+            "WHERE t.user.id = :id")
+    List<Ticket> findTicketsByUser(Long id);
 
     @Query("SELECT t FROM Ticket t " +
-            "WHERE t.purchase = :purchase")
-    List<Ticket> findTicketsByPurchase(Purchase purchase);
+            "WHERE t.purchase.id = :id")
+    List<Ticket> findTicketsByPurchase(Long id);
 }
