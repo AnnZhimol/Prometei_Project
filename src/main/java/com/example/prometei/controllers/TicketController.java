@@ -68,6 +68,7 @@ public class TicketController {
         return new ResponseEntity<>(ticketService.getTicketsByUser(userId).stream().map(TicketDto::new).toList(), HttpStatus.OK);
     }
 
+    @Deprecated
     @PostMapping("/create")
     public void addTicket(@RequestBody TicketDto ticketDto) {
         ticketService.add(ticketDto.dtoToEntity());
@@ -86,6 +87,7 @@ public class TicketController {
         ticketService.addAdditionalFavorsToTicket(id, ticketService.createAdditionalFavorsByFlightFavor(id, listFavors));
     }
 
+    @Deprecated
     @PatchMapping("/edit")
     public void editTicket(@RequestParam Long id,
                            @RequestBody TicketDto ticketDto) {

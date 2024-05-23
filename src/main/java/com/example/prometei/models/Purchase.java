@@ -17,11 +17,9 @@ public class Purchase {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
-    @Column(nullable = false)
     private Double totalCost;
     @Column(nullable = false)
     private PaymentMethod paymentMethod;
-    @Column(nullable = false)
     private LocalDate createDate;
 
     @ManyToOne(fetch = FetchType.LAZY)

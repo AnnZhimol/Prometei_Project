@@ -81,6 +81,11 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureTime);
     }
 
+    public List<FlightFavor> getFlightFavors(Long id) {
+        log.info("Get list of sorted Flight Favors");
+        return flightFavorRepository.findFlightFavorsByFlight(id);
+    }
+
     /**
      * Удаляет все рейсы из базы данных.
      */

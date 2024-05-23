@@ -49,6 +49,15 @@ public class FlightController {
                                     HttpStatus.OK);
     }
 
+    @GetMapping("/getFlightFavors")
+    public ResponseEntity<List<FlightFavorDto>> getFlightFavors(Long flightId) {
+        return new ResponseEntity<>(flightService.getFlightFavors(flightId)
+                .stream()
+                .map(FlightFavorDto::new)
+                .toList(),
+                HttpStatus.OK);
+    }
+
     // создание билетов вместе с полетом
     @PostMapping("/create")
     public void addFlight(@RequestBody FlightDto flightDto) {

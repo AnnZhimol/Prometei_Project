@@ -1,13 +1,17 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.CreatePurchaseDto;
+import com.example.prometei.dto.PurchaseDto;
+import com.example.prometei.dto.TicketDto;
+import com.example.prometei.dto.UserDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
-import com.example.prometei.models.User;
 import com.example.prometei.services.PurchaseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -20,48 +24,59 @@ public class PurchaseController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<Purchase> getPurchase(@RequestParam Long id) {
+    public ResponseEntity<PurchaseDto> getPurchase(@RequestParam Long id) {
         Purchase purchase = purchaseService.getById(id);
         return purchase == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(purchase, HttpStatus.OK);
+                : new ResponseEntity<>(new PurchaseDto(purchase), HttpStatus.OK);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Purchase>> getAllPurchases() {
-        return new ResponseEntity<>(purchaseService.getAll(), HttpStatus.OK);
+    public ResponseEntity<List<PurchaseDto>> getAllPurchases() {
+        return new ResponseEntity<>(purchaseService.getAll()
+                .stream().map(PurchaseDto::new).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/getByUser")
-    public ResponseEntity<List<Purchase>> getPurchasesByUser(@RequestBody User user) {
-        return new ResponseEntity<>(purchaseService.getPurchasesByUser(user), HttpStatus.OK);
+    public ResponseEntity<List<PurchaseDto>> getPurchasesByUser(@RequestParam Long userId) {
+        return new ResponseEntity<>(purchaseService.getPurchasesByUser(userId)
+                .stream().map(PurchaseDto::new).toList(), HttpStatus.OK);
     }
 
     @PostMapping("/create")
-    public void addPurchase(@RequestBody Purchase purchase) {
-        purchaseService.add(purchase);
+    public void addPurchase(@RequestBody CreatePurchaseDto purchaseDto) {
+        purchaseService.createPurchase(purchaseDto.dtoToEntity(), purchaseDto.getTicketIds(), purchaseDto.getUserEmail());
     }
 
+    @Deprecated
     @PostMapping("/addTickets")
     public void addTickets(@RequestParam Long id,
-                           @RequestBody List<Ticket> tickets) {
+                           @RequestBody List<TicketDto> ticketDtos) {
+        List<Ticket> tickets = new ArrayList<>();
+
+        for(TicketDto ticketDto : ticketDtos) {
+            tickets.add(ticketDto.dtoToEntity());
+        }
+
         purchaseService.addTicketsToPurchase(id, tickets);
     }
 
+    @Deprecated
     @PostMapping("/addUser")
     public void addUser(@RequestParam Long id,
-                        @RequestBody User user) {
-        purchaseService.addUserToPurchase(id, user);
+                        @RequestBody UserDto userDto) {
+        purchaseService.addUserToPurchase(id, userDto.dtoToEntity());
     }
 
+    @Deprecated
     @PatchMapping("/edit")
     public void editPurchase(@RequestParam Long id,
-                             @RequestBody Purchase purchase) {
-        purchaseService.edit(id, purchase);
+                             @RequestBody PurchaseDto purchaseDto) {
+        purchaseService.edit(id, purchaseDto.dtoToEntity());
     }
 
     @DeleteMapping("/delete")
-    public void deletePurchase(@RequestBody Purchase purchase) {
-        purchaseService.delete(purchase);
+    public void deletePurchase(@RequestBody PurchaseDto purchaseDto) {
+        purchaseService.delete(purchaseDto.dtoToEntity());
     }
 }

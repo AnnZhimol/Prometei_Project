@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,12 +34,55 @@ public class PurchaseService implements BasicService<Purchase> {
     @Override
     public void add(Purchase entity) {
         if (entity != null) {
+            entity.setCreateDate(LocalDate.now());
             purchaseRepository.save(entity);
             log.info("Purchase with id = {} successfully added", entity.getId());
         }
 
         log.error("Error adding purchase. Purchase = null");
         throw new NullPointerException();
+    }
+
+    /**
+     * Создает покупку в базе данных с пользователем и списком билетов.
+     *
+     * @param purchase объект покупки для добавления
+     * @param ticketIds перечень билетов
+     * @param userEmail пользователь
+     */
+    @Transactional
+    public void createPurchase(Purchase purchase, long[] ticketIds, String userEmail) {
+        if (purchase == null) {
+            log.error("Error create purchase. Purchase = null");
+            throw new NullPointerException();
+        }
+        if (ticketIds == null) {
+            log.error("Error create purchase. ticketIds = null");
+            throw new NullPointerException();
+        }
+        if (userEmail == null) {
+            log.error("Error create purchase. userEmail = null");
+            throw new NullPointerException();
+        }
+
+        List<Ticket> tickets = new ArrayList<>();
+        purchase = purchaseRepository.save(purchase);
+        purchase.setCreateDate(LocalDate.now());
+
+        for(long id : ticketIds) {
+            if (ticketService.getById(id).getPurchase() == null) {
+                tickets.add(ticketService.getById(id));
+            }
+            else {
+                log.error("Error create purchase. Ticket already buyed.");
+                throw new IllegalArgumentException();
+            }
+        }
+
+        addTicketsToPurchase(purchase.getId(), tickets);
+        addUserToPurchase(purchase.getId(), userService.getByEmail(userEmail));
+        purchaseRepository.save(purchase);
+        log.info("Purchase with id = {} successfully saved", purchase.getId());
     }
 
     /**
@@ -71,12 +116,12 @@ public class PurchaseService implements BasicService<Purchase> {
     /**
      * Получает список покупок по пользователю.
      *
-     * @param user объект пользователя
+     * @param id объект пользователя
      * @return список покупок пользователя
      */
-    public List<Purchase> getPurchasesByUser(User user) {
-        log.info("Get list of purchases by user with id = {}", user.getId());
-        return purchaseRepository.findPurchasesByUser(user);
+    public List<Purchase> getPurchasesByUser(Long id) {
+        log.info("Get list of purchases by user with id = {}", id);
+        return purchaseRepository.findPurchasesByUser(id);
     }
 
     /**
