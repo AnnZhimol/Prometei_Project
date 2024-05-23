@@ -15,10 +15,12 @@ import java.io.Serializable;
 public class TicketDto implements Serializable {
     private long id;
     private TicketType ticketType;
+    private String seatNumber;
     private long flightId;
 
     public TicketDto(Ticket ticket) {
         id = ticket.getId();
+        this.seatNumber = ticket.getSeatNumber();
         this.ticketType = ticket.getTicketType();
         this.flightId = ticket.getFlight().getId();
     }
@@ -26,6 +28,7 @@ public class TicketDto implements Serializable {
     public Ticket dtoToEntity() {
         return Ticket.builder()
                 .id(this.id)
+                .seatNumber(this.seatNumber)
                 .ticketType(this.ticketType)
                 .build();
     }

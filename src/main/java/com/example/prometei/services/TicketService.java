@@ -2,7 +2,6 @@ package com.example.prometei.services;
 
 import com.example.prometei.models.*;
 import com.example.prometei.repositories.AdditionalFavorRepository;
-import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

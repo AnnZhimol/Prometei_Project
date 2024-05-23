@@ -234,26 +234,138 @@ public class FlightService implements BasicService<Flight> {
             throw new NullPointerException();
         }
 
-        for (int i = 0; i < flight.getEconomSeats(); i++) {
-            Ticket ticket = Ticket.builder()
-                    .ticketType(TicketType.ECONOMIC)
-                    .flight(flight)
-                    .build();
-            listTickets.add(ticket);
-            ticketService.add(ticket);
-        }
-
-        for (int i = 0; i < flight.getBusinessSeats(); i++) {
-            Ticket ticket = Ticket.builder()
-                    .ticketType(TicketType.BUSINESS)
-                    .flight(flight)
-                    .build();
-            listTickets.add(ticket);
-            ticketService.add(ticket);
-        }
+        createTicketsByModel(flight, listTickets);
 
         flight.setTickets(listTickets);
         log.info("Creating tickets by the flight with id = {} was completed successfully", flight.getId());
+    }
+
+    private void buildTicketList(List<Ticket> listTickets,
+                                 TicketType ticketType,
+                                 Flight flight,
+                                 String num) {
+        Ticket ticket = Ticket.builder()
+                .ticketType(ticketType)
+                .flight(flight)
+                .seatNumber(num)
+                .build();
+
+        listTickets.add(ticket);
+        ticketService.add(ticket);
+    }
+
+    private void createTicketsByModel(Flight flight, List<Ticket> listTickets) {
+        if (flight.getAirplaneModel() == AirplaneModel.AIRBUS320) {
+            for (int i = 1 + flight.getBusinessSeats() / 4; i <= flight.getEconomSeats() / 6 + flight.getBusinessSeats() / 4; i++) {
+                for (char j = 'A'; j <= 'F'; j++) {
+                    buildTicketList(listTickets,
+                            TicketType.ECONOMIC,
+                            flight,
+                            Integer.toString(i) + j);
+                }
+            }
+
+            for (int i = 1; i <= flight.getBusinessSeats() / 4; i++) {
+                for (char j = 'A'; j <= 'F'; j++) {
+                    buildTicketList(listTickets,
+                            TicketType.BUSINESS,
+                            flight,
+                            Integer.toString(i) + j);
+
+                    if (j == 'A' || j == 'D') {
+                        j++;
+                    }
+                }
+            }
+        }
+        else if (flight.getAirplaneModel() == AirplaneModel.AIRBUS330) {
+            for (int i = 5 + flight.getBusinessSeats() / 6; i <= 6 + flight.getEconomSeats() / 8 + flight.getBusinessSeats() / 6; i++) {
+                if (i == 28) {
+                    for (char j = 'D'; j <= 'G'; j++) {
+                        buildTicketList(listTickets,
+                                TicketType.ECONOMIC,
+                                flight,
+                                Integer.toString(i) + j);
+                    }
+                    continue;
+                }
+
+                if (i >= 41 && i <= 43) {
+                    for (char j = 'A'; j <= 'K'; j++) {
+                        buildTicketList(listTickets,
+                                TicketType.ECONOMIC,
+                                flight,
+                                Integer.toString(i) + j);
+
+                        if (j == 'A' || j == 'E') {
+                            j++;
+                        }
+                        else if (j == 'H') {
+                            j+=2;
+                        }
+                    }
+                    continue;
+                }
+
+                if (i == 44) {
+                    for (char j = 'A'; j <= 'G'; j++) {
+                        buildTicketList(listTickets,
+                                TicketType.ECONOMIC,
+                                flight,
+                                Integer.toString(i) + j);
+
+                        if (j == 'A' || j == 'E') {
+                            j++;
+                        }
+                    }
+                    continue;
+                }
+
+                if (i == 45) {
+                    for (char j = 'D'; j <= 'G'; j++) {
+                        buildTicketList(listTickets,
+                                TicketType.ECONOMIC,
+                                flight,
+                                Integer.toString(i) + j);
+
+                        if (j == 'E') {
+                            j++;
+                        }
+                    }
+                    continue;
+                }
+
+                for (char j = 'A'; j <= 'K'; j++) {
+                    buildTicketList(listTickets,
+                            TicketType.ECONOMIC,
+                            flight,
+                            Integer.toString(i) + j);
+
+                    if (j == 'A') {
+                        j++;
+                    }
+                    else if (j == 'H') {
+                        j+=2;
+                    }
+                }
+            }
+
+            for (int i = 1; i <= flight.getBusinessSeats() / 6; i++) {
+                for (char j = 'A'; j <= 'K'; j++) {
+                    buildTicketList(listTickets,
+                            TicketType.BUSINESS,
+                            flight,
+                            Integer.toString(i) + j);
+
+                    if (j == 'A') {
+                        j++;
+                    }
+                    else if (j == 'D' || j == 'H') {
+                        j+=2;
+                    }
+                }
+            }
+        }
     }
 
     @Deprecated

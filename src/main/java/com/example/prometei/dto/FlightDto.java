@@ -19,8 +19,6 @@ public class FlightDto implements Serializable {
     private String destinationPoint;
     private OffsetDateTime destinationTime;
     private OffsetDateTime departureTime;
-    private Integer economSeats;
-    private Integer businessSeats;
     private Double economyCost;
     private Double businessCost;
     private Integer airplaneNumber;
@@ -33,11 +31,11 @@ public class FlightDto implements Serializable {
         this.destinationPoint = flight.getDestinationPoint();
         this.destinationTime = flight.getDestinationTime();
         this.departureTime = flight.getDepartureTime();
-        this.economSeats = flight.getEconomSeats();
         this.businessCost = flight.getBusinessCost();
-        this.businessSeats = flight.getBusinessSeats();
         this.economyCost = flight.getEconomyCost();
         this.airplaneNumber = flight.getAirplaneNumber();
+        flight.setEconomSeats(flight.getAirplaneModel() == AirplaneModel.AIRBUS320 ? 120 : 265);
+        flight.setBusinessSeats(flight.getAirplaneModel() == AirplaneModel.AIRBUS320 ? 20 : 36);
     }
 
     public Flight dtoToEntity() {
@@ -49,10 +47,10 @@ public class FlightDto implements Serializable {
                 .economyCost(this.economyCost)
                 .businessCost(this.businessCost)
                 .airplaneNumber(this.airplaneNumber)
-                .businessSeats(this.businessSeats)
                 .destinationTime(this.destinationTime)
                 .destinationPoint(this.destinationPoint)
-                .economSeats(this.economSeats)
+                .economSeats(airplaneModel == AirplaneModel.AIRBUS320 ? 120 : 265)
+                .businessSeats(airplaneModel == AirplaneModel.AIRBUS320 ? 20 : 36)
                 .build();
     }
 }

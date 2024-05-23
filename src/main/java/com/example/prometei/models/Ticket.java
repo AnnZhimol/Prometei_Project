@@ -18,6 +18,8 @@ public class Ticket {
     private long id;
     @Column(nullable = false)
     private TicketType ticketType;
+    @Column(nullable = false)
+    private String seatNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
