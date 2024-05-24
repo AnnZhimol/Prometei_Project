@@ -52,6 +52,7 @@ public class FlightService implements BasicService<Flight> {
      * @param entity сущность рейса, которую необходимо добавить
      * @throws NullPointerException если указанная сущность равна null
      */
+    @Transactional
     @Override
     public void add(Flight entity) {
         if (entity == null) {
@@ -67,16 +68,22 @@ public class FlightService implements BasicService<Flight> {
     }
 
     private void setPointsAndTimes(Flight entity){
+        AirportInfo departureAirport = null;
+        AirportInfo destinationAirport = null;
+
         for (AirportInfo airportInfo : airportInfoList) {
             if (airportInfo.getLabel().contains(entity.getDeparturePoint())) {
                 entity.setDeparturePoint(
                         airportInfo.getLabel()
                 );
+
                 entity.setDepartureTime(entity.getDepartureTime()
                         .plusHours(Integer.parseInt(
                                 airportInfo.getTimezone()
                         ))
                 );
+
+                departureAirport = airportInfo;
             } else if (airportInfo.getLabel().contains(entity.getDestinationPoint())) {
                 entity.setDestinationPoint(
                         airportInfo.getLabel()
@@ -87,8 +94,22 @@ public class FlightService implements BasicService<Flight> {
                                 airportInfo.getTimezone()
                                 ))
                 );
+
+                destinationAirport = airportInfo;
             }
         }
+
+        if (destinationAirport == null || departureAirport == null) {
+            log.error("Error search Airport. Airport = null");
+            throw new NullPointerException();
+        }
+
+        if (destinationAirport == departureAirport) {
+            log.error("Airports can not be equals!");
+            throw new IllegalArgumentException();
+        }
+
+        log.info("Search Airport complete. Airport was found.");
     }
 
     /**
@@ -157,6 +178,8 @@ public class FlightService implements BasicService<Flight> {
             log.error("Flight with id = {} not found", id);
             throw new EntityNotFoundException();
         }
+
+        setPointsAndTimes(entity);
 
         entity.setId(id);
 

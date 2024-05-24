@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * DTO for {@link com.example.prometei.models.Flight}
@@ -36,5 +38,21 @@ public class FlightDto implements Serializable {
         this.airplaneNumber = flight.getAirplaneNumber();
         flight.setEconomSeats(flight.getAirplaneModel() == AirplaneModel.AIRBUS320 ? 120 : 265);
         flight.setBusinessSeats(flight.getAirplaneModel() == AirplaneModel.AIRBUS320 ? 20 : 36);
+    }
+
+    public Flight dtoToEntity() {
+        return Flight.builder()
+                .id(this.id)
+                .airplaneModel(this.airplaneModel)
+                .departureTime(OffsetDateTime.of(this.departureTime, ZoneOffset.ofHours(0)).toLocalDateTime())
+                .departurePoint(this.departurePoint)
+                .economyCost(this.economyCost)
+                .businessCost(this.businessCost)
+                .airplaneNumber(this.airplaneNumber)
+                .destinationTime(OffsetDateTime.of(this.destinationTime, ZoneOffset.ofHours(0)).toLocalDateTime())
+                .destinationPoint(this.destinationPoint)
+                .economSeats(airplaneModel == AirplaneModel.AIRBUS320 ? 120 : 265)
+                .businessSeats(airplaneModel == AirplaneModel.AIRBUS320 ? 20 : 36)
+                .build();
     }
 }

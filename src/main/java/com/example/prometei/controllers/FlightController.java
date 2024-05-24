@@ -1,7 +1,6 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.dto.AirportInfo;
-import com.example.prometei.dto.CreateFlightDto;
 import com.example.prometei.dto.FlightDto;
 import com.example.prometei.dto.FlightFavorDto;
 import com.example.prometei.models.Flight;
@@ -68,8 +67,8 @@ public class FlightController {
 
     // создание билетов вместе с полетом
     @PostMapping("/create")
-    public void addFlight(@RequestBody CreateFlightDto createFlightDto) {
-        flightService.add(createFlightDto.dtoToEntity());
+    public void addFlight(@RequestBody FlightDto flightDto) {
+        flightService.add(flightDto.dtoToEntity());
     }
 
     @PostMapping("/addFlightFavors")
@@ -86,12 +85,12 @@ public class FlightController {
 
     @PatchMapping("/edit")
     public void editFlight(@RequestParam Long id,
-                           @RequestBody CreateFlightDto createFlightDto) {
-        flightService.edit(id, createFlightDto.dtoToEntity());
+                           @RequestBody FlightDto flightDto) {
+        flightService.edit(id, flightDto.dtoToEntity());
     }
 
     @DeleteMapping("/delete")
-    public void deleteFlight(@RequestBody CreateFlightDto createFlightDto) {
-        flightService.delete(createFlightDto.dtoToEntity());
+    public void deleteFlight(@RequestBody FlightDto flightDto) {
+        flightService.delete(flightDto.dtoToEntity());
     }
 }
