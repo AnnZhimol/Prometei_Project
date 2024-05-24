@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -14,8 +14,8 @@ public class SearchDto implements Serializable {
     private long id;
     private String departurePoint;
     private String destinationPoint;
-    private OffsetDateTime destinationTime;
-    private OffsetDateTime departureTime;
+    private LocalDateTime destinationTime;
+    private LocalDateTime departureTime;
     private TicketType ticketType;
     private Double economyCost;
     private Double businessCost;

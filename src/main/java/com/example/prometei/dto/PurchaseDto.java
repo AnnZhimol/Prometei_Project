@@ -5,6 +5,7 @@ import com.example.prometei.models.Purchase;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -12,7 +13,7 @@ import java.time.LocalDate;
  */
 @Data
 @NoArgsConstructor
-public class PurchaseDto {
+public class PurchaseDto implements Serializable {
     private long id;
     private Double totalCost;
     private PaymentMethod paymentMethod;

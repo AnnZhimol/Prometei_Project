@@ -1,5 +1,7 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.AirportInfo;
+import com.example.prometei.dto.CreateFlightDto;
 import com.example.prometei.dto.FlightDto;
 import com.example.prometei.dto.FlightFavorDto;
 import com.example.prometei.models.Flight;
@@ -31,6 +33,12 @@ public class FlightController {
                 : new ResponseEntity<>(new FlightDto(flight), HttpStatus.OK);
     }
 
+    @GetMapping("/getAirports")
+    public ResponseEntity<AirportInfo[]> getAirports() {
+        return new ResponseEntity<>(flightService.getAllAirports(),
+                HttpStatus.OK);
+    }
+
     @Deprecated
     @GetMapping("/search")
     public ResponseEntity<List<Flight>> searchFlights(@RequestParam String departurePoint,
@@ -60,8 +68,8 @@ public class FlightController {
 
     // создание билетов вместе с полетом
     @PostMapping("/create")
-    public void addFlight(@RequestBody FlightDto flightDto) {
-        flightService.add(flightDto.dtoToEntity());
+    public void addFlight(@RequestBody CreateFlightDto createFlightDto) {
+        flightService.add(createFlightDto.dtoToEntity());
     }
 
     @PostMapping("/addFlightFavors")
@@ -78,12 +86,12 @@ public class FlightController {
 
     @PatchMapping("/edit")
     public void editFlight(@RequestParam Long id,
-                           @RequestBody FlightDto flightDto) {
-        flightService.edit(id, flightDto.dtoToEntity());
+                           @RequestBody CreateFlightDto createFlightDto) {
+        flightService.edit(id, createFlightDto.dtoToEntity());
     }
 
     @DeleteMapping("/delete")
-    public void deleteFlight(@RequestBody FlightDto flightDto) {
-        flightService.delete(flightDto.dtoToEntity());
+    public void deleteFlight(@RequestBody CreateFlightDto createFlightDto) {
+        flightService.delete(createFlightDto.dtoToEntity());
     }
 }

@@ -1,14 +1,19 @@
 package com.example.prometei.services;
 
+import com.example.prometei.dto.AirportInfo;
 import com.example.prometei.models.*;
 import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.FlightRepository;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +24,26 @@ public class FlightService implements BasicService<Flight> {
     private final FlightRepository flightRepository;
     private final FlightFavorRepository flightFavorRepository;
     private final TicketService ticketService;
+    private final AirportInfo[] airportInfoList;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
 
-    public FlightService(FlightRepository flightRepository, FlightFavorRepository flightFavorRepository, TicketService ticketService) {
+    public FlightService(FlightRepository flightRepository, FlightFavorRepository flightFavorRepository, TicketService ticketService) throws FileNotFoundException {
+        JsonReader reader = new JsonReader(new FileReader("airports.json"));
+
         this.flightRepository = flightRepository;
         this.flightFavorRepository = flightFavorRepository;
         this.ticketService = ticketService;
+        this.airportInfoList = new Gson().fromJson(reader, AirportInfo[].class);
+    }
+
+    /**
+     * Получает список всех аэропортов из файла.
+     *
+     * @return список всех аэропортов
+     */
+    public AirportInfo[] getAllAirports(){
+        log.info("Get list of airports");
+        return airportInfoList;
     }
 
     /**
@@ -40,9 +59,36 @@ public class FlightService implements BasicService<Flight> {
             throw new NullPointerException();
         }
 
+        setPointsAndTimes(entity);
+
         flightRepository.save(entity);
         createTicketsByFlight(entity);
         log.info("Flight with id = {} successfully added", entity.getId());
+    }
+
+    private void setPointsAndTimes(Flight entity){
+        for (AirportInfo airportInfo : airportInfoList) {
+            if (airportInfo.getLabel().contains(entity.getDeparturePoint())) {
+                entity.setDeparturePoint(
+                        airportInfo.getLabel()
+                );
+                entity.setDepartureTime(entity.getDepartureTime()
+                        .plusHours(Integer.parseInt(
+                                airportInfo.getTimezone()
+                        ))
+                );
+            } else if (airportInfo.getLabel().contains(entity.getDestinationPoint())) {
+                entity.setDestinationPoint(
+                        airportInfo.getLabel()
+                );
+
+                entity.setDestinationTime(entity.getDestinationTime()
+                        .plusHours(Integer.parseInt(
+                                airportInfo.getTimezone()
+                                ))
+                );
+            }
+        }
     }
 
     /**

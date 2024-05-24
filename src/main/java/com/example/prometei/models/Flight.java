@@ -3,7 +3,7 @@ package com.example.prometei.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -22,9 +22,9 @@ public class Flight {
     @Column(nullable = false)
     private String destinationPoint;
     @Column(nullable = false)
-    private OffsetDateTime destinationTime;
+    private LocalDateTime destinationTime;
     @Column(nullable = false)
-    private OffsetDateTime departureTime;
+    private LocalDateTime departureTime;
     @Column(nullable = false)
     private Integer economSeats;
     @Column(nullable = false)

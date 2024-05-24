@@ -6,12 +6,14 @@ import com.example.prometei.models.Ticket;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * DTO for {@link com.example.prometei.models.Purchase}
  */
 @Data
 @NoArgsConstructor
-public class CreatePurchaseDto {
+public class CreatePurchaseDto implements Serializable {
     private long id;
     private PaymentMethod paymentMethod;
     private String userEmail;
