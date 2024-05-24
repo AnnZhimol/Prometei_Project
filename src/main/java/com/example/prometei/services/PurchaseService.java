@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class PurchaseService implements BasicService<Purchase> {
     @Override
     public void add(Purchase entity) {
         if (entity != null) {
-            entity.setCreateDate(LocalDate.now());
+            entity.setCreateDate(LocalDateTime.now());
             purchaseRepository.save(entity);
             log.info("Purchase with id = {} successfully added", entity.getId());
         }
@@ -67,7 +67,7 @@ public class PurchaseService implements BasicService<Purchase> {
 
         List<Ticket> tickets = new ArrayList<>();
         purchase = purchaseRepository.save(purchase);
-        purchase.setCreateDate(LocalDate.now());
+        purchase.setCreateDate(LocalDateTime.now());
 
         for(long id : ticketIds) {
             if (ticketService.getById(id).getPurchase() == null) {

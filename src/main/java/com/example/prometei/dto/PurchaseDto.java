@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO for {@link com.example.prometei.models.Purchase}
@@ -17,7 +17,7 @@ public class PurchaseDto implements Serializable {
     private long id;
     private Double totalCost;
     private PaymentMethod paymentMethod;
-    private LocalDate createDate;
+    private LocalDateTime createDate;
     private String userEmail;
 
     public PurchaseDto(Purchase purchase) {

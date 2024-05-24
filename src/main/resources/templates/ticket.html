@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Boarding Pass</title>
+    <style>
+        .ticket {
+            width: 600px;
+            border: 1px solid green;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+        .header {
+            text-align: right;
+            color: red;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-weight: bold;
+        }
+        .section-content {
+            margin-left: 10px;
+        }
+        .passenger-info, .flight-info, .class-info {
+            display: flex;
+            justify-content: space-between;
+        }
+        .class-info {
+            border-top: 1px solid green;
+            padding-top: 10px;
+        }
+        .footer {
+            border-top: 1px solid green;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="ticket">
+    <div class="header">
+        <span>8-800-200-0007</span>
+        <span>003</span>
+    </div>
+    <div class="section passenger-info">
+        <div>
+            <div class="section-title">ИМЯ ПАССАЖИРА / PASSENGER NAME</div>
+            <div class="section-content" th:text="${passengerName}"></div>
+        </div>
+    </div>
+    <div class="section flight-info">
+        <div>
+            <div class="section-title">ОТ / FROM</div>
+            <div class="section-content">
+                <span th:text="${departurePoint}"></span>
+            </div>
+        </div>
+        <div>
+            <div class="section-title">ДО / TO</div>
+            <div class="section-content">
+                <span th:text="${destinationPoint}"></span>
+            </div>
+        </div>
+    </div>
+    <div class="section flight-info">
+        <div>
+            <div class="section-title">САМОЛЕТ / AIRPLANE</div>
+            <div class="section-content" th:text="${airplaneModel}"></div>
+        </div>
+        <div>
+            <div class="section-title">ДАТА И ВРЕМЯ ВЫЛЕТА / DATE & TIME DEPARTURE</div>
+            <div class="section-content" th:text="${departureTime}"></div>
+        </div>
+        <div>
+            <div class="section-title">ДАТА И ВРЕМЯ ПРИЛЕТА / DATE & TIME DESTINATION</div>
+            <div class="section-content" th:text="${destinationTime}"></div>
+        </div>
+    </div>
+    <div class="section class-info">
+        <div>
+            <div class="section-title">КЛАСС / CLASS</div>
+            <div class="section-content" th:text="${ticketType}"></div>
+        </div>
+        <div>
+            <div class="section-title">МЕСТО / SEAT</div>
+            <div class="section-content" th:text="${seatNum}"></div>
+        </div>
+    </div>
+    <div class="footer">
+        <div th:text="'ИТОГОВАЯ СТОИМОСТЬ: ' + ${totalCost}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -34,8 +34,7 @@ public class FlightController {
 
     @GetMapping("/getAirports")
     public ResponseEntity<AirportInfo[]> getAirports() {
-        return new ResponseEntity<>(flightService.getAllAirports(),
-                HttpStatus.OK);
+        return new ResponseEntity<>(flightService.getAllAirports(), HttpStatus.OK);
     }
 
     @Deprecated

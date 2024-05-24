@@ -8,6 +8,7 @@ import com.example.prometei.services.TicketService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
@@ -21,6 +22,27 @@ public class TicketController {
 
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
+    }
+
+    @Deprecated
+    @GetMapping("/ticket")
+    public String getTicket(Model model) {
+        model.addAttribute("passengerName", "Иванов Иван");
+        model.addAttribute("from", "МОСКВА (ДОМОДЕДОВО)");
+        model.addAttribute("fromCode", "DME");
+        model.addAttribute("to", "КАЗАНЬ");
+        model.addAttribute("toCode", "KZN");
+        model.addAttribute("flight", "S7 065");
+        model.addAttribute("date", "06 JUN");
+        model.addAttribute("departureTime", "14:45");
+        model.addAttribute("class", "ЭКОНОМ");
+        model.addAttribute("seat", "4A");
+        model.addAttribute("gate", "Уточните в аэропорту");
+        model.addAttribute("gateClosedTime", "14:15");
+        model.addAttribute("etk", "**********");
+        model.addAttribute("ffp", "S7 211674999");
+
+        return "ticket";
     }
 
     @GetMapping("/get")

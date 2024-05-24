@@ -35,6 +35,7 @@ public class UserController {
                                     HttpStatus.OK);
     }
 
+    @Deprecated
     @PostMapping("/create")
     public void addUser(@RequestBody UserDto userDto) {
         userService.add(userDto.dtoToEntity());
