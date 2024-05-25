@@ -1,7 +1,7 @@
-package com.example.prometei.dto;
+package com.example.prometei.dto.EmailDto;
 
-import com.example.prometei.models.AirplaneModel;
-import com.example.prometei.models.TicketType;
+import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.models.enums.TicketType;
 import lombok.Data;
 
 import java.io.Serializable;

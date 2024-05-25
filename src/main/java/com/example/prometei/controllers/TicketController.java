@@ -1,17 +1,17 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.FlightFavorDto;
-import com.example.prometei.dto.SearchDto;
-import com.example.prometei.dto.TicketDto;
+import com.example.prometei.dto.FlightDtos.FlightFavorDto;
+import com.example.prometei.dto.TicketDtos.SearchDto;
+import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
+import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.services.TicketService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,27 +22,6 @@ public class TicketController {
 
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
-    }
-
-    @Deprecated
-    @GetMapping("/ticket")
-    public String getTicket(Model model) {
-        model.addAttribute("passengerName", "Иванов Иван");
-        model.addAttribute("from", "МОСКВА (ДОМОДЕДОВО)");
-        model.addAttribute("fromCode", "DME");
-        model.addAttribute("to", "КАЗАНЬ");
-        model.addAttribute("toCode", "KZN");
-        model.addAttribute("flight", "S7 065");
-        model.addAttribute("date", "06 JUN");
-        model.addAttribute("departureTime", "14:45");
-        model.addAttribute("class", "ЭКОНОМ");
-        model.addAttribute("seat", "4A");
-        model.addAttribute("gate", "Уточните в аэропорту");
-        model.addAttribute("gateClosedTime", "14:15");
-        model.addAttribute("etk", "**********");
-        model.addAttribute("ffp", "S7 211674999");
-
-        return "ticket";
     }
 
     @GetMapping("/get")
@@ -74,10 +53,10 @@ public class TicketController {
     @GetMapping("/searchResult")
     public ResponseEntity<List<SearchDto>> getSearchResult(@RequestParam String departurePoint,
                                                            @RequestParam String destinationPoint,
-                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime departureTime,
+                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
                                                            @RequestParam TicketType ticketType) {
         return new ResponseEntity<>(ticketService.getSearchResult(departurePoint,
-                destinationPoint, departureTime, ticketType).stream().map(SearchDto::new).toList(), HttpStatus.OK);
+                destinationPoint, departureDate, ticketType).stream().map(SearchDto::new).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/getByPurchase")

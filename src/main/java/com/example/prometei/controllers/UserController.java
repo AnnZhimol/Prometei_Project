@@ -1,6 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.UserDto;
+import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.User;
 import com.example.prometei.services.UserService;
 import org.springframework.http.HttpStatus;

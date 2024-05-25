@@ -2,10 +2,10 @@ package com.example.prometei.services;
 
 import com.example.prometei.configuration.jwt.JwtAuthenticationResponse;
 import com.example.prometei.configuration.jwt.JwtService;
-import com.example.prometei.dto.SignInUser;
-import com.example.prometei.dto.SignUpUser;
+import com.example.prometei.dto.UserDtos.SignInUser;
+import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.models.User;
-import com.example.prometei.models.UserRole;
+import com.example.prometei.models.enums.UserRole;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

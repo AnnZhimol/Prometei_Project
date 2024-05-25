@@ -1,8 +1,8 @@
-package com.example.prometei.dto;
+package com.example.prometei.dto.UserDtos;
 
 import com.example.prometei.models.User;
-import com.example.prometei.models.UserGender;
-import com.example.prometei.models.UserRole;
+import com.example.prometei.models.enums.UserGender;
+import com.example.prometei.models.enums.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

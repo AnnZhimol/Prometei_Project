@@ -1,19 +1,23 @@
 package com.example.prometei.services;
 
-import com.example.prometei.dto.AirportInfo;
+import com.example.prometei.dto.FlightDtos.AirportInfo;
 import com.example.prometei.models.*;
+import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.FlightRepository;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.antlr.v4.runtime.misc.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +50,32 @@ public class FlightService implements BasicService<Flight> {
         return airportInfoList;
     }
 
+    public Double getDistance(Pair<Double,Double> coordinatesB, Pair<Double,Double> coordinatesD) {
+        Pair<Double, Double> coordinatesA = new Pair<>(coordinatesD.a, coordinatesB.b);
+
+        double meridianDistDegree = 111.1;
+
+        double AB = meridianDistDegree * Math.abs(coordinatesA.a - coordinatesB.a);
+
+        double degreeD = Math.abs(Math.cos(coordinatesD.a * Math.PI / 180.0));
+        double degreeB = Math.abs(Math.cos(coordinatesB.a * Math.PI / 180.0));
+
+        Double parallelDistDegreeBC = 111.3 * degreeB;
+        Double parallelDistDegreeAD = 111.3 * degreeD;
+
+        Double parallelDegree = Math.abs(coordinatesD.b - coordinatesB.b);
+
+        Double BC = parallelDistDegreeBC * parallelDegree;
+        Double AD = parallelDistDegreeAD * parallelDegree;
+
+        Double cathetusSmall = 0.5 * Math.abs(AD - BC);
+        double BH = Math.sqrt(Math.pow(AB, 2) - Math.pow(cathetusSmall, 2));
+
+        double cathetusLarge = BC > AD ? BC -cathetusSmall : AD - cathetusSmall;
+
+        return Math.sqrt(Math.pow(BH, 2) + Math.pow(cathetusLarge, 2));
+    }
+
     /**
      * Добавляет новую сущность рейса в базу данных.
      *
@@ -70,6 +100,7 @@ public class FlightService implements BasicService<Flight> {
     private void setPointsAndTimes(Flight entity){
         AirportInfo departureAirport = null;
         AirportInfo destinationAirport = null;
+        LocalDateTime departure = entity.getDepartureDate().atTime(entity.getDepartureTime());
 
         for (AirportInfo airportInfo : airportInfoList) {
             if (airportInfo.getLabel().contains(entity.getDeparturePoint())) {
@@ -77,22 +108,21 @@ public class FlightService implements BasicService<Flight> {
                         airportInfo.getLabel()
                 );
 
-                entity.setDepartureTime(entity.getDepartureTime()
+                entity.setDepartureTime(departure
                         .plusHours(Integer.parseInt(
                                 airportInfo.getTimezone()
-                        ))
+                        )).toLocalTime()
                 );
+
+                entity.setDepartureDate(departure
+                        .plusHours(Integer.parseInt(
+                                airportInfo.getTimezone()
+                        )).toLocalDate());
 
                 departureAirport = airportInfo;
             } else if (airportInfo.getLabel().contains(entity.getDestinationPoint())) {
                 entity.setDestinationPoint(
                         airportInfo.getLabel()
-                );
-
-                entity.setDestinationTime(entity.getDestinationTime()
-                        .plusHours(Integer.parseInt(
-                                airportInfo.getTimezone()
-                                ))
                 );
 
                 destinationAirport = airportInfo;
@@ -108,6 +138,23 @@ public class FlightService implements BasicService<Flight> {
             log.error("Airports can not be equals!");
             throw new IllegalArgumentException();
         }
+
+        entity.setDistance(getDistance(new Pair<>(departureAirport.getLatitude(), departureAirport.getLongitude()),new Pair<>(destinationAirport.getLatitude(), destinationAirport.getLongitude())));
+        entity.setFlightTime(entity.getDistance() / 450.0);
+
+        entity.setDestinationTime(departure
+                .plusMinutes(Math.round(entity.getFlightTime() * 60))
+                .plusHours(Integer.parseInt(
+                        destinationAirport.getTimezone()
+                ))
+                .toLocalTime()
+        );
+
+        entity.setDestinationDate(departure
+                .plusMinutes(Math.round(entity.getFlightTime() * 60))
+                .plusHours(Integer.parseInt(
+                        destinationAirport.getTimezone()
+                )).toLocalDate());
 
         log.info("Search Airport complete. Airport was found.");
     }

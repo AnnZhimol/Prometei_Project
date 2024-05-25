@@ -1,9 +1,9 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.CreatePurchaseDto;
-import com.example.prometei.dto.PurchaseDto;
-import com.example.prometei.dto.TicketDto;
-import com.example.prometei.dto.UserDto;
+import com.example.prometei.dto.PurchaseDtos.CreatePurchaseDto;
+import com.example.prometei.dto.PurchaseDtos.PurchaseDto;
+import com.example.prometei.dto.TicketDtos.TicketDto;
+import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.services.PurchaseService;

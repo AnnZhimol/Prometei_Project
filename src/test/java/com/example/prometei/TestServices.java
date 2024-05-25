@@ -1,17 +1,19 @@
 package com.example.prometei;
 
 import com.example.prometei.models.*;
+import com.example.prometei.models.enums.PaymentMethod;
+import com.example.prometei.models.enums.TicketType;
+import com.example.prometei.models.enums.UserGender;
 import com.example.prometei.services.FlightService;
 import com.example.prometei.services.PurchaseService;
 import com.example.prometei.services.TicketService;
 import com.example.prometei.services.UserService;
+import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,43 +38,10 @@ public class TestServices {
     UserService userService;
 
     @Test
-    void createFlight() {
-        OffsetDateTime departureTime = OffsetDateTime.of(2024, 3, 5, 13, 45, 0, 0, ZoneOffset.ofHours(+3));
-        OffsetDateTime destinationTime = OffsetDateTime.of(2024, 3, 5, 22, 15, 0, 0, ZoneOffset.ofHours(+10));
-
-        Flight flight = Flight.builder()
-                .departurePoint("Москва")
-                .destinationPoint("Владивосток")
-                .departureTime(departureTime)
-                .destinationTime(destinationTime)
-                .airplaneNumber(100029302)
-                .businessSeats(30)
-                .economSeats(60)
-                .businessCost(129899.80)
-                .economyCost(53900.83)
-                .build();
-
-        flightService.add(flight);
-    }
-
-    @Test
-    void editFlight(){
-        OffsetDateTime departureTime = OffsetDateTime.of(2024, 3, 5, 13, 45, 0, 0, ZoneOffset.ofHours(+3));
-        OffsetDateTime destinationTime = OffsetDateTime.of(2024, 3, 5, 22, 15, 0, 0, ZoneOffset.ofHours(+9));
-
-        Flight flight = Flight.builder()
-                .departurePoint("Минеральные Воды")
-                .destinationPoint("Ереван")
-                .departureTime(departureTime)
-                .destinationTime(destinationTime)
-                .airplaneNumber(100029302)
-                .businessSeats(2)
-                .economSeats(10)
-                .businessCost(129899.80)
-                .economyCost(53900.83)
-                .build();
-
-        flightService.edit(2L, flight);
+    void getDist() {
+        //{ "value": "KGD", "label": "Калининград, Храброво, KGD", "timezone": "+2", "latitude": 54.8900, "longitude": 20.5926 },
+        //{ "value": "RTW", "label": "Саратов, Гагарин, RTW", "timezone": "+4", "latitude": 51.5643, "longitude": 46.0468 },
+        System.out.println(flightService.getDistance(new Pair<>(54.8900, 20.5926), new Pair<>(51.5643, 46.0468)));
     }
 
     @Test
@@ -116,7 +85,7 @@ public class TestServices {
     @Test
     void createPurchase() {
         Purchase purchase = Purchase.builder()
-                .createDate(LocalDate.now())
+                .createDate(LocalDate.now().atStartOfDay())
                 .paymentMethod(PaymentMethod.BANKCARD)
                 .totalCost(0.0)
                 .build();
@@ -127,7 +96,7 @@ public class TestServices {
     @Test
     void editPurchase(){
         Purchase purchase = Purchase.builder()
-                .createDate(LocalDate.now())
+                .createDate(LocalDate.now().atStartOfDay())
                 .paymentMethod(PaymentMethod.CASH)
                 .totalCost(2445.0)
                 .build();

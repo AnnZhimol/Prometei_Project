@@ -1,7 +1,7 @@
-package com.example.prometei.dto;
+package com.example.prometei.dto.TicketDtos;
 
 import com.example.prometei.models.Ticket;
-import com.example.prometei.models.TicketType;
+import com.example.prometei.models.enums.TicketType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

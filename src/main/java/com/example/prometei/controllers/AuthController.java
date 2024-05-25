@@ -1,8 +1,8 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.configuration.jwt.JwtAuthenticationResponse;
-import com.example.prometei.dto.SignInUser;
-import com.example.prometei.dto.SignUpUser;
+import com.example.prometei.dto.UserDtos.SignInUser;
+import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.services.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;

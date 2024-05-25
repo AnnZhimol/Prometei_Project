@@ -1,6 +1,7 @@
 package com.example.prometei.services;
 
 import com.example.prometei.models.*;
+import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -9,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,16 +75,16 @@ public class TicketService implements BasicService<Ticket> {
      *
      * @param departurePoint точка отправления
      * @param destinationPoint точка назначения
-     * @param departureTime время отправления
+     * @param departureDate время отправления
      * @param ticketType тип билета
      * @return отсортированный список билетов
      */
     public List<Ticket> getSearchResult(String departurePoint,
                                         String destinationPoint,
-                                        OffsetDateTime departureTime,
+                                        LocalDate departureDate,
                                         TicketType ticketType) {
         log.info("Get list of sorted tickets");
-        return ticketRepository.findTicketsForSearch(departurePoint, destinationPoint, departureTime, ticketType);
+        return ticketRepository.findTicketsForSearch(departurePoint, destinationPoint, departureDate, ticketType);
     }
 
     /**

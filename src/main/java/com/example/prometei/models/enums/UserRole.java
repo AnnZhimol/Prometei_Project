@@ -1,4 +1,4 @@
-package com.example.prometei.models;
+package com.example.prometei.models.enums;
 
 import org.springframework.security.core.GrantedAuthority;
 

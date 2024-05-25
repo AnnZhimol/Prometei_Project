@@ -1,6 +1,7 @@
 package com.example.prometei.services;
 
 import com.example.prometei.models.*;
+import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.PurchaseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

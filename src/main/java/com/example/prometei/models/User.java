@@ -1,5 +1,7 @@
 package com.example.prometei.models;
 
+import com.example.prometei.models.enums.UserGender;
+import com.example.prometei.models.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;

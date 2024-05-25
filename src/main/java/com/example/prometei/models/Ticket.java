@@ -1,5 +1,6 @@
 package com.example.prometei.models;
 
+import com.example.prometei.models.enums.TicketType;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,9 +1,11 @@
 package com.example.prometei.models;
 
+import com.example.prometei.models.enums.AirplaneModel;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -22,9 +24,13 @@ public class Flight {
     @Column(nullable = false)
     private String destinationPoint;
     @Column(nullable = false)
-    private LocalDateTime destinationTime;
+    private LocalTime destinationTime;
     @Column(nullable = false)
-    private LocalDateTime departureTime;
+    private LocalTime departureTime;
+    @Column(nullable = false)
+    private LocalDate destinationDate;
+    @Column(nullable = false)
+    private LocalDate departureDate;
     @Column(nullable = false)
     private Integer economSeats;
     @Column(nullable = false)
@@ -37,6 +43,10 @@ public class Flight {
     private Integer airplaneNumber;
     @Column(nullable = false)
     private AirplaneModel airplaneModel;
+    @Column(nullable = false)
+    private Double distance;
+    @Column(nullable = false)
+    private Double flightTime;
 
     @OneToMany(mappedBy = "flight", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Ticket> tickets;

@@ -1,5 +1,6 @@
 package com.example.prometei.models;
 
+import com.example.prometei.models.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 

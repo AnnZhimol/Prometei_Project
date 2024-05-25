@@ -1,4 +1,4 @@
-package com.example.prometei.dto;
+package com.example.prometei.dto.FlightDtos;
 
 import com.example.prometei.models.FlightFavor;
 import lombok.Data;
