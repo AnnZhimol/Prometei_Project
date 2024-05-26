@@ -12,13 +12,16 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+import static com.example.prometei.utils.CipherUtil.encryptId;
+
 /**
  * DTO for {@link com.example.prometei.models.User}
  */
 @Data
 @NoArgsConstructor
 public class UserDto implements Serializable {
-    private long id;
+    private String id;
     @Size(min = 5, max = 256)
     @NotBlank
     @Email
@@ -39,7 +42,7 @@ public class UserDto implements Serializable {
     private UserRole role;
 
     public UserDto(User user) {
-        id = user.getId();
+        id = encryptId(user.getId());
         this.birthDate = user.getBirthDate();
         this.email = user.getEmail();
         this.firstName = user.getFirstName();
@@ -56,7 +59,7 @@ public class UserDto implements Serializable {
 
     public User dtoToEntity() {
         return User.builder()
-                .id(this.getId())
+                .id(decryptId(this.getId()))
                 .birthDate(this.getBirthDate())
                 .email(this.getEmail())
                 .firstName(this.getFirstName())

@@ -7,13 +7,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.*;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+
 /**
  * DTO for {@link com.example.prometei.models.Flight}
  */
 @Data
 @NoArgsConstructor
 public class CreateFlightDto {
-    private long id;
+    private String id;
     private String departurePoint;
     private String destinationPoint;
     private LocalTime departureTime;
@@ -26,7 +28,7 @@ public class CreateFlightDto {
     public Flight dtoToEntity() {
         LocalDateTime departure = this.departureDate.atTime(this.departureTime);
         return Flight.builder()
-                .id(this.id)
+                .id(decryptId(this.id))
                 .airplaneModel(this.airplaneModel)
                 .departureTime(OffsetDateTime.of(departure, ZoneOffset.ofHours(0)).toLocalTime())
                 .departureDate(OffsetDateTime.of(departure, ZoneOffset.ofHours(0)).toLocalDate())

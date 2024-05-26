@@ -12,10 +12,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
+import static com.example.prometei.utils.CipherUtil.encryptId;
+
 @Data
 @NoArgsConstructor
 public class SearchDto implements Serializable {
-    private long id;
+    private String id;
     private String departurePoint;
     private String destinationPoint;
     private String destinationDate;
@@ -49,7 +51,7 @@ public class SearchDto implements Serializable {
     }
 
     public SearchDto(Ticket ticket) {
-        id = ticket.getId();
+        id = encryptId(ticket.getId());
         this.ticketType = ticket.getTicketType();
         this.departurePoint = ticket.getFlight().getDeparturePoint();
         this.destinationPoint = ticket.getFlight().getDestinationPoint();

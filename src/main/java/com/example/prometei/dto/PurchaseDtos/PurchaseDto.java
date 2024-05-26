@@ -8,20 +8,23 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+import static com.example.prometei.utils.CipherUtil.encryptId;
+
 /**
  * DTO for {@link com.example.prometei.models.Purchase}
  */
 @Data
 @NoArgsConstructor
 public class PurchaseDto implements Serializable {
-    private long id;
+    private String id;
     private Double totalCost;
     private PaymentMethod paymentMethod;
     private LocalDateTime createDate;
     private String userEmail;
 
     public PurchaseDto(Purchase purchase) {
-        id = purchase.getId();
+        id = encryptId(purchase.getId());
         this.totalCost = purchase.getTotalCost();
         this.paymentMethod = purchase.getPaymentMethod();
         this.createDate = purchase.getCreateDate();
@@ -30,7 +33,7 @@ public class PurchaseDto implements Serializable {
 
     public Purchase dtoToEntity() {
         return Purchase.builder()
-                .id(this.id)
+                .id(decryptId(this.id))
                 .totalCost(this.totalCost)
                 .paymentMethod(this.paymentMethod)
                 .createDate(this.createDate)

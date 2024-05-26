@@ -4,10 +4,11 @@ import com.example.prometei.models.enums.AirplaneModel;
 import com.example.prometei.models.Flight;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.io.Serializable;
 import java.time.*;
+
+import static com.example.prometei.utils.CipherUtil.encryptId;
 
 /**
  * DTO for {@link com.example.prometei.models.Flight}
@@ -30,7 +31,7 @@ public class FlightDto implements Serializable {
     private Double flightTime;
 
     public FlightDto(Flight flight) {
-        id = BCrypt.hashpw(Integer.toString((int) flight.getId()), BCrypt.gensalt());
+        id = encryptId(flight.getId());
         this.airplaneModel = flight.getAirplaneModel();
         this.departurePoint = flight.getDeparturePoint();
         this.destinationPoint = flight.getDestinationPoint();
