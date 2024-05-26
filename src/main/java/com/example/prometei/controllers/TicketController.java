@@ -1,6 +1,7 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.dto.FlightDtos.FlightFavorDto;
+import com.example.prometei.dto.TicketDtos.AdditionalFavorDto;
 import com.example.prometei.dto.TicketDtos.SearchDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
@@ -67,6 +68,11 @@ public class TicketController {
     @GetMapping("/getByUser")
     public ResponseEntity<List<TicketDto>> getTicketsByUser(@RequestParam Long userId) {
         return new ResponseEntity<>(ticketService.getTicketsByUser(userId).stream().map(TicketDto::new).toList(), HttpStatus.OK);
+    }
+
+    @GetMapping("/getAdditionalFavors")
+    public ResponseEntity<List<AdditionalFavorDto>> getAdditionalFavorsByTicket(@RequestParam Long ticketId) {
+        return new ResponseEntity<>(ticketService.getAdditionalFavorsByTicket(ticketId).stream().map(AdditionalFavorDto::new).toList(), HttpStatus.OK);
     }
 
     @Deprecated

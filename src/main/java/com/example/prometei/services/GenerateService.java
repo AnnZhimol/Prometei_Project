@@ -1,10 +1,7 @@
 package com.example.prometei.services;
 
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
-import com.example.prometei.models.Airport;
-import com.example.prometei.models.Favor;
-import com.example.prometei.models.Flight;
-import com.example.prometei.models.FlightFavor;
+import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -21,11 +18,13 @@ import java.util.Random;
 @Service
 public class GenerateService {
     private final FlightService flightService;
+    private final TicketService ticketService;
     private final Random random;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
 
-    public GenerateService(FlightService flightService){
+    public GenerateService(FlightService flightService, TicketService ticketService){
         this.flightService = flightService;
+        this.ticketService = ticketService;
         this.random = new Random();
     }
 
@@ -49,6 +48,25 @@ public class GenerateService {
 
         log.info("Adding favors completed.");
         flightService.addAllFavors(favors);
+    }
+
+    public void generateAdditionalFavor() {
+        List<FlightFavor> flightFavors = new ArrayList<>();
+        List<Ticket> tickets = ticketService.getAll();
+
+        Ticket ticket = tickets.get(random.nextInt(tickets.size()));
+
+        if (ticket.getAdditionalFavors().isEmpty()) {
+            for (FlightFavor flightFavor : ticket.getFlight().getFlightFavors()) {
+                if (random.nextBoolean()) {
+                    flightFavors.add(flightFavor);
+                }
+            }
+        }
+
+        if (!flightFavors.isEmpty()) {
+            ticketService.addAdditionalFavorsToTicket(ticket.getId(), ticketService.createAdditionalFavorsByFlightFavor(ticket.getId(), flightFavors));
+        }
     }
 
     public void generateRandomFlight() {

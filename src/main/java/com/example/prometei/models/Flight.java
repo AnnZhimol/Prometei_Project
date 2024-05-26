@@ -51,6 +51,6 @@ public class Flight {
     @OneToMany(mappedBy = "flight", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Ticket> tickets;
 
-    @OneToMany(mappedBy = "flight", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private List<FlightFavor> flightFavors;
 }

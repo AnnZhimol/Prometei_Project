@@ -24,6 +24,22 @@ public class GenerateEntities {
     GenerateService generateService;
 
     @Test
+    public void FavorGenerate() throws FileNotFoundException {
+        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream("favors.json"), StandardCharsets.UTF_8));
+        List<Favor> favors = asList(new Gson().fromJson(reader, Favor[].class));
+
+        generateService.addAllFavors(favors);
+    }
+
+    @Test
+    public void AirportGenerate() throws FileNotFoundException {
+        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream("airports.json"), StandardCharsets.UTF_8));
+        List<Airport> airports = asList(new Gson().fromJson(reader, Airport[].class));
+
+        generateService.addAllAirports(airports);
+    }
+
+    @Test
     public void FlightGenerate() {
         for (int i = 0; i < 10; i++) {
             generateService.generateRandomFlight();
@@ -38,18 +54,9 @@ public class GenerateEntities {
     }
 
     @Test
-    public void FavorGenerate() throws FileNotFoundException {
-        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream("favors.json"), StandardCharsets.UTF_8));
-        List<Favor> favors = asList(new Gson().fromJson(reader, Favor[].class));
-
-        generateService.addAllFavors(favors);
-    }
-
-    @Test
-    public void AirportGenerate() throws FileNotFoundException {
-        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream("airports.json"), StandardCharsets.UTF_8));
-        List<Airport> airports = asList(new Gson().fromJson(reader, Airport[].class));
-
-        generateService.addAllAirports(airports);
+    public void TicketGenerate() {
+        for (int i = 0; i < 2000; i++) {
+            generateService.generateAdditionalFavor();
+        }
     }
 }

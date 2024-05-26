@@ -337,4 +337,22 @@ public class TicketService implements BasicService<Ticket> {
         ticketRepository.save(ticket);
         log.info("Adding additionalFavors to the ticket with id = {} was completed successfully", ticket.getId());
     }
+
+    /**
+     * Возвращает список услуг, связанных с указанным билетом.
+     *
+     * @param id идентификатор билета
+     * @return список услуг для указанного билета
+     * @throws NullPointerException если билет с указанным идентификатором не найден
+     */
+    public List<AdditionalFavor> getAdditionalFavorsByTicket(Long id) {
+        Ticket ticket = ticketRepository.findById(id).orElse(null);
+
+        if (ticket == null) {
+            log.error("Adding additionalFavors to the ticket failed. Ticket == null");
+            throw new NullPointerException();
+        }
+
+        return additionalFavorRepository.findAdditionalFavorsByTicket(id);
+    }
 }
