@@ -1,9 +1,9 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.FlightDtos.AirportInfo;
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.FlightDtos.FlightDto;
 import com.example.prometei.dto.FlightDtos.FlightFavorDto;
+import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
 import com.example.prometei.services.FlightService;
@@ -34,7 +34,7 @@ public class FlightController {
     }
 
     @GetMapping("/getAirports")
-    public ResponseEntity<AirportInfo[]> getAirports() {
+    public ResponseEntity<List<Airport>> getAirports() {
         return new ResponseEntity<>(flightService.getAllAirports(), HttpStatus.OK);
     }
 

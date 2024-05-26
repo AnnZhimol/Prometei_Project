@@ -8,7 +8,6 @@ import com.example.prometei.services.FlightService;
 import com.example.prometei.services.PurchaseService;
 import com.example.prometei.services.TicketService;
 import com.example.prometei.services.UserService;
-import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,13 +35,6 @@ public class TestServices {
 
     @Autowired
     UserService userService;
-
-    @Test
-    void getDist() {
-        //{ "value": "KGD", "label": "Калининград, Храброво, KGD", "timezone": "+2", "latitude": 54.8900, "longitude": 20.5926 },
-        //{ "value": "RTW", "label": "Саратов, Гагарин, RTW", "timezone": "+4", "latitude": 51.5643, "longitude": 46.0468 },
-        System.out.println(flightService.getDistance(new Pair<>(54.8900, 20.5926), new Pair<>(51.5643, 46.0468)));
-    }
 
     @Test
     void createUser() {

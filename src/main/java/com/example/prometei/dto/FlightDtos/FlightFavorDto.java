@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-import static com.example.prometei.utils.CipherUtil.decryptId;
 import static com.example.prometei.utils.CipherUtil.encryptId;
 
 /**
@@ -27,7 +26,6 @@ public class FlightFavorDto implements Serializable {
 
     public FlightFavor dtoToEntity() {
         return FlightFavor.builder()
-                .id(decryptId(this.id))
                 .name(this.name)
                 .cost(this.cost)
                 .build();

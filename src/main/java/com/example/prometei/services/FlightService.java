@@ -1,13 +1,12 @@
 package com.example.prometei.services;
 
-import com.example.prometei.dto.FlightDtos.AirportInfo;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
 import com.example.prometei.models.enums.TicketType;
+import com.example.prometei.repositories.AirportRepository;
+import com.example.prometei.repositories.FavorRepository;
 import com.example.prometei.repositories.FlightFavorRepository;
 import com.example.prometei.repositories.FlightRepository;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.Pair;
@@ -15,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -27,30 +24,74 @@ import java.util.Objects;
 public class FlightService implements BasicService<Flight> {
     private final FlightRepository flightRepository;
     private final FlightFavorRepository flightFavorRepository;
+    private final FavorRepository favorRepository;
+    private final AirportRepository airportRepository;
     private final TicketService ticketService;
-    private final AirportInfo[] airportInfoList;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
 
-    public FlightService(FlightRepository flightRepository, FlightFavorRepository flightFavorRepository, TicketService ticketService) throws FileNotFoundException {
-        JsonReader reader = new JsonReader(new FileReader("airports.json"));
-
+    public FlightService(FlightRepository flightRepository, FlightFavorRepository flightFavorRepository, FavorRepository favorRepository, AirportRepository airportRepository, TicketService ticketService) {
+        this.favorRepository = favorRepository;
+        this.airportRepository = airportRepository;
         this.flightRepository = flightRepository;
         this.flightFavorRepository = flightFavorRepository;
         this.ticketService = ticketService;
-        this.airportInfoList = new Gson().fromJson(reader, AirportInfo[].class);
     }
 
     /**
-     * Получает список всех аэропортов из файла.
+     * Получает список всех аэропортов.
      *
      * @return список всех аэропортов
      */
-    public AirportInfo[] getAllAirports(){
+    public List<Airport> getAllAirports(){
         log.info("Get list of airports");
-        return airportInfoList;
+        return airportRepository.findAll();
     }
 
-    public Double getDistance(Pair<Double,Double> coordinatesB, Pair<Double,Double> coordinatesD) {
+    /**
+     * Получает список всех услуг авиакомпании.
+     *
+     * @return список всех услуг авиакомпании.
+     */
+    public List<Favor> getAllFavors(){
+        log.info("Get list of favors");
+        return favorRepository.findAll();
+    }
+
+    /**
+     * Добавляет список аэропортов в репозиторий.
+     *
+     * @param airports список аэропортов для добавления
+     * @throws NullPointerException если в списке есть null элементы
+     */
+    @Transactional
+    public void addAllAirports(List<Airport> airports) {
+        if (airports.contains(null)) {
+            log.error("Adding airports failed. Element can't be null.");
+            throw new NullPointerException();
+        }
+
+        log.info("Adding airports completed.");
+        airportRepository.saveAll(airports);
+    }
+
+    /**
+     * Добавляет список услуг в репозиторий.
+     *
+     * @param favors список услуг для добавления
+     * @throws NullPointerException если в списке есть null элементы
+     */
+    @Transactional
+    public void addAllFavors(List<Favor> favors) {
+        if (favors.contains(null)) {
+            log.error("Adding favors failed. Element can't be null.");
+            throw new NullPointerException();
+        }
+
+        log.info("Adding favors completed.");
+        favorRepository.saveAll(favors);
+    }
+
+    private Double getDistance(Pair<Double,Double> coordinatesB, Pair<Double,Double> coordinatesD) {
         Pair<Double, Double> coordinatesA = new Pair<>(coordinatesD.a, coordinatesB.b);
 
         double meridianDistDegree = 111.1;
@@ -98,34 +139,34 @@ public class FlightService implements BasicService<Flight> {
     }
 
     private void setPointsAndTimes(Flight entity){
-        AirportInfo departureAirport = null;
-        AirportInfo destinationAirport = null;
+        Airport departureAirport = null;
+        Airport destinationAirport = null;
         LocalDateTime departure = entity.getDepartureDate().atTime(entity.getDepartureTime());
 
-        for (AirportInfo airportInfo : airportInfoList) {
-            if (airportInfo.getLabel().contains(entity.getDeparturePoint())) {
+        for (Airport airport : getAllAirports()) {
+            if (airport.getLabel().contains(entity.getDeparturePoint())) {
                 entity.setDeparturePoint(
-                        airportInfo.getLabel()
+                        airport.getLabel()
                 );
 
                 entity.setDepartureTime(departure
                         .plusHours(Integer.parseInt(
-                                airportInfo.getTimezone()
+                                airport.getTimezone()
                         )).toLocalTime()
                 );
 
                 entity.setDepartureDate(departure
                         .plusHours(Integer.parseInt(
-                                airportInfo.getTimezone()
+                                airport.getTimezone()
                         )).toLocalDate());
 
-                departureAirport = airportInfo;
-            } else if (airportInfo.getLabel().contains(entity.getDestinationPoint())) {
+                departureAirport = airport;
+            } else if (airport.getLabel().contains(entity.getDestinationPoint())) {
                 entity.setDestinationPoint(
-                        airportInfo.getLabel()
+                        airport.getLabel()
                 );
 
-                destinationAirport = airportInfo;
+                destinationAirport = airport;
             }
         }
 
@@ -274,6 +315,7 @@ public class FlightService implements BasicService<Flight> {
      * @param id идентификатор рейса, к которому необходимо добавить доступные услуги
      * @param flightFavors список доступных услуг, которые нужно добавить
      * @throws NullPointerException если рейс или список доступных услуг равны null
+     * @throws IllegalArgumentException если список доступных услуг не совпадает с услугами авиакомпании
      */
     @Transactional
     public void addFlightFavorsToFlight(Long id, List<FlightFavor> flightFavors) {
@@ -292,11 +334,36 @@ public class FlightService implements BasicService<Flight> {
         flightFavorRepository.deleteAll(flightFavorRepository.findFlightFavorsByFlight(id));
 
         flight.setFlightFavors(flightFavors);
+        boolean favorExist = false;
 
         for (FlightFavor flightFavor : flightFavors) {
             if (flightFavor == null) {
                 log.error("Adding flightFavors to the flight with id = {} failed. FlightFavor == null", flight.getId());
                 throw new NullPointerException();
+            }
+
+            for (Favor favor : getAllFavors()) {
+                if (Objects.equals(flightFavor.getName(), favor.getName())) {
+                    favorExist = true;
+                    flightFavor.setCost(favor.getCost());
+                    flightFavor.setName(favor.getName());
+                    break;
+                } else {
+                    favorExist = false;
+                }
+            }
+
+            if (!favorExist) {
+                log.error("Adding flightFavors to the flight with id = {} failed. Confirm favor not exist", flight.getId());
+                throw new IllegalArgumentException();
+            }
+
+            for (FlightFavor flightFavorTemp : flightFavors) {
+                if (Objects.equals(flightFavorTemp.getName(), flightFavor.getName()) &&
+                flightFavor != flightFavorTemp) {
+                    log.error("Adding flightFavors to the flight with id = {} failed. You can add only one flightFavor", flight.getId());
+                    throw new IllegalArgumentException();
+                }
             }
 
             flightFavor.setFlight(flight);
