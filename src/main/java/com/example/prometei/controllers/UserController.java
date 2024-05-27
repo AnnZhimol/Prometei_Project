@@ -2,7 +2,7 @@ package com.example.prometei.controllers;
 
 import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.User;
-import com.example.prometei.services.UserService;
+import com.example.prometei.services.baseServices.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

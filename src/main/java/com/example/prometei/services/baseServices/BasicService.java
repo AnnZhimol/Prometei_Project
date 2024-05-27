@@ -1,4 +1,4 @@
-package com.example.prometei.services;
+package com.example.prometei.services.baseServices;
 
 import java.util.List;
 

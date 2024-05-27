@@ -6,7 +6,7 @@ import com.example.prometei.dto.FlightDtos.FlightFavorDto;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
-import com.example.prometei.services.FlightService;
+import com.example.prometei.services.baseServices.FlightService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

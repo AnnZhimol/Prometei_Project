@@ -1,4 +1,4 @@
-package com.example.prometei.services;
+package com.example.prometei.services.baseServices;
 
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.UserRole;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserService implements BasicService<User>{
+public class UserService implements BasicService<User> {
     private final UserRepository userRepository;
     private final TicketService ticketService;
     private final Logger log = LoggerFactory.getLogger(UserService.class);

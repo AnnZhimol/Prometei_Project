@@ -1,8 +1,10 @@
-package com.example.prometei.services;
+package com.example.prometei.services.emailServices;
 
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.models.User;
+import com.example.prometei.services.baseServices.PurchaseService;
+import com.example.prometei.services.baseServices.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;

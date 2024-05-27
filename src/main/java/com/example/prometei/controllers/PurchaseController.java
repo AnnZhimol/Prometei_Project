@@ -6,7 +6,7 @@ import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
-import com.example.prometei.services.PurchaseService;
+import com.example.prometei.services.baseServices.PurchaseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

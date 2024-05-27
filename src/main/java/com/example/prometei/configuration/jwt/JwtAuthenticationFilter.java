@@ -1,6 +1,6 @@
 package com.example.prometei.configuration.jwt;
 
-import com.example.prometei.services.UserService;
+import com.example.prometei.services.baseServices.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,7 +1,7 @@
 package com.example.prometei.configuration;
 
 import com.example.prometei.configuration.jwt.JwtAuthenticationFilter;
-import com.example.prometei.services.UserService;
+import com.example.prometei.services.baseServices.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

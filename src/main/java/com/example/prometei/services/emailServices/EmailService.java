@@ -1,4 +1,4 @@
-package com.example.prometei.services;
+package com.example.prometei.services.emailServices;
 
 import jakarta.mail.MessagingException;
 

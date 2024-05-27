@@ -1,6 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.services.EmailService;
+import com.example.prometei.services.emailServices.EmailService;
 import jakarta.mail.MessagingException;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;

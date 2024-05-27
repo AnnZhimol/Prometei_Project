@@ -6,6 +6,7 @@ import com.example.prometei.dto.UserDtos.SignInUser;
 import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.models.User;
 import com.example.prometei.models.enums.UserRole;
+import com.example.prometei.services.baseServices.UserService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

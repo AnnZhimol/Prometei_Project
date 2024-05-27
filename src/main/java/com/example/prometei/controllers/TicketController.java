@@ -6,7 +6,7 @@ import com.example.prometei.dto.TicketDtos.SearchDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
-import com.example.prometei.services.TicketService;
+import com.example.prometei.services.baseServices.TicketService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
