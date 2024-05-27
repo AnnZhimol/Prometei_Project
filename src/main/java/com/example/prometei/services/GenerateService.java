@@ -1,8 +1,11 @@
 package com.example.prometei.services;
 
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
+import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.models.enums.PaymentMethod;
+import com.github.javafaker.Faker;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,21 +13,25 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class GenerateService {
     private final FlightService flightService;
     private final TicketService ticketService;
+    private final UserService userService;
+    private final PurchaseService purchaseService;
     private final Random random;
+    private final AuthenticationService authenticationService;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
+    private static final Faker faker = new Faker(new Locale("en-US"));
 
-    public GenerateService(FlightService flightService, TicketService ticketService){
+    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AuthenticationService authenticationService){
         this.flightService = flightService;
         this.ticketService = ticketService;
+        this.userService = userService;
+        this.purchaseService = purchaseService;
+        this.authenticationService = authenticationService;
         this.random = new Random();
     }
 
@@ -48,6 +55,53 @@ public class GenerateService {
 
         log.info("Adding favors completed.");
         flightService.addAllFavors(favors);
+    }
+
+    @Transactional
+    public void generateUser() {
+        String password = faker.internet().password(10, 20);
+        SignUpUser user = SignUpUser.builder()
+                .email(faker.internet().emailAddress())
+                .password(password)
+                .passwordConfirm(password)
+                .build();
+
+        if (userService.getByEmail(user.getEmail()) == null) {
+            authenticationService.signUp(user);
+        }
+    }
+
+    @Transactional
+    public void generatePurchase() {
+        List<User> users = userService.getAll();
+        List<Ticket> tickets = ticketService.getAll();
+
+        List<Ticket> availableTickets = tickets.stream()
+                .filter(ticket -> ticket.getPurchase() == null).toList();
+
+        if (availableTickets.size() < 2) {
+            log.error("Not enough available tickets to generate a purchase. Available tickets: {}", availableTickets.size());
+            return;
+        }
+
+        Set<Long> selectedTicketIds = new HashSet<>();
+        while (selectedTicketIds.size() < 2) {
+            Ticket randomTicket = availableTickets.get(random.nextInt(availableTickets.size()));
+            selectedTicketIds.add(randomTicket.getId());
+        }
+        List<Long> ticketIds = new ArrayList<>(selectedTicketIds);
+
+        Purchase purchase = Purchase.builder()
+                .paymentMethod(faker.options().option(PaymentMethod.class))
+                .build();
+
+        User randomUser = users.get(random.nextInt(users.size()));
+
+        purchaseService.createPurchase(purchase,
+                ticketIds.stream()
+                        .mapToLong(Long::longValue)
+                        .toArray(),
+                randomUser.getEmail());
     }
 
     public void generateAdditionalFavor() {

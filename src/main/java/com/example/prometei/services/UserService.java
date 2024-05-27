@@ -49,7 +49,7 @@ public class UserService implements BasicService<User>{
      * @throws UsernameNotFoundException если пользователь не найден
      */
     public User getByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     /**

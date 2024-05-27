@@ -59,4 +59,18 @@ public class GenerateEntities {
             generateService.generateAdditionalFavor();
         }
     }
+
+    @Test
+    public void UserGenerate() {
+        for (int i = 0; i < 1000; i++) {
+            generateService.generateUser();
+        }
+    }
+
+    @Test
+    public void PurchaseGenerate() {
+        for (int i = 0; i < 2000; i++) {
+            generateService.generatePurchase();
+        }
+    }
 }

@@ -70,7 +70,7 @@ public class PurchaseService implements BasicService<Purchase> {
         purchase = purchaseRepository.save(purchase);
         purchase.setCreateDate(LocalDateTime.now());
 
-        for(long id : ticketIds) {
+        for (long id : ticketIds) {
             if (ticketService.getById(id).getPurchase() == null) {
                 tickets.add(ticketService.getById(id));
             }

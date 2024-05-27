@@ -3,6 +3,7 @@ package com.example.prometei.dto.UserDtos;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 /**
  * DTO for {@link com.example.prometei.models.User}
  */
+@Builder
 @Data
 public class SignUpUser implements Serializable {
     @Size(min = 5, max = 256, message = "Адрес эл. почты должен содержать от 5 до 256 символов")
