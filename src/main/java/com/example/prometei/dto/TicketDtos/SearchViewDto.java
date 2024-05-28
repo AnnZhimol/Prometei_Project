@@ -16,7 +16,7 @@ import static com.example.prometei.utils.CipherUtil.encryptId;
 
 @Data
 @NoArgsConstructor
-public class SearchDto implements Serializable {
+public class SearchViewDto implements Serializable {
     private String id;
     private String departurePoint;
     private String destinationPoint;
@@ -50,7 +50,7 @@ public class SearchDto implements Serializable {
         return String.format("В пути: %dч %dм", hours, minutes);
     }
 
-    public SearchDto(Ticket ticket) {
+    public SearchViewDto(Ticket ticket) {
         id = encryptId(ticket.getId());
         this.ticketType = ticket.getTicketType();
         this.departurePoint = ticket.getFlight().getDeparturePoint();

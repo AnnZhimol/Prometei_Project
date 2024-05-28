@@ -3,6 +3,8 @@ package com.example.prometei.controllers;
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.FlightDtos.FlightDto;
 import com.example.prometei.dto.FlightDtos.FlightFavorDto;
+import com.example.prometei.dto.FlightDtos.DataGenetic;
+import com.example.prometei.dto.FlightDtos.FlightGeneticDto;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,25 @@ public class FlightController {
 
     public FlightController(FlightService flightService) {
         this.flightService = flightService;
+    }
+
+    @GetMapping("/getFlightData")
+    public ResponseEntity<DataGenetic> getDataForSearch(@RequestParam String departurePoint,
+                                                        @RequestParam String destinationPoint,
+                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
+                                                        @RequestParam Integer countBusiness,
+                                                        @RequestParam Integer countEconomic) {
+        return new ResponseEntity<>(new DataGenetic(departurePoint,
+                                                    destinationPoint,
+                                                    countBusiness,
+                                                    countEconomic,
+                                                    departureDate,
+                                                    returnDate,
+                flightService.getFlightData(departureDate,
+                                            countBusiness,
+                                            countEconomic)
+                        .stream().map(FlightGeneticDto::new).toList()), HttpStatus.OK);
     }
 
     @GetMapping("/get")

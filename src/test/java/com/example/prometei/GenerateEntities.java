@@ -41,7 +41,7 @@ public class GenerateEntities {
 
     @Test
     public void FlightGenerate() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             generateService.generateRandomFlight();
         }
     }
@@ -55,21 +55,21 @@ public class GenerateEntities {
 
     @Test
     public void TicketGenerate() {
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 50; i++) {
             generateService.generateAdditionalFavor();
         }
     }
 
     @Test
     public void UserGenerate() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             generateService.generateUser();
         }
     }
 
     @Test
     public void PurchaseGenerate() {
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 200; i++) {
             generateService.generatePurchase();
         }
     }

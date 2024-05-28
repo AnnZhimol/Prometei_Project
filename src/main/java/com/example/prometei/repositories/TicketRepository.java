@@ -19,7 +19,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "WHERE t.flight.departurePoint = :departurePoint " +
             "AND t.flight.destinationPoint = :destinationPoint " +
             "AND t.flight.departureDate = :departureDate " +
-            "AND t.ticketType = :ticketType")
+            "AND t.ticketType = :ticketType " +
+            "AND t.purchase IS NULL")
     List<Ticket> findTicketsForSearch(String departurePoint, String destinationPoint, LocalDate departureDate, TicketType ticketType);
 
     @Query("SELECT t FROM Ticket t " +

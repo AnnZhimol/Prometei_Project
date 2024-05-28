@@ -5,7 +5,7 @@ import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -302,12 +302,23 @@ public class TicketService implements BasicService<Ticket> {
         return additionalFavorList;
     }
 
+    private boolean isDuplicate(AdditionalFavor favor1, AdditionalFavor favor2) {
+        String name1 = favor1.getFlightFavor().getName();
+        String name2 = favor2.getFlightFavor().getName();
+
+        return (name1.contains("Выбор места") && name2.contains("Выбор места")) ||
+                (name1.contains("Интернет на борту (весь полет)") && name2.contains("Интернет на борту (весь полет)")) ||
+                (name1.contains("Приоритетная посадка") && name2.contains("Приоритетная посадка")) ||
+                (name1.contains("Возврат билета") && name2.contains("Возврат билета"));
+    }
+
     /**
      * Добавляет список выбранных услуг к билету по его идентификатору.
      *
      * @param id идентификатор билета, к которому добавляются выбранные услуги
      * @param additionalFavors список выбранных услуг для добавления
      */
+
     @Transactional
     public void addAdditionalFavorsToTicket(Long id, List<AdditionalFavor> additionalFavors) {
         Ticket ticket = ticketRepository.findById(id).orElse(null);
@@ -322,7 +333,7 @@ public class TicketService implements BasicService<Ticket> {
             throw new NullPointerException();
         }
 
-        ticket.setAdditionalFavors(additionalFavors);
+        List<AdditionalFavor> existingFavors = additionalFavorRepository.findAdditionalFavorsByTicket(id);
 
         for (AdditionalFavor additionalFavor : additionalFavors) {
             if (additionalFavor == null) {
@@ -330,10 +341,31 @@ public class TicketService implements BasicService<Ticket> {
                 throw new NullPointerException();
             }
 
+            for (AdditionalFavor existingFavor : existingFavors) {
+                if (isDuplicate(existingFavor, additionalFavor)) {
+                    log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates existing favor {}.",
+                            additionalFavor.getFlightFavor().getName(), existingFavor.getFlightFavor().getName());
+                    throw new IllegalArgumentException("AdditionalFavor cannot duplicate existing favor: " + existingFavor.getFlightFavor().getName());
+                }
+            }
+        }
+
+        for (int i = 0; i < additionalFavors.size(); i++) {
+            for (int j = i + 1; j < additionalFavors.size(); j++) {
+                if (isDuplicate(additionalFavors.get(i), additionalFavors.get(j))) {
+                    log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates another favor {} in the list.",
+                            additionalFavors.get(i).getFlightFavor().getName(), additionalFavors.get(j).getFlightFavor().getName());
+                    throw new IllegalArgumentException("AdditionalFavor cannot duplicate another favor in the list: " + additionalFavors.get(j).getFlightFavor().getName());
+                }
+            }
+        }
+
+        for (AdditionalFavor additionalFavor : additionalFavors) {
             additionalFavor.setTicket(ticket);
             additionalFavorRepository.save(additionalFavor);
         }
 
+        ticket.setAdditionalFavors(additionalFavors);
         ticketRepository.save(ticket);
         log.info("Adding additionalFavors to the ticket with id = {} was completed successfully", ticket.getId());
     }

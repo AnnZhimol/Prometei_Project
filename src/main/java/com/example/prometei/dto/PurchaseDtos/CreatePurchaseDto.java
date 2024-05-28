@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-import static com.example.prometei.utils.CipherUtil.decryptId;
-
 /**
  * DTO for {@link com.example.prometei.models.Purchase}
  */
@@ -22,7 +20,6 @@ public class CreatePurchaseDto implements Serializable {
 
     public Purchase dtoToEntity() {
         return Purchase.builder()
-                .id(decryptId(this.id))
                 .paymentMethod(this.paymentMethod)
                 .build();
     }

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -234,6 +235,13 @@ public class FlightService implements BasicService<Flight> {
                                         OffsetDateTime departureTime) {
         log.info("Get list of sorted flights");
         return flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureTime);
+    }
+
+    public List<Flight> getFlightData(LocalDate departureDate,
+                                      Integer countBusiness,
+                                      Integer countEconomic) {
+        log.info("Get list of data flights");
+        return flightRepository.findFlightsByInput(departureDate, countBusiness, countEconomic);
     }
 
     public List<FlightFavor> getFlightFavors(Long id) {

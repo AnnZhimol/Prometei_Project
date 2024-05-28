@@ -2,7 +2,7 @@ package com.example.prometei.controllers;
 
 import com.example.prometei.dto.FlightDtos.FlightFavorDto;
 import com.example.prometei.dto.TicketDtos.AdditionalFavorDto;
-import com.example.prometei.dto.TicketDtos.SearchDto;
+import com.example.prometei.dto.TicketDtos.SearchViewDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
@@ -10,6 +10,7 @@ import com.example.prometei.services.baseServices.TicketService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -51,13 +52,14 @@ public class TicketController {
                                     HttpStatus.OK);
     }
 
+
     @GetMapping("/searchResult")
-    public ResponseEntity<List<SearchDto>> getSearchResult(@RequestParam String departurePoint,
-                                                           @RequestParam String destinationPoint,
-                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-                                                           @RequestParam TicketType ticketType) {
+    public ResponseEntity<List<SearchViewDto>> getSearchResult(@RequestParam String departurePoint,
+                                                               @RequestParam String destinationPoint,
+                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+                                                               @RequestParam TicketType ticketType) {
         return new ResponseEntity<>(ticketService.getSearchResult(departurePoint,
-                destinationPoint, departureDate, ticketType).stream().map(SearchDto::new).toList(), HttpStatus.OK);
+                destinationPoint, departureDate, ticketType).stream().map(SearchViewDto::new).toList(), HttpStatus.OK);
     }
 
     @GetMapping("/getByPurchase")
@@ -82,6 +84,7 @@ public class TicketController {
     }
 
     //привязка к билету услуг (пользователь выбрал перечень услуг, на их основе создались AdditionalFavors и привязались к билету)
+    @Transactional
     @PostMapping("/addAdditionalFavors")
     public void addAdditionalFavors(@RequestParam Long id,
                                     @RequestBody List<FlightFavorDto> flightFavorsDto) {

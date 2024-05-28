@@ -73,6 +73,12 @@ public class PurchaseService implements BasicService<Purchase> {
         for (long id : ticketIds) {
             if (ticketService.getById(id).getPurchase() == null) {
                 tickets.add(ticketService.getById(id));
+                if (ticketService.getById(id).getTicketType() == TicketType.BUSINESS) {
+                    ticketService.getById(id).getFlight().setBusinessSeats(ticketService.getById(id).getFlight().getBusinessSeats() - 1);
+                }
+                if (ticketService.getById(id).getTicketType() == TicketType.ECONOMIC) {
+                    ticketService.getById(id).getFlight().setEconomSeats(ticketService.getById(id).getFlight().getEconomSeats() - 1);
+                }
             }
             else {
                 log.error("Error create purchase. Ticket already buyed.");
