@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-import static com.example.prometei.utils.CipherUtil.decryptId;
 import static com.example.prometei.utils.CipherUtil.encryptId;
 
 /**
@@ -55,23 +54,5 @@ public class UserDto implements Serializable {
         this.phoneNumber = user.getPhoneNumber();
         this.residenceCity = user.getResidenceCity();
         this.role = user.getRole();
-    }
-
-    public User dtoToEntity() {
-        return User.builder()
-                .id(decryptId(this.getId()))
-                .birthDate(this.getBirthDate())
-                .email(this.getEmail())
-                .firstName(this.getFirstName())
-                .lastName(this.getLastName())
-                .gender(this.getGender())
-                .internationalPassportNum(this.getInternationalPassportNum())
-                .internationalPassportDate(this.getInternationalPassportDate())
-                .passport(this.getPassport())
-                .password(this.getPassword())
-                .phoneNumber(this.getPhoneNumber())
-                .residenceCity(this.getResidenceCity())
-                .role(this.getRole())
-                .build();
     }
 }

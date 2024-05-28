@@ -3,7 +3,7 @@ package com.example.prometei.controllers;
 import com.example.prometei.dto.PurchaseDtos.CreatePurchaseDto;
 import com.example.prometei.dto.PurchaseDtos.PurchaseDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
-import com.example.prometei.dto.UserDtos.UserDto;
+import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.services.baseServices.PurchaseService;
@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+
 @RestController
 @RequestMapping("/purchase")
 public class PurchaseController {
@@ -23,26 +25,48 @@ public class PurchaseController {
         this.purchaseService = purchaseService;
     }
 
+    /**
+     * Получает информацию о покупке по её идентификатору.
+     *
+     * @param purchaseId идентификатор покупки, которую требуется получить (зашифрованный)
+     * @return ResponseEntity с объектом PurchaseDto в случае успешного получения информации о покупке, либо ResponseEntity с кодом NO_CONTENT, если покупка не найдена
+     */
     @GetMapping("/get")
-    public ResponseEntity<PurchaseDto> getPurchase(@RequestParam Long id) {
-        Purchase purchase = purchaseService.getById(id);
+    public ResponseEntity<PurchaseDto> getPurchase(@RequestParam String purchaseId) {
+        Purchase purchase = purchaseService.getById(decryptId(purchaseId));
         return purchase == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(new PurchaseDto(purchase), HttpStatus.OK);
     }
 
+    /**
+     * Получает список всех покупок.
+     *
+     * @return ResponseEntity со списком PurchaseDto всех покупок в случае успешного получения, иначе пустой список.
+     */
     @GetMapping("/all")
     public ResponseEntity<List<PurchaseDto>> getAllPurchases() {
         return new ResponseEntity<>(purchaseService.getAll()
                 .stream().map(PurchaseDto::new).toList(), HttpStatus.OK);
     }
 
+    /**
+     * Получает список всех покупок пользователя по его идентификатору.
+     *
+     * @param userId идентификатор пользователя, чьи покупки требуется получить
+     * @return ResponseEntity со списком PurchaseDto всех покупок пользователя в случае успешного получения, иначе пустой список.
+     */
     @GetMapping("/getByUser")
-    public ResponseEntity<List<PurchaseDto>> getPurchasesByUser(@RequestParam Long userId) {
-        return new ResponseEntity<>(purchaseService.getPurchasesByUser(userId)
+    public ResponseEntity<List<PurchaseDto>> getPurchasesByUser(@RequestParam String userId) {
+        return new ResponseEntity<>(purchaseService.getPurchasesByUser(decryptId(userId))
                 .stream().map(PurchaseDto::new).toList(), HttpStatus.OK);
     }
 
+    /**
+     * Создает новую покупку на основе переданных данных.
+     *
+     * @param purchaseDto объект CreatePurchaseDto, содержащий информацию о новой покупке
+     */
     @PostMapping("/create")
     public void addPurchase(@RequestBody CreatePurchaseDto purchaseDto) {
         purchaseService.createPurchase(purchaseDto.dtoToEntity(), purchaseDto.getTicketIds(), purchaseDto.getUserEmail());
@@ -50,7 +74,7 @@ public class PurchaseController {
 
     @Deprecated
     @PostMapping("/addTickets")
-    public void addTickets(@RequestParam Long id,
+    public void addTickets(@RequestParam String purchaseId,
                            @RequestBody List<TicketDto> ticketDtos) {
         List<Ticket> tickets = new ArrayList<>();
 
@@ -58,23 +82,24 @@ public class PurchaseController {
             tickets.add(ticketDto.dtoToEntity());
         }
 
-        purchaseService.addTicketsToPurchase(id, tickets);
+        purchaseService.addTicketsToPurchase(decryptId(purchaseId), tickets);
     }
 
     @Deprecated
     @PostMapping("/addUser")
-    public void addUser(@RequestParam Long id,
-                        @RequestBody UserDto userDto) {
-        purchaseService.addUserToPurchase(id, userDto.dtoToEntity());
+    public void addUser(@RequestParam String purchaseId,
+                        @RequestBody EditUserDto userDto) {
+        purchaseService.addUserToPurchase(decryptId(purchaseId), userDto.dtoToEntity());
     }
 
     @Deprecated
     @PatchMapping("/edit")
-    public void editPurchase(@RequestParam Long id,
+    public void editPurchase(@RequestParam String purchaseId,
                              @RequestBody PurchaseDto purchaseDto) {
-        purchaseService.edit(id, purchaseDto.dtoToEntity());
+        purchaseService.edit(decryptId(purchaseId), purchaseDto.dtoToEntity());
     }
 
+    @Deprecated
     @DeleteMapping("/delete")
     public void deletePurchase(@RequestBody PurchaseDto purchaseDto) {
         purchaseService.delete(purchaseDto.dtoToEntity());

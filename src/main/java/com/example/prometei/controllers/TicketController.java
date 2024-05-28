@@ -1,7 +1,7 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.FlightDtos.FlightFavorDto;
-import com.example.prometei.dto.TicketDtos.AdditionalFavorDto;
+import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
+import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.dto.TicketDtos.SearchViewDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+
 @RestController
 @RequestMapping("/ticket")
 public class TicketController {
@@ -26,14 +28,26 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
+    /**
+     * Получает информацию о билете по его идентификатору.
+     *
+     * @param ticketId идентификатор билета, закодированный в строку
+     * @return ResponseEntity с информацией о билете в виде TicketDto в случае успешного получения,
+     *         либо ResponseEntity с пустым телом и статусом NO_CONTENT, если билет не найден
+     */
     @GetMapping("/get")
-    public ResponseEntity<TicketDto> getTicket(@RequestParam Long id) {
-        Ticket ticket = ticketService.getById(id);
+    public ResponseEntity<TicketDto> getTicket(@RequestParam String ticketId) {
+        Ticket ticket = ticketService.getById(decryptId(ticketId));
         return ticket == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(new TicketDto(ticket), HttpStatus.OK);
     }
 
+    /**
+     * Получает список всех билетов.
+     *
+     * @return ResponseEntity со списком всех билетов в виде List<TicketDto> и статусом OK
+     */
     @GetMapping("/all")
     public ResponseEntity<List<TicketDto>> getAllTickets() {
         return new ResponseEntity<>(ticketService.getAll()
@@ -43,16 +57,30 @@ public class TicketController {
                                     HttpStatus.OK);
     }
 
+    /**
+     * Получает список билетов по идентификатору рейса.
+     *
+     * @param flightId идентификатор рейса
+     * @return ResponseEntity со списком билетов в виде List<TicketDto> и статусом OK
+     */
     @GetMapping("/getByFlight")
-    public ResponseEntity<List<TicketDto>> getTicketsByFlight(@RequestParam Long flightId) {
-        return new ResponseEntity<>(ticketService.getTicketsByFlight(flightId)
+    public ResponseEntity<List<TicketDto>> getTicketsByFlight(@RequestParam String flightId) {
+        return new ResponseEntity<>(ticketService.getTicketsByFlight(decryptId(flightId))
                                     .stream()
                                     .map(TicketDto::new)
                                     .toList(),
                                     HttpStatus.OK);
     }
 
-
+    /**
+     * Получает результаты поиска билетов по заданным параметрам.
+     *
+     * @param departurePoint пункт отправления
+     * @param destinationPoint пункт назначения
+     * @param departureDate дата отправления
+     * @param ticketType тип билета
+     * @return ResponseEntity со списком результатов поиска в виде List<SearchViewDto> и статусом OK
+     */
     @GetMapping("/searchResult")
     public ResponseEntity<List<SearchViewDto>> getSearchResult(@RequestParam String departurePoint,
                                                                @RequestParam String destinationPoint,
@@ -62,19 +90,37 @@ public class TicketController {
                 destinationPoint, departureDate, ticketType).stream().map(SearchViewDto::new).toList(), HttpStatus.OK);
     }
 
+    /**
+     * Получает список билетов по идентификатору покупки.
+     *
+     * @param purchaseId идентификатор покупки
+     * @return ResponseEntity со списком билетов в виде List<TicketDto> и статусом OK
+     */
     @GetMapping("/getByPurchase")
-    public ResponseEntity<List<TicketDto>> getTicketsByPurchase(@RequestParam Long purchaseId) {
-        return new ResponseEntity<>(ticketService.getTicketsByPurchase(purchaseId).stream().map(TicketDto::new).toList(), HttpStatus.OK);
+    public ResponseEntity<List<TicketDto>> getTicketsByPurchase(@RequestParam String purchaseId) {
+        return new ResponseEntity<>(ticketService.getTicketsByPurchase(decryptId(purchaseId)).stream().map(TicketDto::new).toList(), HttpStatus.OK);
     }
 
+    /**
+     * Получает список билетов по идентификатору пользователя.
+     *
+     * @param userId идентификатор пользователя
+     * @return ResponseEntity со списком билетов в виде List<TicketDto> и статусом OK
+     */
     @GetMapping("/getByUser")
-    public ResponseEntity<List<TicketDto>> getTicketsByUser(@RequestParam Long userId) {
-        return new ResponseEntity<>(ticketService.getTicketsByUser(userId).stream().map(TicketDto::new).toList(), HttpStatus.OK);
+    public ResponseEntity<List<TicketDto>> getTicketsByUser(@RequestParam String userId) {
+        return new ResponseEntity<>(ticketService.getTicketsByUser(decryptId(userId)).stream().map(TicketDto::new).toList(), HttpStatus.OK);
     }
 
+    /**
+     * Получает список дополнительных услуг по идентификатору билета.
+     *
+     * @param ticketId идентификатор билета
+     * @return ResponseEntity со списком дополнительных услуг в виде List<AdditionalFavorDto> и статусом OK
+     */
     @GetMapping("/getAdditionalFavors")
-    public ResponseEntity<List<AdditionalFavorDto>> getAdditionalFavorsByTicket(@RequestParam Long ticketId) {
-        return new ResponseEntity<>(ticketService.getAdditionalFavorsByTicket(ticketId).stream().map(AdditionalFavorDto::new).toList(), HttpStatus.OK);
+    public ResponseEntity<List<AdditionalFavorDto>> getAdditionalFavorsByTicket(@RequestParam String ticketId) {
+        return new ResponseEntity<>(ticketService.getAdditionalFavorsByTicket(decryptId(ticketId)).stream().map(AdditionalFavorDto::new).toList(), HttpStatus.OK);
     }
 
     @Deprecated
@@ -83,27 +129,33 @@ public class TicketController {
         ticketService.add(ticketDto.dtoToEntity());
     }
 
-    //привязка к билету услуг (пользователь выбрал перечень услуг, на их основе создались AdditionalFavors и привязались к билету)
+     /**
+     * Добавляет дополнительные услуги к билету. Старые услуги также сохраняются.
+     *
+     * @param ticketId идентификатор билета
+     * @param createFlightFavorDtos список DTO дополнительных услуг для создания
+     */
     @Transactional
     @PostMapping("/addAdditionalFavors")
-    public void addAdditionalFavors(@RequestParam Long id,
-                                    @RequestBody List<FlightFavorDto> flightFavorsDto) {
+    public void addAdditionalFavors(@RequestParam String ticketId,
+                                    @RequestBody List<CreateFlightFavorDto> createFlightFavorDtos) {
         List<FlightFavor> listFavors = new ArrayList<>();
 
-        for(FlightFavorDto flightFavorDto : flightFavorsDto) {
-            listFavors.add(flightFavorDto.dtoToEntity());
+        for(CreateFlightFavorDto createFlightFavorDto : createFlightFavorDtos) {
+            listFavors.add(createFlightFavorDto.dtoToEntity());
         }
 
-        ticketService.addAdditionalFavorsToTicket(id, ticketService.createAdditionalFavorsByFlightFavor(id, listFavors));
+        ticketService.addAdditionalFavorsToTicket(decryptId(ticketId), ticketService.createAdditionalFavorsByFlightFavor(decryptId(ticketId), listFavors));
     }
 
     @Deprecated
     @PatchMapping("/edit")
-    public void editTicket(@RequestParam Long id,
+    public void editTicket(@RequestParam String ticketId,
                            @RequestBody TicketDto ticketDto) {
-        ticketService.edit(id, ticketDto.dtoToEntity());
+        ticketService.edit(decryptId(ticketId), ticketDto.dtoToEntity());
     }
 
+    @Deprecated
     @DeleteMapping("/delete")
     public void deleteTicket(@RequestBody TicketDto ticketDto) {
         ticketService.delete(ticketDto.dtoToEntity());

@@ -13,7 +13,6 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 public class CreatePurchaseDto implements Serializable {
-    private String id;
     private PaymentMethod paymentMethod;
     private String userEmail;
     private long[] ticketIds;

@@ -1,8 +1,9 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.FlightDtos.FlightDto;
-import com.example.prometei.dto.FlightDtos.FlightFavorDto;
+import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.FlightDtos.DataGenetic;
 import com.example.prometei.dto.FlightDtos.FlightGeneticDto;
 import com.example.prometei.models.Airport;
@@ -19,6 +20,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+
 @RestController
 @RequestMapping("/flight")
 public class FlightController {
@@ -28,6 +31,17 @@ public class FlightController {
         this.flightService = flightService;
     }
 
+    /**
+     * Возвращает данные (рейсы), которые подаются на вход ГА.
+     *
+     * @param departurePoint точка отправления указанная пользователем
+     * @param destinationPoint точка назначения указанная пользователем
+     * @param departureDate дата отправления (в формате ISO.DATE) указанная пользователем
+     * @param returnDate дата возврата (в формате ISO.DATE) указанная пользователем
+     * @param countBusiness количество билетов бизнес-класса, которое необходимо пользователю
+     * @param countEconomic количество билетов эконом-класса, которое необходимо пользователю
+     * @return ResponseEntity с объектом DataGenetic, содержащим данные для поиска рейсов
+     */
     @GetMapping("/getFlightData")
     public ResponseEntity<DataGenetic> getDataForSearch(@RequestParam String departurePoint,
                                                         @RequestParam String destinationPoint,
@@ -47,14 +61,25 @@ public class FlightController {
                         .stream().map(FlightGeneticDto::new).toList()), HttpStatus.OK);
     }
 
+    /**
+     * Возвращает информацию о рейсе по заданному идентификатору.
+     *
+     * @param flightId зашифрованный идентификатор рейса
+     * @return ResponseEntity с объектом FlightDto, содержащим данные о рейсе, или статусом NO_CONTENT, если рейс не найден
+     */
     @GetMapping("/get")
-    public ResponseEntity<FlightDto> getFlight(@RequestParam Long id) {
-        Flight flight = flightService.getById(id);
+    public ResponseEntity<FlightDto> getFlight(@RequestParam String flightId) {
+        Flight flight = flightService.getById(decryptId(flightId));
         return flight == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(new FlightDto(flight), HttpStatus.OK);
     }
 
+    /**
+     * Возвращает список всех аэропортов.
+     *
+     * @return ResponseEntity со списком объектов Airport и статусом OK
+     */
     @GetMapping("/getAirports")
     public ResponseEntity<List<Airport>> getAirports() {
         return new ResponseEntity<>(flightService.getAllAirports(), HttpStatus.OK);
@@ -69,6 +94,11 @@ public class FlightController {
                 destinationPoint, departureTime), HttpStatus.OK);
     }
 
+    /**
+     * Возвращает список всех рейсов.
+     *
+     * @return ResponseEntity со списком объектов FlightDto и статусом OK
+     */
     @GetMapping("/all")
     public ResponseEntity<List<FlightDto>> getAllFlights() {
         return new ResponseEntity<>(flightService.getAll()
@@ -78,39 +108,65 @@ public class FlightController {
                                     HttpStatus.OK);
     }
 
+    /**
+     * Возвращает список дополнительных услуг для заданного рейса.
+     *
+     * @param flightId зашифрованный идентификатор рейса
+     * @return ResponseEntity со списком объектов FlightFavorDto и статусом OK
+     */
     @GetMapping("/getFlightFavors")
-    public ResponseEntity<List<FlightFavorDto>> getFlightFavors(Long flightId) {
-        return new ResponseEntity<>(flightService.getFlightFavors(flightId)
+    public ResponseEntity<List<FlightFavorDto>> getFlightFavors(@RequestParam String flightId) {
+        return new ResponseEntity<>(flightService.getFlightFavors(decryptId(flightId))
                 .stream()
                 .map(FlightFavorDto::new)
                 .toList(),
                 HttpStatus.OK);
     }
 
-    // создание билетов вместе с полетом
+    /**
+     * Добавляет новый рейс на основе предоставленных данных и билеты, которые относятся к данному рейсу.
+     *
+     * @param createFlightDto объект, содержащий информацию о новом рейсе
+     */
     @PostMapping("/create")
     public void addFlight(@RequestBody CreateFlightDto createFlightDto) {
         flightService.add(createFlightDto.dtoToEntity());
     }
 
+    /**
+     * Добавляет дополнительные услуги (должны содержатся в общем перечне услуг, иначе ошибка) к указанному рейсу.
+     * Если рейс уже содержал услуги, удаляет старые и добавляет новые.
+     *
+     * @param flightId зашифрованный идентификатор рейса, к которому добавляются услуги
+     * @param createFlightFavorDtos список объектов, содержащих информацию о дополнительных услугах
+     */
     @PostMapping("/addFlightFavors")
-    public void addFlightFavors(@RequestParam Long id,
-                                @RequestBody List<FlightFavorDto> flightFavorsDto) {
+    public void addFlightFavors(@RequestParam String flightId,
+                                @RequestBody List<CreateFlightFavorDto> createFlightFavorDtos) {
         List<FlightFavor> listFavors = new ArrayList<>();
 
-        for(FlightFavorDto flightFavorDto : flightFavorsDto) {
-            listFavors.add(flightFavorDto.dtoToEntity());
+        for(CreateFlightFavorDto createFlightFavorDto : createFlightFavorDtos) {
+            listFavors.add(createFlightFavorDto.dtoToEntity());
         }
 
-        flightService.addFlightFavorsToFlight(id, listFavors);
+        flightService.addFlightFavorsToFlight(decryptId(flightId), listFavors);
     }
 
+    /**
+     * Редактирует информацию о рейсе на основе предоставленных данных.
+     * Если изменена модель самолета, старые билеты удаляются и добавляются новые.
+     * При изменении даты отправления меняется и дата прибытия.
+     *
+     * @param flightId идентификатор рейса, который требуется отредактировать
+     * @param createFlightDto объект, содержащий новую информацию о рейсе
+     */
     @PatchMapping("/edit")
-    public void editFlight(@RequestParam Long id,
+    public void editFlight(@RequestParam String flightId,
                            @RequestBody CreateFlightDto createFlightDto) {
-        flightService.edit(id, createFlightDto.dtoToEntity());
+        flightService.edit(decryptId(flightId), createFlightDto.dtoToEntity());
     }
 
+    @Deprecated
     @DeleteMapping("/delete")
     public void deleteFlight(@RequestBody CreateFlightDto createFlightDto) {
         flightService.delete(createFlightDto.dtoToEntity());

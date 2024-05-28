@@ -26,5 +26,4 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
                                     Integer countBusiness,
                                     Integer countEconomic);
 
-
 }

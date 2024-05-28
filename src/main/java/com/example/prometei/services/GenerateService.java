@@ -5,6 +5,7 @@ import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
 import com.example.prometei.models.enums.PaymentMethod;
+import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import com.example.prometei.services.baseServices.TicketService;
@@ -25,16 +26,19 @@ public class GenerateService {
     private final TicketService ticketService;
     private final UserService userService;
     private final PurchaseService purchaseService;
+
+    private final AdditionalFavorRepository additionalFavorRepository;
     private final Random random;
     private final AuthenticationService authenticationService;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
     private static final Faker faker = new Faker(new Locale("en-US"));
 
-    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AuthenticationService authenticationService){
+    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AdditionalFavorRepository additionalFavorRepository, AuthenticationService authenticationService){
         this.flightService = flightService;
         this.ticketService = ticketService;
         this.userService = userService;
         this.purchaseService = purchaseService;
+        this.additionalFavorRepository = additionalFavorRepository;
         this.authenticationService = authenticationService;
         this.random = new Random();
     }
@@ -109,21 +113,29 @@ public class GenerateService {
     }
 
     public void generateAdditionalFavor() {
-        List<FlightFavor> flightFavors = new ArrayList<>();
         List<Ticket> tickets = ticketService.getAll();
 
-        Ticket ticket = tickets.get(random.nextInt(tickets.size()));
+        for (Ticket ticket : tickets) {
+            if (ticket.getAdditionalFavors().isEmpty()) {
+                List<FlightFavor> flightFavors = new ArrayList<>();
 
-        if (ticket.getAdditionalFavors().isEmpty()) {
-            for (FlightFavor flightFavor : ticket.getFlight().getFlightFavors()) {
-                if (random.nextBoolean()) {
-                    flightFavors.add(flightFavor);
+                for (FlightFavor flightFavor : ticket.getFlight().getFlightFavors()) {
+                    if (random.nextBoolean()) {
+                        flightFavors.add(flightFavor);
+                    }
+                }
+
+                List<AdditionalFavor> list = ticketService.createAdditionalFavorsByFlightFavor(ticket.getId(), flightFavors);
+
+                if (!flightFavors.isEmpty()) {
+                    try {
+                        ticketService.addAdditionalFavorsToTicket(ticket.getId(), list);
+                    } catch (IllegalArgumentException e) {
+                        additionalFavorRepository.deleteAll(list);
+                        log.error("Failed to add additional favors to the ticket with id {}. Duplicate favors detected. Error: {}", ticket.getId(), e.getMessage());
+                    }
                 }
             }
-        }
-
-        if (!flightFavors.isEmpty()) {
-            ticketService.addAdditionalFavorsToTicket(ticket.getId(), ticketService.createAdditionalFavorsByFlightFavor(ticket.getId(), flightFavors));
         }
     }
 

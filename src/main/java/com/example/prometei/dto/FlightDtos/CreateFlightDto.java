@@ -17,7 +17,6 @@ import java.time.*;
 @Builder
 @AllArgsConstructor
 public class CreateFlightDto {
-    private String id;
     private String departurePoint;
     private String destinationPoint;
     private LocalTime departureTime;

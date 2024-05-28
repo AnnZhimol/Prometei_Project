@@ -1,5 +1,6 @@
 package com.example.prometei.controllers;
 
+import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.User;
 import com.example.prometei.services.baseServices.UserService;
@@ -8,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.example.prometei.utils.CipherUtil.decryptId;
 
 @RestController
 @RequestMapping("/user")
@@ -18,14 +21,25 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Получает информацию о пользователе по его идентификатору.
+     *
+     * @param userId идентификатор пользователя
+     * @return объект ResponseEntity с UserDto и статусом OK, если пользователь найден, или NO_CONTENT, если пользователь не найден
+     */
     @GetMapping("/get")
-    public ResponseEntity<UserDto> getUser(@RequestParam Long id) {
-        User user = userService.getById(id);
+    public ResponseEntity<UserDto> getUser(@RequestParam String userId) {
+        User user = userService.getById(decryptId(userId));
         return user == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
                 : new ResponseEntity<>(new UserDto(user), HttpStatus.OK);
     }
 
+    /**
+     * Получает список всех пользователей.
+     *
+     * @return объект ResponseEntity со списком UserDto и статусом OK
+     */
     @GetMapping("/all")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         return new ResponseEntity<>(userService.getAll()
@@ -37,18 +51,25 @@ public class UserController {
 
     @Deprecated
     @PostMapping("/create")
-    public void addUser(@RequestBody UserDto userDto) {
+    public void addUser(@RequestBody EditUserDto userDto) {
         userService.add(userDto.dtoToEntity());
     }
 
+    /**
+     * Редактирует информацию о пользователе.
+     *
+     * @param userId идентификатор пользователя
+     * @param userDto объект UserDto, содержащий обновленную информацию о пользователе
+     */
     @PatchMapping("/edit")
-    public void editUser(@RequestParam Long id,
-                         @RequestBody UserDto userDto) {
-        userService.edit(id, userDto.dtoToEntity());
+    public void editUser(@RequestParam String userId,
+                         @RequestBody EditUserDto userDto) {
+        userService.edit(decryptId(userId), userDto.dtoToEntity());
     }
 
+    @Deprecated
     @DeleteMapping("/delete")
-    public void deleteUser(@RequestBody UserDto userDto) {
+    public void deleteUser(@RequestBody EditUserDto userDto) {
         userService.delete(userDto.dtoToEntity());
     }
 }

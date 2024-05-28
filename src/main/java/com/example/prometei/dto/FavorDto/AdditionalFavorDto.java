@@ -1,4 +1,4 @@
-package com.example.prometei.dto.TicketDtos;
+package com.example.prometei.dto.FavorDto;
 
 import com.example.prometei.models.AdditionalFavor;
 import lombok.Data;
