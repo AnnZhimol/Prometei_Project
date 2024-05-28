@@ -12,11 +12,11 @@ import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -229,12 +229,33 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findAll();
     }
 
-    @Deprecated
-    public List<Flight> getSearchResult(String departurePoint,
+    public List<Pair<Flight, Flight>> getSearchResult(String departurePoint,
                                         String destinationPoint,
-                                        OffsetDateTime departureTime) {
+                                        LocalDate departureDate,
+                                        @Nullable LocalDate returnDate,
+                                        Integer countBusiness,
+                                        Integer countEconomic) {
         log.info("Get list of sorted flights");
-        return flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureTime);
+        List<Flight> flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic);
+        List<Pair<Flight, Flight>> combinations = new ArrayList<>();
+
+        if (returnDate != null) {
+            for (Flight flight1 : flights) {
+                for (Flight flight2 : flights) {
+                    if (!flight1.equals(flight2) &&
+                            flight1.getDeparturePoint().equals(departurePoint) &&
+                            flight1.getDestinationPoint().equals(flight2.getDeparturePoint())) {
+                        combinations.add(new Pair<>(flight1, flight2));
+                    }
+                }
+            }
+        } else {
+            for (Flight flight1 : flights) {
+                combinations.add(new Pair<>(flight1, null));
+            }
+        }
+
+        return combinations;
     }
 
     public List<Flight> getFlightData(LocalDate departureDate,

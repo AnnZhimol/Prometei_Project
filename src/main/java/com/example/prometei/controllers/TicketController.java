@@ -2,18 +2,14 @@ package com.example.prometei.controllers;
 
 import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
-import com.example.prometei.dto.TicketDtos.SearchViewDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
-import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.services.baseServices.TicketService;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,24 +66,6 @@ public class TicketController {
                                     .map(TicketDto::new)
                                     .toList(),
                                     HttpStatus.OK);
-    }
-
-    /**
-     * Получает результаты поиска билетов по заданным параметрам.
-     *
-     * @param departurePoint пункт отправления
-     * @param destinationPoint пункт назначения
-     * @param departureDate дата отправления
-     * @param ticketType тип билета
-     * @return ResponseEntity со списком результатов поиска в виде List<SearchViewDto> и статусом OK
-     */
-    @GetMapping("/searchResult")
-    public ResponseEntity<List<SearchViewDto>> getSearchResult(@RequestParam String departurePoint,
-                                                               @RequestParam String destinationPoint,
-                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-                                                               @RequestParam TicketType ticketType) {
-        return new ResponseEntity<>(ticketService.getSearchResult(departurePoint,
-                destinationPoint, departureDate, ticketType).stream().map(SearchViewDto::new).toList(), HttpStatus.OK);
     }
 
     /**

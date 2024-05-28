@@ -318,7 +318,6 @@ public class TicketService implements BasicService<Ticket> {
      * @param id идентификатор билета, к которому добавляются выбранные услуги
      * @param additionalFavors список выбранных услуг для добавления
      */
-
     @Transactional
     public void addAdditionalFavorsToTicket(Long id, List<AdditionalFavor> additionalFavors) {
         Ticket ticket = ticketRepository.findById(id).orElse(null);

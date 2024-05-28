@@ -1,22 +1,20 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
-import com.example.prometei.dto.FlightDtos.CreateFlightDto;
-import com.example.prometei.dto.FlightDtos.FlightDto;
+import com.example.prometei.dto.FlightDtos.*;
 import com.example.prometei.dto.FavorDto.FlightFavorDto;
-import com.example.prometei.dto.FlightDtos.DataGenetic;
-import com.example.prometei.dto.FlightDtos.FlightGeneticDto;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
 import com.example.prometei.services.baseServices.FlightService;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,13 +83,37 @@ public class FlightController {
         return new ResponseEntity<>(flightService.getAllAirports(), HttpStatus.OK);
     }
 
-    @Deprecated
-    @GetMapping("/search")
-    public ResponseEntity<List<Flight>> searchFlights(@RequestParam String departurePoint,
-                                                      @RequestParam String destinationPoint,
-                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime departureTime) {
-        return new ResponseEntity<>(flightService.getSearchResult(departurePoint,
-                destinationPoint, departureTime), HttpStatus.OK);
+    /**
+     * Ищет все возможные комбинации полетов, где destinationPoint одного полета совпадает с departurePoint другого полета.
+     *
+     * @param departurePoint точка отправления
+     * @param destinationPoint точка назначения
+     * @param departureDate дата отправления
+     * @param returnDate дата возвращения (может быть null)
+     * @param countBusiness количество бизнес-мест
+     * @param countEconomic количество эконом-мест
+     * @return список пар полетов, где destinationPoint одного полета совпадает с departurePoint другого полета
+     */
+    @GetMapping("/searchFlight")
+    public ResponseEntity<List<Pair<SearchViewDto, SearchViewDto>>> searchFlights(@RequestParam String departurePoint,
+                                                                          @RequestParam String destinationPoint,
+                                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+                                                                          @RequestParam @Nullable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
+                                                                          @RequestParam Integer countBusiness,
+                                                                          @RequestParam Integer countEconomic) {
+        List<Pair<SearchViewDto, SearchViewDto>> result = new ArrayList<>();
+        List<Pair<Flight, Flight>> flightPairs = flightService.getSearchResult(departurePoint,
+                                                                                destinationPoint,
+                                                                                departureDate,
+                                                                                returnDate,
+                                                                                countBusiness,
+                                                                                countEconomic);
+
+        for (Pair<Flight, Flight> pair : flightPairs) {
+            result.add(new Pair<>(new SearchViewDto(pair.a), returnDate == null ? null : new SearchViewDto(pair.b)));
+        }
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**

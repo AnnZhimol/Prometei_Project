@@ -1,7 +1,6 @@
-package com.example.prometei.dto.TicketDtos;
+package com.example.prometei.dto.FlightDtos;
 
-import com.example.prometei.models.Ticket;
-import com.example.prometei.models.enums.TicketType;
+import com.example.prometei.models.Flight;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -24,7 +23,6 @@ public class SearchViewDto implements Serializable {
     private String destinationTime;
     private String departureDate;
     private String departureTime;
-    private TicketType ticketType;
     private Double economyCost;
     private Double businessCost;
     private String flightTime;
@@ -50,17 +48,16 @@ public class SearchViewDto implements Serializable {
         return String.format("В пути: %dч %dм", hours, minutes);
     }
 
-    public SearchViewDto(Ticket ticket) {
-        id = encryptId(ticket.getId());
-        this.ticketType = ticket.getTicketType();
-        this.departurePoint = ticket.getFlight().getDeparturePoint();
-        this.destinationPoint = ticket.getFlight().getDestinationPoint();
-        this.departureDate = DateParser(ticket.getFlight().getDepartureDate());
-        this.destinationDate = DateParser(ticket.getFlight().getDestinationDate());
-        this.destinationTime = TimeParser(ticket.getFlight().getDestinationTime());
-        this.departureTime = TimeParser(ticket.getFlight().getDepartureTime());
-        this.flightTime = FlightTimeParser(ticket.getFlight().getFlightTime());
-        this.economyCost = ticketType == TicketType.ECONOMIC ? ticket.getFlight().getEconomyCost() : null;
-        this.businessCost = ticketType == TicketType.BUSINESS ? ticket.getFlight().getBusinessCost() : null;
+    public SearchViewDto(Flight flight) {
+        id = encryptId(flight.getId());
+        this.departurePoint = flight.getDeparturePoint();
+        this.destinationPoint = flight.getDestinationPoint();
+        this.departureDate = DateParser(flight.getDepartureDate());
+        this.destinationDate = DateParser(flight.getDestinationDate());
+        this.destinationTime = TimeParser(flight.getDestinationTime());
+        this.departureTime = TimeParser(flight.getDepartureTime());
+        this.flightTime = FlightTimeParser(flight.getFlightTime());
+        this.economyCost = flight.getEconomyCost();
+        this.businessCost = flight.getBusinessCost();
     }
 }
