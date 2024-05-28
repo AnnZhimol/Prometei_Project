@@ -3,6 +3,8 @@ package com.example.prometei.controllers;
 import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
 import com.example.prometei.dto.FlightDtos.*;
 import com.example.prometei.dto.FavorDto.FlightFavorDto;
+import com.example.prometei.dto.GeneticAlg.DataGenetic;
+import com.example.prometei.dto.GeneticAlg.FlightGeneticDto;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;

@@ -1,4 +1,4 @@
-package com.example.prometei.dto.FlightDtos;
+package com.example.prometei.dto.GeneticAlg;
 
 import com.example.prometei.models.Flight;
 import lombok.Data;
