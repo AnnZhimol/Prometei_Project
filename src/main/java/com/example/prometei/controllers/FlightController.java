@@ -9,7 +9,6 @@ import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
 import com.example.prometei.services.baseServices.FlightService;
-import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -97,23 +96,20 @@ public class FlightController {
      * @return список пар полетов, где destinationPoint одного полета совпадает с departurePoint другого полета
      */
     @GetMapping("/searchFlight")
-    public ResponseEntity<List<Pair<SearchViewDto, SearchViewDto>>> searchFlights(@RequestParam String departurePoint,
+    public ResponseEntity<List<SearchViewDto>> searchFlights(@RequestParam String departurePoint,
                                                                           @RequestParam String destinationPoint,
                                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
                                                                           @RequestParam @Nullable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
                                                                           @RequestParam Integer countBusiness,
                                                                           @RequestParam Integer countEconomic) {
-        List<Pair<SearchViewDto, SearchViewDto>> result = new ArrayList<>();
-        List<Pair<Flight, Flight>> flightPairs = flightService.getSearchResult(departurePoint,
-                                                                                destinationPoint,
-                                                                                departureDate,
-                                                                                returnDate,
-                                                                                countBusiness,
-                                                                                countEconomic);
+        List<SearchViewDto> flightPairs = flightService.getSearchResult(departurePoint,
+                                                                        destinationPoint,
+                                                                        departureDate,
+                                                                        returnDate,
+                                                                        countBusiness,
+                                                                        countEconomic).stream().map(SearchViewDto::new).toList();
 
-        for (Pair<Flight, Flight> pair : flightPairs) {
-            result.add(new Pair<>(new SearchViewDto(pair.a), returnDate == null ? null : new SearchViewDto(pair.b)));
-        }
+        List<SearchViewDto> result = new ArrayList<>(flightPairs);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
