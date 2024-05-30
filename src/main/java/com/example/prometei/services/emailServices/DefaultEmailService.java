@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
+import static com.example.prometei.utils.CipherUtil.encryptId;
 
 @Service
 public class DefaultEmailService implements EmailService {
@@ -64,6 +65,7 @@ public class DefaultEmailService implements EmailService {
 
             emailContentMap.put("passengerName", ticket.getUser() != null ? ticket.getUser().getFirstName() + " " + ticket.getUser().getLastName() : ticket.getUnauthUser().getFirstName() + " " + ticket.getUnauthUser().getLastName() );
             emailContentMap.put("seatNum", ticket.getSeatNumber());
+            emailContentMap.put("ticketNumber", encryptId(ticket.getId()));
             emailContentMap.put("ticketType", ticket.getTicketType());
             emailContentMap.put("ticketTotalCost", ticket.getTicketType() == TicketType.BUSINESS ? ticket.getFlight().getBusinessCost() : ticket.getFlight().getEconomyCost());
             emailContentMap.put("airplaneModel", ticket.getFlight().getAirplaneModel());

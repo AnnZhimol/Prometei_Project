@@ -1,5 +1,6 @@
 package com.example.prometei.dto.TicketDtos;
 
+import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.models.enums.TicketType;
 import lombok.Data;
@@ -20,13 +21,22 @@ public class TicketDto implements Serializable {
     private TicketType ticketType;
     private String seatNumber;
     private long flightId;
-    private Double cost;
+    private Double costFlight;
+    private Double costFavors;
 
     public TicketDto(Ticket ticket) {
         id = encryptId(ticket.getId());
         this.seatNumber = ticket.getSeatNumber();
         this.ticketType = ticket.getTicketType();
         this.flightId = ticket.getFlight().getId();
+        this.costFavors = ticket.getAdditionalFavors()
+                                .stream()
+                                .map(AdditionalFavorDto::new)
+                                .mapToDouble(AdditionalFavorDto::getCost)
+                                .sum();
+        this.costFlight = ticket.getTicketType() == TicketType.BUSINESS ?
+                          ticket.getFlight().getBusinessCost() :
+                          ticket.getFlight().getEconomyCost();
     }
 
     public Ticket dtoToEntity() {

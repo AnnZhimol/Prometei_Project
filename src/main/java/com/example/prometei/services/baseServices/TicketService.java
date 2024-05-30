@@ -1,5 +1,6 @@
 package com.example.prometei.services.baseServices;
 
+import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AdditionalFavorRepository;
@@ -10,9 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TicketService implements BasicService<Ticket> {
@@ -257,6 +261,53 @@ public class TicketService implements BasicService<Ticket> {
         additionalFavor.setFlightFavor(flightFavor);
         additionalFavorRepository.save(additionalFavor);
         log.info("Adding flightFavor to the additionalFavor with id = {} was completed successfully", additionalFavor.getId());
+    }
+
+    /**
+     * Возвращает билет, если соблюдены условия возврата.
+     *
+     * @param ticketId идентификатор билета, который необходимо вернуть
+     * @throws IllegalArgumentException если условия возврата не соблюдены
+     */
+    @Transactional
+    public void returnTicket(Long ticketId) {
+        Ticket ticket = getById(ticketId);
+        LocalDateTime dateNow = LocalDateTime.now();
+        Duration duration =Duration.between(dateNow, ticket.getFlight().getDepartureDate().atTime(ticket.getFlight().getDepartureTime()));
+        boolean favorExist = false;
+
+        for (AdditionalFavor additionalFavor : ticket.getAdditionalFavors()) {
+            if (Objects.equals(additionalFavor.getFlightFavor().getName(), "Возврат билета")) {
+                favorExist = true;
+                break;
+            }
+        }
+
+        if (duration.toHours() >= 24 && favorExist) {
+            Purchase purchase = ticket.getPurchase();
+
+            Double costFavors = ticket.getAdditionalFavors()
+                    .stream()
+                    .map(AdditionalFavorDto::new)
+                    .mapToDouble(AdditionalFavorDto::getCost)
+                    .sum();
+            Double costFlight = ticket.getTicketType() == TicketType.BUSINESS ?
+                    ticket.getFlight().getBusinessCost() :
+                    ticket.getFlight().getEconomyCost();
+
+            purchase.setTotalCost(purchase.getTotalCost() - costFavors - costFlight);
+            ticket.setUnauthUser(null);
+            ticket.setUser(null);
+            ticket.setAdditionalFavors(new ArrayList<>());
+            ticket.setPurchase(purchase);
+            ticketRepository.save(ticket);
+            ticket.setPurchase(null);
+            ticketRepository.save(ticket);
+            log.info("Ticket with id = {} returned successfully", ticket.getId());
+        } else {
+            log.error("Ticket with id = {} returning failed. See conditions.", ticket.getId());
+            throw new IllegalArgumentException();
+        }
     }
 
     /**

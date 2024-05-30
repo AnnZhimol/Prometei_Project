@@ -5,6 +5,7 @@ import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
 import com.example.prometei.services.baseServices.TicketService;
+import lombok.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,6 +125,11 @@ public class TicketController {
         }
 
         ticketService.addAdditionalFavorsToTicket(decryptId(ticketId), ticketService.createAdditionalFavorsByFlightFavor(decryptId(ticketId), listFavors));
+    }
+
+    @PatchMapping("/returnTicket")
+    public void returnTicket(@RequestParam @NonNull String ticketId) {
+        ticketService.returnTicket(decryptId(ticketId));
     }
 
     @Deprecated
