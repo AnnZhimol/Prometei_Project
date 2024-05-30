@@ -26,6 +26,9 @@ public class Ticket {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    private UnauthUser unauthUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private Purchase purchase;
 
     @ManyToOne(fetch = FetchType.EAGER)

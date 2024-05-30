@@ -6,9 +6,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class CipherUtil {
-    private static final String ALGORITHM = "AES";
-    private static final String TRANSFORMATION = "AES/ECB/PKCS5Padding";
-    private static final String KEY = "uJBvyr6896hgjOYUGFjjiOPBDF62jk0d"; // 32 байта для AES-256
+    public static String ALGORITHM;
+    public static String TRANSFORMATION;
+    public static String KEY;
 
     public static String encryptId(long id) {
         try {

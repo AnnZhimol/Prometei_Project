@@ -1,7 +1,7 @@
 package com.example.prometei.services.baseServices;
 
 import com.example.prometei.models.*;
-import com.example.prometei.models.enums.UserRole;
+import com.example.prometei.repositories.UnauthUserRepository;
 import com.example.prometei.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -17,11 +17,13 @@ import java.util.List;
 @Service
 public class UserService implements BasicService<User> {
     private final UserRepository userRepository;
+    private final UnauthUserRepository unauthUserRepository;
     private final TicketService ticketService;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository, TicketService ticketService) {
+    public UserService(UserRepository userRepository, UnauthUserRepository unauthUserRepository, TicketService ticketService) {
         this.userRepository = userRepository;
+        this.unauthUserRepository = unauthUserRepository;
         this.ticketService = ticketService;
     }
 
@@ -38,6 +40,20 @@ public class UserService implements BasicService<User> {
         }
 
         userRepository.save(entity);
+        log.info("User with id = {} successfully added", entity.getId());
+    }
+
+    /**
+     * Добавляет нового неавторизованного пользователя в систему.
+     *
+     * @param entity новый пользователь, которого необходимо добавить
+     */
+    public void add(UnauthUser entity) {
+        if (entity == null) {
+            log.error("Can not add unauth user. UnauthUser == null");
+            throw new NullPointerException();
+        }
+        unauthUserRepository.save(entity);
         log.info("User with id = {} successfully added", entity.getId());
     }
 
@@ -71,13 +87,6 @@ public class UserService implements BasicService<User> {
         return getByEmail(email);
     }
 
-    @Deprecated
-    public void getAdmin(){
-        User user = getCurrentUser();
-        user.setRole(UserRole.ADMIN);
-        userRepository.save(user);
-    }
-
     /**
      * Удаляет пользователя из системы.
      *
@@ -104,6 +113,16 @@ public class UserService implements BasicService<User> {
     public List<User> getAll() {
         log.info("Get list of users");
         return userRepository.findAll();
+    }
+
+    /**
+     * Получает список всех неавторизированных пользователей.
+     *
+     * @return список всех пользователей
+     */
+    public List<UnauthUser> getAllUnauthUser() {
+        log.info("Get list of UnauthUsers");
+        return unauthUserRepository.findAll();
     }
 
     /**
@@ -156,6 +175,24 @@ public class UserService implements BasicService<User> {
         }
 
         log.error("Search user with id = {} failed", id);
+        return null;
+    }
+
+    /**
+     * Получает неавторизированного пользователя по идентификатору.
+     *
+     * @param id идентификатор пользователя
+     * @return найденный пользователь или null, если пользователь не найден
+     */
+    public UnauthUser getUnauthUserById(Long id) {
+        UnauthUser unauthUser = unauthUserRepository.findById(id).orElse(null);
+
+        if(unauthUser != null) {
+            log.info("UnauthUser with id = {} successfully find", id);
+            return unauthUser;
+        }
+
+        log.error("Search UnauthUser with id = {} failed", id);
         return null;
     }
 

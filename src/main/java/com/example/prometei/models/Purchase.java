@@ -26,6 +26,9 @@ public class Purchase {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UnauthUser unauthUser;
+
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Ticket> tickets;
 }

@@ -105,11 +105,11 @@ public class GenerateService {
 
         User randomUser = users.get(random.nextInt(users.size()));
 
-        purchaseService.createPurchase(purchase,
+        /*purchaseService.createPurchase(purchase,
                 ticketIds.stream()
                         .mapToLong(Long::longValue)
                         .toArray(),
-                randomUser.getEmail());
+                randomUser.getEmail());*/
     }
 
     public void generateAdditionalFavor() {

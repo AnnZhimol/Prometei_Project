@@ -63,13 +63,23 @@ public class PurchaseController {
     }
 
     /**
-     * Создает новую покупку на основе переданных данных.
+     * Создает новую покупку на основе переданных данных (авторизированный пользователь).
      *
      * @param purchaseDto объект CreatePurchaseDto, содержащий информацию о новой покупке
      */
-    @PostMapping("/create")
+    @PostMapping("/createAuthUser")
     public void addPurchase(@RequestBody CreatePurchaseDto purchaseDto) {
-        purchaseService.createPurchase(purchaseDto.dtoToEntity(), purchaseDto.getTicketIds(), purchaseDto.getUserEmail());
+        purchaseService.createPurchase(purchaseDto.dtoToEntity(), purchaseDto.decryptTicketIds(), purchaseDto.getUserPurchaseDto().dtoToEntity(), purchaseDto.listDtoToEntity());
+    }
+
+    /**
+     * Создает новую покупку на основе переданных данных (неавторизированный пользователь).
+     *
+     * @param purchaseDto объект CreatePurchaseDto, содержащий информацию о новой покупке
+     */
+    @PostMapping("/createUnAuthUser")
+    public void addPurchaseByUnauthUser(@RequestBody CreatePurchaseDto purchaseDto) {
+        purchaseService.createPurchaseByUnauthUser(purchaseDto.dtoToEntity(), purchaseDto.decryptTicketIds(), purchaseDto.getUnauthUser().dtoToEntity(), purchaseDto.listDtoToEntity());
     }
 
     @Deprecated
