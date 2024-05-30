@@ -21,6 +21,14 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/getCurrent")
+    public ResponseEntity<UserDto> getCurrentUser() {
+        User user = userService.getCurrentUser();
+        return user == null
+                ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
+                : new ResponseEntity<>(new UserDto(user), HttpStatus.OK);
+    }
+
     /**
      * Получает информацию о пользователе по его идентификатору.
      *
