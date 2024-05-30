@@ -32,7 +32,7 @@ public class EmailController {
 
     @GetMapping("/simple-html-email")
     public @ResponseBody ResponseEntity<String> sendHtmlEmail(@RequestParam @NonNull String email,
-                                                              @RequestParam @NonNull Long purchaseId) {
+                                                              @RequestParam @NonNull String purchaseId) {
         try {
             emailService.sendHtmlEmail(email, purchaseId);
         } catch (MessagingException mailException) {

@@ -110,6 +110,8 @@ public class PurchaseService implements BasicService<Purchase> {
         addTicketsToPurchase(purchase.getId(), tickets);
         addUserToPurchase(purchase.getId(), userService.getByEmail(user.getEmail()));
 
+        userService.edit(userService.getByEmail(user.getEmail()).getId(), user);
+
         purchaseRepository.save(purchase);
         log.info("Purchase with id = {} successfully saved", purchase.getId());
     }

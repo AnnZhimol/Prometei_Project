@@ -20,6 +20,7 @@ public class TicketDto implements Serializable {
     private TicketType ticketType;
     private String seatNumber;
     private long flightId;
+    private Double cost;
 
     public TicketDto(Ticket ticket) {
         id = encryptId(ticket.getId());

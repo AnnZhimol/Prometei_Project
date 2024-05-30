@@ -4,13 +4,6 @@
     <meta charset="UTF-8">
     <title>Boarding Pass</title>
     <style>
-        .ticket {
-            width: 600px;
-            border: 1px solid green;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            position: relative;
-        }
         .header {
             text-align: right;
             color: red;
@@ -36,10 +29,19 @@
             border-top: 1px solid green;
             padding-top: 10px;
         }
+        .additional-favors {
+            margin-top: 20px;
+        }
+        .favor {
+            display: flex;
+            justify-content: space-between;
+        }
+        .favor-title {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-<div class="ticket">
     <div class="header">
         <span>8-800-200-0007</span>
         <span>003</span>
@@ -88,9 +90,15 @@
             <div class="section-content" th:text="${seatNum}"></div>
         </div>
     </div>
-    <div class="footer">
-        <div th:text="'ИТОГОВАЯ СТОИМОСТЬ: ' + ${totalCost}"></div>
+    <div class="additional-favors">
+        <div class="section-title">ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ / ADDITIONAL FAVORS</div>
+        <div th:each="favor : ${additionalFavors}" class="favor">
+            <div class="favor-title" th:text="${favor.name}"> </div>
+            <div class="favor-cost" th:text="${favor.cost}"> </div>
+        </div>
     </div>
-</div>
+    <div class="footer">
+        <div th:text="'ИТОГОВАЯ СТОИМОСТЬ: ' + ${ticketTotalCost} + ' СТОИМОСТЬ УСЛУГ: ' + ${totalFavorCost}"></div>
+    </div>
 </body>
 </html>

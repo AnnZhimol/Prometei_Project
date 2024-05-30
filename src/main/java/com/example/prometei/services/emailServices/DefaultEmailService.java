@@ -1,10 +1,10 @@
 package com.example.prometei.services.emailServices;
 
+import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
-import com.example.prometei.models.User;
+import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.services.baseServices.PurchaseService;
-import com.example.prometei.services.baseServices.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.prometei.utils.CipherUtil.decryptId;
+
 @Service
 public class DefaultEmailService implements EmailService {
 
@@ -30,13 +32,11 @@ public class DefaultEmailService implements EmailService {
     public JavaMailSender emailSender;
     final private SpringTemplateEngine templateEngine;
     final private PurchaseService purchaseService;
-    final private UserService userService;
     private final Logger log = LoggerFactory.getLogger(PurchaseService.class);
 
-    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService, UserService userService) {
+    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService) {
         this.templateEngine = templateEngine;
         this.purchaseService = purchaseService;
-        this.userService = userService;
     }
 
     @Override
@@ -49,17 +49,10 @@ public class DefaultEmailService implements EmailService {
         emailSender.send(simpleMailMessage);
     }
 
-    private List<Map<String, Object>> getContentForEmail(String toAddress, Long purchaseId) {
-        Purchase purchase = purchaseService.getById(purchaseId);
+    private List<Map<String, Object>> getContentForEmail(String purchaseId) {
+        Purchase purchase = purchaseService.getById(decryptId(purchaseId));
 
         if (purchase == null) {
-            log.error("Error send email. Purchase = null");
-            throw new NullPointerException();
-        }
-
-        User user = userService.getByEmail(toAddress);
-
-        if (user == null) {
             log.error("Error send email. Purchase = null");
             throw new NullPointerException();
         }
@@ -69,15 +62,17 @@ public class DefaultEmailService implements EmailService {
         for (Ticket ticket : purchase.getTickets()) {
             Map<String, Object> emailContentMap = new HashMap<>();
 
-            emailContentMap.put("passengerName", user.getFirstName() + " " + user.getLastName());
+            emailContentMap.put("passengerName", ticket.getUser() != null ? ticket.getUser().getFirstName() + " " + ticket.getUser().getLastName() : ticket.getUnauthUser().getFirstName() + " " + ticket.getUnauthUser().getLastName() );
             emailContentMap.put("seatNum", ticket.getSeatNumber());
             emailContentMap.put("ticketType", ticket.getTicketType());
-            emailContentMap.put("totalCost", purchase.getTotalCost());
+            emailContentMap.put("ticketTotalCost", ticket.getTicketType() == TicketType.BUSINESS ? ticket.getFlight().getBusinessCost() : ticket.getFlight().getEconomyCost());
             emailContentMap.put("airplaneModel", ticket.getFlight().getAirplaneModel());
             emailContentMap.put("departurePoint", ticket.getFlight().getDeparturePoint());
             emailContentMap.put("destinationPoint", ticket.getFlight().getDestinationPoint());
-            emailContentMap.put("departureTime", ticket.getFlight().getDepartureTime().toString());
-            emailContentMap.put("destinationTime", ticket.getFlight().getDestinationTime().toString());
+            emailContentMap.put("departureTime", ticket.getFlight().getDepartureDate().toString()+" "+ticket.getFlight().getDepartureTime().toString());
+            emailContentMap.put("destinationTime",ticket.getFlight().getDestinationDate().toString()+" "+ticket.getFlight().getDestinationTime().toString());
+            emailContentMap.put("additionalFavors", ticket.getAdditionalFavors().stream().map(AdditionalFavorDto::new).toList());
+            emailContentMap.put("totalFavorCost", ticket.getAdditionalFavors().stream().map(AdditionalFavorDto::new).mapToDouble(AdditionalFavorDto::getCost).sum());
 
             emailContentList.add(emailContentMap);
         }
@@ -91,8 +86,8 @@ public class DefaultEmailService implements EmailService {
     }
 
     @Override
-    public void sendHtmlEmail(String toAddress, Long purchaseId) throws MessagingException {
-        List<Map<String, Object>> maps = getContentForEmail(toAddress,purchaseId);
+    public void sendHtmlEmail(String toAddress, String purchaseId) throws MessagingException {
+        List<Map<String, Object>> maps = getContentForEmail(purchaseId);
 
         for (Map<String, Object> map : maps) {
             MimeMessage message = emailSender.createMimeMessage();

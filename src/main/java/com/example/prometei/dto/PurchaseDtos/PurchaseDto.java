@@ -28,7 +28,7 @@ public class PurchaseDto implements Serializable {
         this.totalCost = purchase.getTotalCost();
         this.paymentMethod = purchase.getPaymentMethod();
         this.createDate = purchase.getCreateDate();
-        this.userEmail = purchase.getUser().getEmail();
+        this.userEmail = purchase.getUser() != null ? purchase.getUser().getEmail() : purchase.getUnauthUser().getEmail();
     }
 
     public Purchase dtoToEntity() {
