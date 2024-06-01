@@ -352,6 +352,15 @@ public class TicketService implements BasicService<Ticket> {
         return additionalFavorList;
     }
 
+    private boolean isDuplicate(Set<String> existingFavorNames, String name) {
+        return (existingFavorNames.contains("Выбор места в салоне") && name.contains("Выбор места в салоне")) ||
+                (existingFavorNames.contains("Интернет на борту (весь полет)") && name.contains("Интернет на борту (весь полет)")) ||
+                (existingFavorNames.contains("Приоритетная посадка") && name.contains("Приоритетная посадка")) ||
+                (existingFavorNames.contains("Выбор места у окна") && name.contains("Выбор места у окна")) ||
+                (existingFavorNames.contains("Выбор места с увеличенным пространством для ног") && name.contains("Выбор места с увеличенным пространством для ног")) ||
+                (existingFavorNames.contains("Возврат билета") && name.contains("Возврат билета"));
+    }
+
     /**
      * Добавляет список выбранных услуг к билету по его идентификатору.
      *
@@ -387,7 +396,7 @@ public class TicketService implements BasicService<Ticket> {
 
             String favorName = additionalFavor.getFlightFavor().getName();
 
-            if (existingFavorNames.contains(favorName) || !newFavorNames.add(favorName)) {
+            if (isDuplicate(existingFavorNames, favorName) || isDuplicate(newFavorNames, favorName)) {
                 log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates an existing favor or another favor in the list.", favorName);
                 throw new IllegalArgumentException("AdditionalFavor cannot duplicate existing or another favor in the list: " + favorName);
             }
