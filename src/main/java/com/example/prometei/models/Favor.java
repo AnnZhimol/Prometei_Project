@@ -1,5 +1,6 @@
 package com.example.prometei.models;
 
+import com.example.prometei.models.enums.FavorType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,4 +19,6 @@ public class Favor {
     private String name;
     @Column(nullable = false)
     private Double cost;
+    @Column(nullable = false)
+    private FavorType favorType;
 }

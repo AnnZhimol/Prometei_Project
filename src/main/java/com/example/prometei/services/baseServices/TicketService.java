@@ -14,9 +14,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TicketService implements BasicService<Ticket> {
@@ -353,16 +352,6 @@ public class TicketService implements BasicService<Ticket> {
         return additionalFavorList;
     }
 
-    private boolean isDuplicate(AdditionalFavor favor1, AdditionalFavor favor2) {
-        String name1 = favor1.getFlightFavor().getName();
-        String name2 = favor2.getFlightFavor().getName();
-
-        return (name1.contains("Выбор места") && name2.contains("Выбор места")) ||
-                (name1.contains("Интернет на борту (весь полет)") && name2.contains("Интернет на борту (весь полет)")) ||
-                (name1.contains("Приоритетная посадка") && name2.contains("Приоритетная посадка")) ||
-                (name1.contains("Возврат билета") && name2.contains("Возврат билета"));
-    }
-
     /**
      * Добавляет список выбранных услуг к билету по его идентификатору.
      *
@@ -384,6 +373,11 @@ public class TicketService implements BasicService<Ticket> {
         }
 
         List<AdditionalFavor> existingFavors = additionalFavorRepository.findAdditionalFavorsByTicket(id);
+        Set<String> existingFavorNames = existingFavors.stream()
+                .map(favor -> favor.getFlightFavor().getName())
+                .collect(Collectors.toSet());
+
+        Set<String> newFavorNames = new HashSet<>();
 
         for (AdditionalFavor additionalFavor : additionalFavors) {
             if (additionalFavor == null) {
@@ -391,22 +385,11 @@ public class TicketService implements BasicService<Ticket> {
                 throw new NullPointerException();
             }
 
-            for (AdditionalFavor existingFavor : existingFavors) {
-                if (isDuplicate(existingFavor, additionalFavor)) {
-                    log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates existing favor {}.",
-                            additionalFavor.getFlightFavor().getName(), existingFavor.getFlightFavor().getName());
-                    throw new IllegalArgumentException("AdditionalFavor cannot duplicate existing favor: " + existingFavor.getFlightFavor().getName());
-                }
-            }
-        }
+            String favorName = additionalFavor.getFlightFavor().getName();
 
-        for (int i = 0; i < additionalFavors.size(); i++) {
-            for (int j = i + 1; j < additionalFavors.size(); j++) {
-                if (isDuplicate(additionalFavors.get(i), additionalFavors.get(j))) {
-                    log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates another favor {} in the list.",
-                            additionalFavors.get(i).getFlightFavor().getName(), additionalFavors.get(j).getFlightFavor().getName());
-                    throw new IllegalArgumentException("AdditionalFavor cannot duplicate another favor in the list: " + additionalFavors.get(j).getFlightFavor().getName());
-                }
+            if (existingFavorNames.contains(favorName) || !newFavorNames.add(favorName)) {
+                log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates an existing favor or another favor in the list.", favorName);
+                throw new IllegalArgumentException("AdditionalFavor cannot duplicate existing or another favor in the list: " + favorName);
             }
         }
 

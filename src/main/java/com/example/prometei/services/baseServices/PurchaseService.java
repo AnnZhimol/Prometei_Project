@@ -61,10 +61,12 @@ public class PurchaseService implements BasicService<Purchase> {
             log.error("Error create purchase. Purchase = null");
             throw new NullPointerException();
         }
+
         if (ticketIds == null) {
             log.error("Error create purchase. ticketIds = null");
             throw new NullPointerException();
         }
+
         if (user == null) {
             log.error("Error create purchase. userEmail = null");
             throw new NullPointerException();
@@ -75,42 +77,58 @@ public class PurchaseService implements BasicService<Purchase> {
         purchase.setCreateDate(LocalDateTime.now());
 
         for (long id : ticketIds) {
-            if (ticketService.getById(id).getPurchase() == null) {
-                tickets.add(ticketService.getById(id));
-                if (ticketService.getById(id).getTicketType() == TicketType.BUSINESS) {
-                    ticketService.getById(id).getFlight().setBusinessSeats(ticketService.getById(id).getFlight().getBusinessSeats() - 1);
+            Ticket ticket = ticketService.getById(id);
+
+            if (ticket.getPurchase() == null) {
+                tickets.add(ticket);
+                Flight flight = ticket.getFlight();
+
+                if (ticket.getTicketType() == TicketType.BUSINESS) {
+                    flight.setBusinessSeats(flight.getBusinessSeats() - 1);
+                } else if (ticket.getTicketType() == TicketType.ECONOMIC) {
+                    flight.setEconomSeats(flight.getEconomSeats() - 1);
                 }
-                if (ticketService.getById(id).getTicketType() == TicketType.ECONOMIC) {
-                    ticketService.getById(id).getFlight().setEconomSeats(ticketService.getById(id).getFlight().getEconomSeats() - 1);
-                }
-            }
-            else {
-                log.error("Error create purchase. Ticket already buyed.");
-                throw new IllegalArgumentException();
+            } else {
+                log.error("Error create purchase. Ticket already bought.");
+                throw new IllegalArgumentException("Ticket already bought.");
             }
         }
 
+        userService.edit(userService.getByEmail(user.getEmail()).getId(), user);
+
         if (passengers != null) {
-            int ticketIndex = 0;
-            for (Ticket ticket : tickets) {
-                if (ticketIndex / (tickets.size() / (passengers.size() + 1)) == 0) {
-                    ticket.setUser(userService.getByEmail(user.getEmail()));
+            int totalParticipants = passengers.size() + 1;
+            int groupSize = tickets.size() / totalParticipants;
+
+            if (groupSize == 0) {
+                groupSize = 1;
+            }
+
+            for (int i = 0; i < tickets.size(); i++) {
+                Ticket ticket = tickets.get(i);
+
+                if (i < groupSize) {
+                    ticket.setUser(user);
                 } else {
-                    userService.add(passengers.get((ticketIndex / (tickets.size() / (passengers.size() + 1))) - 1));
-                    ticket.setUnauthUser(passengers.get((ticketIndex / (tickets.size() / (passengers.size() + 1))) - 1));
+                    int passengerIndex = (i / groupSize) - 1;
+
+                    if (passengerIndex < passengers.size()) {
+                        UnauthUser passenger = passengers.get(passengerIndex);
+                        userService.add(passenger);
+                        ticket.setUnauthUser(passenger);
+                    } else {
+                        ticket.setUser(user);
+                    }
                 }
-                ticketIndex++;
             }
         } else {
             for (Ticket ticket : tickets) {
-                ticket.setUser(userService.getByEmail(user.getEmail()));
+                ticket.setUser(user);
             }
         }
 
         addTicketsToPurchase(purchase.getId(), tickets);
         addUserToPurchase(purchase.getId(), userService.getByEmail(user.getEmail()));
-
-        userService.edit(userService.getByEmail(user.getEmail()).getId(), user);
 
         purchaseRepository.save(purchase);
         log.info("Purchase with id = {} successfully saved", purchase.getId());
@@ -132,10 +150,12 @@ public class PurchaseService implements BasicService<Purchase> {
             log.error("Error create purchase. Purchase = null");
             throw new NullPointerException();
         }
+
         if (ticketIds == null) {
             log.error("Error create purchase. ticketIds = null");
             throw new NullPointerException();
         }
+
         if (unauthUser == null) {
             log.error("Error create purchase. authUser = null");
             throw new NullPointerException();
@@ -146,33 +166,49 @@ public class PurchaseService implements BasicService<Purchase> {
         purchase.setCreateDate(LocalDateTime.now());
 
         for (long id : ticketIds) {
-            if (ticketService.getById(id).getPurchase() == null) {
-                tickets.add(ticketService.getById(id));
-                if (ticketService.getById(id).getTicketType() == TicketType.BUSINESS) {
-                    ticketService.getById(id).getFlight().setBusinessSeats(ticketService.getById(id).getFlight().getBusinessSeats() - 1);
+            Ticket ticket = ticketService.getById(id);
+
+            if (ticket.getPurchase() == null) {
+                tickets.add(ticket);
+                Flight flight = ticket.getFlight();
+
+                if (ticket.getTicketType() == TicketType.BUSINESS) {
+                    flight.setBusinessSeats(flight.getBusinessSeats() - 1);
+                } else if (ticket.getTicketType() == TicketType.ECONOMIC) {
+                    flight.setEconomSeats(flight.getEconomSeats() - 1);
                 }
-                if (ticketService.getById(id).getTicketType() == TicketType.ECONOMIC) {
-                    ticketService.getById(id).getFlight().setEconomSeats(ticketService.getById(id).getFlight().getEconomSeats() - 1);
-                }
-            }
-            else {
-                log.error("Error create purchase. Ticket already buyed.");
-                throw new IllegalArgumentException();
+            } else {
+                log.error("Error create purchase. Ticket already bought.");
+                throw new IllegalArgumentException("Ticket already bought.");
             }
         }
 
         userService.add(unauthUser);
 
         if (passengers != null) {
-            int ticketIndex = 0;
-            for (Ticket ticket : tickets) {
-                if (ticketIndex / (tickets.size() / (passengers.size() + 1)) == 0) {
+            int totalParticipants = passengers.size() + 1;
+            int groupSize = tickets.size() / totalParticipants;
+
+            if (groupSize == 0) {
+                groupSize = 1;
+            }
+
+            for (int i = 0; i < tickets.size(); i++) {
+                Ticket ticket = tickets.get(i);
+
+                if (i < groupSize) {
                     ticket.setUnauthUser(unauthUser);
                 } else {
-                    userService.add(passengers.get((ticketIndex / (tickets.size() / (passengers.size() + 1))) - 1));
-                    ticket.setUnauthUser(passengers.get((ticketIndex / (tickets.size() / (passengers.size() + 1))) - 1));
+                    int passengerIndex = (i / groupSize) - 1;
+
+                    if (passengerIndex < passengers.size()) {
+                        UnauthUser passenger = passengers.get(passengerIndex);
+                        userService.add(passenger);
+                        ticket.setUnauthUser(passenger);
+                    } else {
+                        ticket.setUnauthUser(unauthUser);
+                    }
                 }
-                ticketIndex++;
             }
         } else {
             for (Ticket ticket : tickets) {
@@ -346,7 +382,6 @@ public class PurchaseService implements BasicService<Purchase> {
 
         purchase.setUser(user);
 
-        user.getPurchases().add(purchase);
         userService.edit(user.getId(), user);
         purchaseRepository.save(purchase);
 

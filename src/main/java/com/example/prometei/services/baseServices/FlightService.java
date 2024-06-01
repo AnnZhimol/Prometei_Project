@@ -2,6 +2,7 @@ package com.example.prometei.services.baseServices;
 
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.models.enums.FavorType;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AirportRepository;
 import com.example.prometei.repositories.FavorRepository;
@@ -17,9 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class FlightService implements BasicService<Flight> {
@@ -342,7 +341,7 @@ public class FlightService implements BasicService<Flight> {
      * Добавляет список доступных услуг к рейсу по его идентификатору.
      *
      * @param id идентификатор рейса, к которому необходимо добавить доступные услуги
-     * @param flightFavors список доступных услуг, которые нужно добавить
+     * @param flightFavors список доступных услуг, требующих добавления (достаточно указать услуги с типом NON-REQUIRED, остальные добавятся автоматически)
      * @throws NullPointerException если рейс или список доступных услуг равны null
      * @throws IllegalArgumentException если список доступных услуг не совпадает с услугами авиакомпании
      */
@@ -352,54 +351,63 @@ public class FlightService implements BasicService<Flight> {
 
         if (flight == null) {
             log.error("Adding flightFavors to the flight failed. Flight == null");
-            throw new NullPointerException();
+            throw new NullPointerException("Flight is null");
         }
 
         if (flightFavors == null) {
             log.error("Adding flightFavors to the flight failed. FlightFavors == null");
-            throw new NullPointerException();
+            throw new NullPointerException("FlightFavors are null");
         }
 
-        flightFavorRepository.deleteAll(flightFavorRepository.findFlightFavorsByFlight(id));
-
-        flight.setFlightFavors(flightFavors);
-        boolean favorExist = false;
+        Set<String> favorNames = new HashSet<>();
+        List<Favor> allFavors = getAllFavors();
+        List<Favor> nonRequiredFavors = allFavors.stream()
+                .filter(favor -> favor.getFavorType() == FavorType.NON_REQUIRED)
+                .toList();
 
         for (FlightFavor flightFavor : flightFavors) {
             if (flightFavor == null) {
                 log.error("Adding flightFavors to the flight with id = {} failed. FlightFavor == null", flight.getId());
-                throw new NullPointerException();
+                throw new NullPointerException("FlightFavor is null");
             }
 
-            for (Favor favor : getAllFavors()) {
+            if (!favorNames.add(flightFavor.getName())) {
+                log.error("Adding flightFavors to the flight with id = {} failed. Duplicate FlightFavor found", flight.getId());
+                throw new IllegalArgumentException("Duplicate FlightFavor found");
+            }
+
+            boolean favorExist = false;
+            for (Favor favor : nonRequiredFavors) {
                 if (Objects.equals(flightFavor.getName(), favor.getName())) {
                     favorExist = true;
                     flightFavor.setCost(favor.getCost());
                     flightFavor.setName(favor.getName());
                     break;
-                } else {
-                    favorExist = false;
                 }
             }
 
             if (!favorExist) {
                 log.error("Adding flightFavors to the flight with id = {} failed. Confirm favor not exist", flight.getId());
-                throw new IllegalArgumentException();
-            }
-
-            for (FlightFavor flightFavorTemp : flightFavors) {
-                if (Objects.equals(flightFavorTemp.getName(), flightFavor.getName()) &&
-                flightFavor != flightFavorTemp) {
-                    log.error("Adding flightFavors to the flight with id = {} failed. You can add only one flightFavor", flight.getId());
-                    throw new IllegalArgumentException();
-                }
+                throw new IllegalArgumentException("Favor does not exist");
             }
 
             flightFavor.setFlight(flight);
-            flightFavorRepository.save(flightFavor);
         }
 
-        flightRepository.save(flight);
+        flightFavorRepository.deleteAll(flightFavorRepository.findFlightFavorsByFlight(id));
+        flightFavorRepository.saveAll(flightFavors);
+
+        List<FlightFavor> requiredFlightFavors = allFavors.stream()
+                .filter(favor -> favor.getFavorType() == FavorType.REQUIRED)
+                .map(favor -> FlightFavor.builder()
+                        .name(favor.getName())
+                        .cost(favor.getCost())
+                        .flight(flight)
+                        .build())
+                .toList();
+
+        flightFavorRepository.saveAll(requiredFlightFavors);
+
         log.info("Adding flightFavors to the flight with id = {} was completed successfully", flight.getId());
     }
 

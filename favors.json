@@ -1,70 +1,87 @@
 [
   {
     "name": "Дополнительный багаж (20 кг)",
-    "cost": 5000
+    "cost": 5000,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Дополнительная ручная кладь (более 5 кг)",
-    "cost": 1000
+    "cost": 1000,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Выбор места в салоне",
-    "cost": 500
+    "cost": 500,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Выбор места у окна",
-    "cost": 700
+    "cost": 700,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Выбор места с увеличенным пространством для ног",
-    "cost": 1500
+    "cost": 1500,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Питание на борту (стандартное меню)",
-    "cost": 800
+    "cost": 800,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Питание на борту (вегетарианское меню)",
-    "cost": 1200
+    "cost": 1200,
+    "favorType": "NON_REQUIRED"
   },
   {
     "name": "Алкогольные напитки",
-    "cost": 600
+    "cost": 600,
+    "favorType": "NON_REQUIRED"
   },
   {
     "name": "Безалкогольные напитки",
-    "cost": 200
+    "cost": 200,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Интернет на борту (1 час)",
-    "cost": 1000
+    "cost": 1000,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Интернет на борту (весь полет)",
-    "cost": 2500
+    "cost": 2500,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Плед",
-    "cost": 300
+    "cost": 300,
+    "favorType": "NON_REQUIRED"
   },
   {
     "name": "Подушка",
-    "cost": 200
+    "cost": 200,
+    "favorType": "NON_REQUIRED"
   },
   {
     "name": "Приоритетная посадка",
-    "cost": 700
+    "cost": 700,
+    "favorType": "NON_REQUIRED"
   },
   {
     "name": "Возврат билета",
-    "cost": 3500
+    "cost": 3500,
+    "favorType": "REQUIRED"
   },
   {
     "name": "Перевозка домашних животных менее 10 кг (в салоне)",
-    "cost": 2500
+    "cost": 2500,
+    "favorType": "NON_REQUIRED"
   },
   {
     "name": "Перевозка домашних животных более 10 кг (в багажном отделении)",
-    "cost": 5000
+    "cost": 5000,
+    "favorType": "NON_REQUIRED"
   }
 ]

@@ -4,7 +4,9 @@ import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.models.enums.FavorType;
 import com.example.prometei.models.enums.PaymentMethod;
+import com.example.prometei.models.enums.UserGender;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.PurchaseService;
@@ -18,7 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GenerateService {
@@ -31,7 +35,7 @@ public class GenerateService {
     private final Random random;
     private final AuthenticationService authenticationService;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
-    private static final Faker faker = new Faker(new Locale("en-US"));
+    private static final Faker faker = new Faker(new Locale("ru"));
 
     public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AdditionalFavorRepository additionalFavorRepository, AuthenticationService authenticationService){
         this.flightService = flightService;
@@ -76,65 +80,104 @@ public class GenerateService {
 
         if (userService.getByEmail(user.getEmail()) == null) {
             authenticationService.signUp(user);
+            User userTemp = userService.getByEmail(user.getEmail());
+            userService.edit(userTemp.getId(), User.builder()
+                    .gender(faker.options().option(UserGender.class))
+                    .firstName(faker.name().firstName())
+                    .lastName(faker.name().lastName())
+                    .birthDate(faker.date().past(6480, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                    .passport(faker.idNumber().valid())
+                    .build());
         }
+    }
+
+    @Transactional
+    public void generateUnAuthUser() {
+        UnauthUser user = UnauthUser.builder()
+                .email(faker.internet().emailAddress())
+                .gender(faker.options().option(UserGender.class))
+                .firstName(faker.name().firstName())
+                .lastName(faker.name().lastName())
+                .phoneNumber(faker.phoneNumber().cellPhone())
+                .birthDate(faker.date().past(6480, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                .passport(faker.idNumber().valid())
+                .build();
+
+        userService.add(user);
     }
 
     @Transactional
     public void generatePurchase() {
         List<User> users = userService.getAll();
+        List<UnauthUser> unauthUsers = userService.getAllUnauthUser();
         List<Ticket> tickets = ticketService.getAll();
+
+        List<UnauthUser> passengers = new ArrayList<>();
+
+        int numPassengers = random.nextInt(4) + 1;
+        for (int i = 0; i < numPassengers; i++) {
+            passengers.add(unauthUsers.get(random.nextInt(unauthUsers.size())));
+        }
 
         List<Ticket> availableTickets = tickets.stream()
                 .filter(ticket -> ticket.getPurchase() == null).toList();
 
-        if (availableTickets.size() < 2) {
+        int totalTicketsNeeded = (numPassengers + 1) * (random.nextInt(3) + 1);
+
+        if (availableTickets.size() < totalTicketsNeeded) {
             log.error("Not enough available tickets to generate a purchase. Available tickets: {}", availableTickets.size());
             return;
         }
 
-        Set<Long> selectedTicketIds = new HashSet<>();
-        while (selectedTicketIds.size() < 2) {
-            Ticket randomTicket = availableTickets.get(random.nextInt(availableTickets.size()));
-            selectedTicketIds.add(randomTicket.getId());
-        }
-        List<Long> ticketIds = new ArrayList<>(selectedTicketIds);
+        List<Ticket> selectedTickets = availableTickets.subList(0, totalTicketsNeeded);
+        List<Long> ticketIds = selectedTickets.stream().map(Ticket::getId).toList();
 
         Purchase purchase = Purchase.builder()
                 .paymentMethod(faker.options().option(PaymentMethod.class))
                 .build();
 
-        User randomUser = users.get(random.nextInt(users.size()));
+        if (random.nextBoolean()) {
+            User randomUser = users.get(random.nextInt(users.size()));
+            purchaseService.createPurchase(purchase,
+                    ticketIds.stream()
+                            .mapToLong(Long::longValue)
+                            .toArray(),
+                    randomUser,
+                    passengers);
+        } else {
+            UnauthUser randomUnAuthUser = unauthUsers.get(random.nextInt(unauthUsers.size()));
 
-        /*purchaseService.createPurchase(purchase,
-                ticketIds.stream()
-                        .mapToLong(Long::longValue)
-                        .toArray(),
-                randomUser.getEmail());*/
+            if (passengers.contains(randomUnAuthUser)) {
+                log.error("Random unauthUser cannot be one of the passengers");
+                return;
+            }
+
+            purchaseService.createPurchaseByUnauthUser(purchase,
+                    ticketIds.stream()
+                            .mapToLong(Long::longValue)
+                            .toArray(),
+                    randomUnAuthUser,
+                    passengers);
+        }
     }
 
     public void generateAdditionalFavor() {
         List<Ticket> tickets = ticketService.getAll();
 
         for (Ticket ticket : tickets) {
-            if (ticket.getAdditionalFavors().isEmpty()) {
-                List<FlightFavor> flightFavors = new ArrayList<>();
+            List<FlightFavor> flightFavors = ticket.getFlight().getFlightFavors();
+            List<FlightFavor> selectedFavors = new ArrayList<>();
 
-                for (FlightFavor flightFavor : ticket.getFlight().getFlightFavors()) {
-                    if (random.nextBoolean()) {
-                        flightFavors.add(flightFavor);
-                    }
+            for (FlightFavor flightFavor : flightFavors) {
+                if (random.nextBoolean()) {
+                    selectedFavors.add(flightFavor);
                 }
+            }
 
-                List<AdditionalFavor> list = ticketService.createAdditionalFavorsByFlightFavor(ticket.getId(), flightFavors);
-
-                if (!flightFavors.isEmpty()) {
-                    try {
-                        ticketService.addAdditionalFavorsToTicket(ticket.getId(), list);
-                    } catch (IllegalArgumentException e) {
-                        additionalFavorRepository.deleteAll(list);
-                        log.error("Failed to add additional favors to the ticket with id {}. Duplicate favors detected. Error: {}", ticket.getId(), e.getMessage());
-                    }
-                }
+            if (!selectedFavors.isEmpty()) {
+                List<AdditionalFavor> additionalFavors = ticketService.createAdditionalFavorsByFlightFavor(ticket.getId(), selectedFavors);
+                ticketService.addAdditionalFavorsToTicket(ticket.getId(), additionalFavors);
+                log.info("Successfully added additional favors to the ticket with id {}", ticket.getId());
             }
         }
     }
@@ -165,26 +208,40 @@ public class GenerateService {
         flightService.add(randomFlight);
     }
 
-    public void generateRandomFlightFavor() {
-        List<Favor> favors = flightService.getAllFavors();
-        List<FlightFavor> flightFavors = new ArrayList<>();
+    public void generateRandomFlightFavors() {
+        List<Favor> favors = flightService.getAllFavors().stream()
+                .filter(x -> x.getFavorType() == FavorType.NON_REQUIRED)
+                .toList();
 
-        outerLoop:
-        for (int i = 0; i < 5; i++) {
-            Favor randomFavor = favors.get(random.nextInt(favors.size()));
+        List<Flight> flights = flightService.getAll();
 
-            for (FlightFavor flightFavor : flightFavors) {
-                if (Objects.equals(flightFavor.getName(), randomFavor.getName())) {
-                    break outerLoop;
-                }
-            }
-
-            flightFavors.add(FlightFavor.builder()
-                    .name(randomFavor.getName())
-                    .cost(randomFavor.getCost())
-                    .build());
+        if (flights.isEmpty()) {
+            log.error("No flights available for adding flight favors.");
+            return;
         }
 
-        flightService.addFlightFavorsToFlight(flightService.getAll().get(random.nextInt(flightService.getAll().size())).getId(), flightFavors);
+        for (Flight flight : flights) {
+            List<FlightFavor> flightFavors = new ArrayList<>();
+            Set<String> addedFavors = new HashSet<>();
+
+            for (int i = 0; i < 5; i++) {
+                Favor randomFavor = favors.get(random.nextInt(favors.size()));
+
+                if (addedFavors.contains(randomFavor.getName())) {
+                    continue;
+                }
+
+                flightFavors.add(FlightFavor.builder()
+                        .name(randomFavor.getName())
+                        .cost(randomFavor.getCost())
+                        .flight(flight)
+                        .build());
+                addedFavors.add(randomFavor.getName());
+            }
+
+            flightService.addFlightFavorsToFlight(flight.getId(), flightFavors);
+        }
+
+        log.info("Added flight favors to all flights successfully.");
     }
 }
