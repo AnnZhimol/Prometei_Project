@@ -45,6 +45,8 @@ public class AuthenticationService {
     public JwtAuthenticationResponse signUp(SignUpUser request) {
         User user = User.builder()
                 .email(request.getEmail())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
                 .role(UserRole.CLIENT)
                 .build();

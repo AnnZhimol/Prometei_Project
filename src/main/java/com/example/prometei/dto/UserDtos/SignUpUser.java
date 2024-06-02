@@ -26,4 +26,10 @@ public class SignUpUser implements Serializable {
     @Size(min = 10, message = "Пароль должен быть длиной не менее 10-ти символов")
     @NotBlank(message = "Пароль не может быть пустым")
     private String passwordConfirm;
+
+    @NotBlank(message = "Имя не может быть пустым")
+    private String firstName;
+
+    @NotBlank(message = "Фамилия не может быть пустой")
+    private String lastName;
 }

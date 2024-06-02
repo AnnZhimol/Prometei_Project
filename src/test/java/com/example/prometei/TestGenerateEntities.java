@@ -18,7 +18,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 @SpringBootTest
-public class GenerateEntities {
+public class TestGenerateEntities {
 
     @Autowired
     GenerateService generateService;
@@ -41,7 +41,7 @@ public class GenerateEntities {
 
     @Test
     public void UnAuthUserGenerate() {
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 8; i++) {
             generateService.generateUnAuthUser();
         }
     }
@@ -65,14 +65,14 @@ public class GenerateEntities {
 
     @Test
     public void UserGenerate() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 5; i++) {
             generateService.generateUser();
         }
     }
 
     @Test
     public void PurchaseGenerate() {
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 200; i++) {
             generateService.generatePurchase();
         }
     }

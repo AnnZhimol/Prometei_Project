@@ -4,6 +4,7 @@ import com.example.prometei.models.*;
 import com.example.prometei.models.enums.PaymentMethod;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.models.enums.UserGender;
+import com.example.prometei.services.StatisticService;
 import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import com.example.prometei.services.baseServices.TicketService;
@@ -35,6 +36,9 @@ public class TestServices {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    StatisticService statisticService;
 
     @Test
     void createUser() {

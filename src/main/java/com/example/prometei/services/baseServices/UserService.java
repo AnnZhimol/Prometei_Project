@@ -152,6 +152,8 @@ public class UserService implements BasicService<User> {
 
         entity.setId(id);
         entity.setRole(currentUser.getRole());
+        entity.setFirstName(currentUser.getFirstName());
+        entity.setLastName(currentUser.getLastName());
         entity.setPassword(currentUser.getPassword());
         entity.setEmail(currentUser.getEmail());
 

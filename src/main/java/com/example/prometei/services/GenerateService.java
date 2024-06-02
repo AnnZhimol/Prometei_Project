@@ -70,6 +70,8 @@ public class GenerateService {
         String password = faker.internet().password(10, 20);
         SignUpUser user = SignUpUser.builder()
                 .email(faker.internet().emailAddress())
+                .firstName(faker.name().firstName())
+                .lastName(faker.name().lastName())
                 .password(password)
                 .passwordConfirm(password)
                 .build();
@@ -79,8 +81,6 @@ public class GenerateService {
             User userTemp = userService.getByEmail(user.getEmail());
             userService.edit(userTemp.getId(), User.builder()
                     .gender(faker.options().option(UserGender.class))
-                    .firstName(faker.name().firstName())
-                    .lastName(faker.name().lastName())
                     .birthDate(faker.date().past(6480, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
                     .passport(faker.idNumber().valid())
                     .build());
