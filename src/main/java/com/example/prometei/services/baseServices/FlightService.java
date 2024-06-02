@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FlightService implements BasicService<Flight> {
@@ -361,9 +362,14 @@ public class FlightService implements BasicService<Flight> {
 
         Set<String> favorNames = new HashSet<>();
         List<Favor> allFavors = getAllFavors();
+
         List<Favor> nonRequiredFavors = allFavors.stream()
                 .filter(favor -> favor.getFavorType() == FavorType.NON_REQUIRED)
                 .toList();
+
+        Set<String> existingFavorNames = flightFavorRepository.findFlightFavorsByFlight(id).stream()
+                .map(FlightFavor::getName)
+                .collect(Collectors.toSet());
 
         for (FlightFavor flightFavor : flightFavors) {
             if (flightFavor == null) {
@@ -377,8 +383,9 @@ public class FlightService implements BasicService<Flight> {
             }
 
             boolean favorExist = false;
+
             for (Favor favor : nonRequiredFavors) {
-                if (Objects.equals(flightFavor.getName(), favor.getName())) {
+                if (Objects.equals(flightFavor.getName(), favor.getName()) && !existingFavorNames.contains(favor.getName())) {
                     favorExist = true;
                     flightFavor.setCost(favor.getCost());
                     flightFavor.setName(favor.getName());
@@ -394,18 +401,16 @@ public class FlightService implements BasicService<Flight> {
             flightFavor.setFlight(flight);
         }
 
-        flightFavorRepository.deleteAll(flightFavorRepository.findFlightFavorsByFlight(id));
-        flightFavorRepository.saveAll(flightFavors);
-
         List<FlightFavor> requiredFlightFavors = allFavors.stream()
-                .filter(favor -> favor.getFavorType() == FavorType.REQUIRED)
+                .filter(favor -> favor.getFavorType() == FavorType.REQUIRED && !existingFavorNames.contains(favor.getName()))
                 .map(favor -> FlightFavor.builder()
                         .name(favor.getName())
                         .cost(favor.getCost())
                         .flight(flight)
                         .build())
-                .toList();
+                .collect(Collectors.toList());
 
+        requiredFlightFavors.addAll(flightFavors);
         flightFavorRepository.saveAll(requiredFlightFavors);
 
         log.info("Adding flightFavors to the flight with id = {} was completed successfully", flight.getId());

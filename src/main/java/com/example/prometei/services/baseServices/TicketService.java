@@ -353,11 +353,13 @@ public class TicketService implements BasicService<Ticket> {
     }
 
     private boolean isDuplicate(Set<String> existingFavorNames, String name) {
-        return (existingFavorNames.contains("Выбор места в салоне") && name.contains("Выбор места в салоне")) ||
-                (existingFavorNames.contains("Интернет на борту (весь полет)") && name.contains("Интернет на борту (весь полет)")) ||
+        boolean condition = name.contains("Выбор места в салоне") || name.contains("Выбор места у окна") || name.contains("Выбор места с увеличенным пространством для ног");
+        return (existingFavorNames.contains("Выбор места в салоне") && condition) ||
+                (existingFavorNames.contains("Интернет на борту (1 час)") && name.contains("Интернет на борту (весь полет)")) ||
+                (existingFavorNames.contains("Интернет на борту (весь полет)") && (name.contains("Интернет на борту (весь полет)") || name.contains("Интернет на борту (1 час)") )) ||
                 (existingFavorNames.contains("Приоритетная посадка") && name.contains("Приоритетная посадка")) ||
-                (existingFavorNames.contains("Выбор места у окна") && name.contains("Выбор места у окна")) ||
-                (existingFavorNames.contains("Выбор места с увеличенным пространством для ног") && name.contains("Выбор места с увеличенным пространством для ног")) ||
+                (existingFavorNames.contains("Выбор места у окна") && condition) ||
+                (existingFavorNames.contains("Выбор места с увеличенным пространством для ног") && condition) ||
                 (existingFavorNames.contains("Возврат билета") && name.contains("Возврат билета"));
     }
 
@@ -400,6 +402,8 @@ public class TicketService implements BasicService<Ticket> {
                 log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates an existing favor or another favor in the list.", favorName);
                 throw new IllegalArgumentException("AdditionalFavor cannot duplicate existing or another favor in the list: " + favorName);
             }
+            
+            newFavorNames.add(favorName);
         }
 
         for (AdditionalFavor additionalFavor : additionalFavors) {

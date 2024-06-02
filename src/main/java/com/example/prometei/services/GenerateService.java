@@ -7,7 +7,6 @@ import com.example.prometei.models.enums.AirplaneModel;
 import com.example.prometei.models.enums.FavorType;
 import com.example.prometei.models.enums.PaymentMethod;
 import com.example.prometei.models.enums.UserGender;
-import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import com.example.prometei.services.baseServices.TicketService;
@@ -30,19 +29,16 @@ public class GenerateService {
     private final TicketService ticketService;
     private final UserService userService;
     private final PurchaseService purchaseService;
-
-    private final AdditionalFavorRepository additionalFavorRepository;
     private final Random random;
     private final AuthenticationService authenticationService;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
     private static final Faker faker = new Faker(new Locale("ru"));
 
-    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AdditionalFavorRepository additionalFavorRepository, AuthenticationService authenticationService){
+    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AuthenticationService authenticationService){
         this.flightService = flightService;
         this.ticketService = ticketService;
         this.userService = userService;
         this.purchaseService = purchaseService;
-        this.additionalFavorRepository = additionalFavorRepository;
         this.authenticationService = authenticationService;
         this.random = new Random();
     }
@@ -167,10 +163,22 @@ public class GenerateService {
         for (Ticket ticket : tickets) {
             List<FlightFavor> flightFavors = ticket.getFlight().getFlightFavors();
             List<FlightFavor> selectedFavors = new ArrayList<>();
+            Set<String> names = new HashSet<>();
 
             for (FlightFavor flightFavor : flightFavors) {
+                boolean condition = flightFavor.getName().contains("Выбор места в салоне") || flightFavor.getName().contains("Выбор места у окна") || flightFavor.getName().contains("Выбор места с увеличенным пространством для ног");
+
                 if (random.nextBoolean()) {
-                    selectedFavors.add(flightFavor);
+                    if (!((names.contains("Выбор места в салоне") && condition) ||
+                            (names.contains("Интернет на борту (1 час)") && flightFavor.getName().contains("Интернет на борту (весь полет)")) ||
+                            (names.contains("Интернет на борту (весь полет)") && (flightFavor.getName().contains("Интернет на борту (весь полет)") || flightFavor.getName().contains("Интернет на борту (1 час)"))) ||
+                            (names.contains("Приоритетная посадка") && flightFavor.getName().contains("Приоритетная посадка")) ||
+                            (names.contains("Выбор места у окна") && condition) ||
+                            (names.contains("Выбор места с увеличенным пространством для ног") && condition) ||
+                            (names.contains("Возврат билета") && flightFavor.getName().contains("Возврат билета")))) {
+                        selectedFavors.add(flightFavor);
+                        names.add(flightFavor.getName());
+                    }
                 }
             }
 

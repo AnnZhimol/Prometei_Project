@@ -1,6 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
+import com.example.prometei.dto.FavorDto.CreateAdditionalFavorDto;
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
@@ -112,15 +112,15 @@ public class TicketController {
      * Добавляет дополнительные услуги к билету. Старые услуги также сохраняются.
      *
      * @param ticketId идентификатор билета
-     * @param createFlightFavorDtos список DTO дополнительных услуг для создания
+     * @param createAdditionalFavorDtos список DTO дополнительных услуг для создания
      */
     @Transactional
     @PostMapping("/addAdditionalFavors")
     public void addAdditionalFavors(@RequestParam String ticketId,
-                                    @RequestBody List<CreateFlightFavorDto> createFlightFavorDtos) {
+                                    @RequestBody List<CreateAdditionalFavorDto> createAdditionalFavorDtos) {
         List<FlightFavor> listFavors = new ArrayList<>();
 
-        for(CreateFlightFavorDto createFlightFavorDto : createFlightFavorDtos) {
+        for(CreateAdditionalFavorDto createFlightFavorDto : createAdditionalFavorDtos) {
             listFavors.add(createFlightFavorDto.dtoToEntity());
         }
 
