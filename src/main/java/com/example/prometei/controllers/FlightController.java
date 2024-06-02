@@ -45,7 +45,7 @@ public class FlightController {
     public ResponseEntity<DataGenetic> getDataForSearch(@RequestParam String departurePoint,
                                                         @RequestParam String destinationPoint,
                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
+                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate returnDate,
                                                         @RequestParam Integer countBusiness,
                                                         @RequestParam Integer countEconomic) {
         return new ResponseEntity<>(new DataGenetic(departurePoint,

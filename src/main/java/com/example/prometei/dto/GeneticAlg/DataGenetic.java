@@ -9,8 +9,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class DataGenetic {
-    private String from;
-    private String to;
+    private String fromPoint;
+    private String toPoint;
     private Integer countBusiness;
     private Integer countEconomic;
     private LocalDate departureDate;
