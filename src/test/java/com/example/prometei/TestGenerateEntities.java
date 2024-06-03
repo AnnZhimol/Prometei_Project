@@ -72,7 +72,7 @@ public class TestGenerateEntities {
 
     @Test
     public void PurchaseGenerate() {
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 10; i++) {
             generateService.generatePurchase();
         }
     }

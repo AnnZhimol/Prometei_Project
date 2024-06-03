@@ -1,6 +1,7 @@
 package com.example.prometei.dto.UserDtos;
 
 import com.example.prometei.models.UnauthUser;
+import com.example.prometei.models.User;
 import com.example.prometei.models.enums.UserGender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -10,12 +11,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-/**
- * DTO for {@link com.example.prometei.models.UnauthUser}
- */
 @Data
 @NoArgsConstructor
-public class UnAuthUserDto implements Serializable {
+public class PassengerDto implements Serializable {
     @Size(min = 5, max = 256)
     @Email
     private String email;
@@ -29,8 +27,22 @@ public class UnAuthUserDto implements Serializable {
     private String internationalPassportNum;
     private LocalDate internationalPassportDate;
 
-    public UnauthUser dtoToEntity() {
+    public UnauthUser dtoToUnAuth() {
         return UnauthUser.builder()
+                .email(this.getEmail())
+                .birthDate(this.getBirthDate())
+                .firstName(this.getFirstName())
+                .lastName(this.getLastName())
+                .gender(this.getGender())
+                .internationalPassportNum(this.getInternationalPassportNum())
+                .internationalPassportDate(this.getInternationalPassportDate())
+                .passport(this.getPassport())
+                .phoneNumber(this.getPhoneNumber())
+                .build();
+    }
+
+    public User dtoToUser() {
+        return User.builder()
                 .email(this.getEmail())
                 .birthDate(this.getBirthDate())
                 .firstName(this.getFirstName())

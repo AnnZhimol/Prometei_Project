@@ -235,7 +235,7 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findAll();
     }
 
-    public List<Pair<Flight, Flight>> getSearchResult(String departurePoint,
+    public List<Pair<List<Flight>, List<Flight>>> getSearchResult(String departurePoint,
                                         String destinationPoint,
                                         LocalDate departureDate,
                                         @Nullable LocalDate returnDate,
@@ -245,35 +245,34 @@ public class FlightService implements BasicService<Flight> {
         log.info("Get list of sorted flights");
         List<Flight> flights;
 
+
         if (!withPet) {
             flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic);
         } else {
             flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic).stream()
                     .filter(x -> x.getFlightFavors().stream()
                             .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
-                                    Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
+                                               Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
                     .toList();
         }
 
-        List<Pair<Flight, Flight>> combinations = new ArrayList<>();
+        List<Pair<List<Flight>, List<Flight>>> result = new ArrayList<>();
 
         if (returnDate != null) {
-            for (Flight flight1 : flights) {
-                for (Flight flight2 : flights) {
-                    if (!flight1.equals(flight2) &&
-                            flight1.getDeparturePoint().equals(departurePoint) &&
-                            flight1.getDestinationPoint().equals(flight2.getDeparturePoint())) {
-                        combinations.add(new Pair<>(flight1, flight2));
-                    }
-                }
-            }
+            List<Flight> departureFlights = flights.stream()
+                    .filter(flight -> flight.getDeparturePoint().equals(departurePoint))
+                    .toList();
+
+            List<Flight> returnFlights = flights.stream()
+                    .filter(flight -> flight.getDeparturePoint().equals(destinationPoint))
+                    .toList();
+
+            result.add(new Pair<>(departureFlights, returnFlights));
         } else {
-            for (Flight flight1 : flights) {
-                combinations.add(new Pair<>(flight1, null));
-            }
+            result.add(new Pair<>(flights, Collections.emptyList()));
         }
 
-        return combinations;
+        return result;
     }
 
     public List<Flight> getFlightData(LocalDate departureDate,
