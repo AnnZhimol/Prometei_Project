@@ -15,6 +15,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "WHERE t.flight.id = :id ")
     List<Ticket> findTicketsByFlight(Long id);
 
+    @Deprecated
     @Query("SELECT t FROM Ticket t " +
             "WHERE t.flight.departurePoint = :departurePoint " +
             "AND t.flight.destinationPoint = :destinationPoint " +

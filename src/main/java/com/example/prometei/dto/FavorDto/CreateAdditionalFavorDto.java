@@ -4,6 +4,8 @@ import com.example.prometei.models.FlightFavor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 import static com.example.prometei.utils.CipherUtil.decryptId;
 
 /**
@@ -11,7 +13,7 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
  */
 @Data
 @NoArgsConstructor
-public class CreateAdditionalFavorDto {
+public class CreateAdditionalFavorDto implements Serializable {
     private String id;
     private String name;
     private Double cost;

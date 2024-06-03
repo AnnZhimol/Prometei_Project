@@ -12,13 +12,13 @@ import java.util.List;
 @Repository
 public interface FlightRepository extends JpaRepository<Flight, Long> {
     @Query("SELECT f FROM Flight f " +
-            "WHERE (f.departurePoint = :departurePoint " +
-            "AND f.destinationPoint = :destinationPoint " +
+            "WHERE (LOCATE(:departurePoint, f.departurePoint) > 0 " +
+            "AND LOCATE(:destinationPoint, f.destinationPoint) > 0 " +
             "AND f.departureDate = :departureDate " +
             "AND f.economSeats >= :countEconomic " +
             "AND f.businessSeats >= :countBusiness) " +
-            "OR (f.departurePoint = :destinationPoint " +
-            "AND f.destinationPoint = :departurePoint " +
+            "OR (LOCATE(:destinationPoint, f.departurePoint) > 0 " +
+            "AND LOCATE(:departurePoint, f.destinationPoint) > 0 " +
             "AND f.departureDate = :returnDate " +
             "AND f.economSeats >= :countEconomic " +
             "AND f.businessSeats >= :countBusiness)")

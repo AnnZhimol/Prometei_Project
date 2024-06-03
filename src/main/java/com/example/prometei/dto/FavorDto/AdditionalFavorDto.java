@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 @Data
 @NoArgsConstructor
-public class AdditionalFavorDto  implements Serializable {
+public class AdditionalFavorDto implements Serializable {
     private long id;
     private String name;
     private Double cost;

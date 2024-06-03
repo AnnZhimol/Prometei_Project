@@ -64,7 +64,7 @@ public class FlightController {
      * Возвращает информацию о рейсе по заданному идентификатору.
      *
      * @param flightId зашифрованный идентификатор рейса
-     * @return ResponseEntity с объектом FlightDto, содержащим данные о рейсе, или статусом NO_CONTENT, если рейс не найден
+     * @return ResponseEntity с объектом FlightClientViewDto, содержащим данные о рейсе, или статусом NO_CONTENT, если рейс не найден
      */
     @GetMapping("/get")
     public ResponseEntity<FlightDto> getFlight(@RequestParam String flightId) {
@@ -96,7 +96,7 @@ public class FlightController {
      * @return список пар полетов, где destinationPoint одного полета совпадает с departurePoint другого полета
      */
     @GetMapping("/searchFlight")
-    public ResponseEntity<List<SearchViewDto>> searchFlights(@RequestParam String departurePoint,
+    public ResponseEntity<List<SearchDto>> searchFlights(@RequestParam String departurePoint,
                                                              @RequestParam String destinationPoint,
                                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
                                                              @RequestParam @Nullable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
@@ -105,15 +105,15 @@ public class FlightController {
                                                              @RequestParam Boolean withPet,
                                                              @RequestParam Boolean useGeneticAlg) {
         if (!useGeneticAlg) {
-            List<SearchViewDto> flightPairs = flightService.getSearchResult(departurePoint,
+            List<SearchDto> flightPairs = flightService.getSearchResult(departurePoint,
                     destinationPoint,
                     departureDate,
                     returnDate,
                     countBusiness,
                     countEconomic,
-                    withPet).stream().map(SearchViewDto::new).toList();
+                    withPet).stream().map(SearchDto::new).toList();
 
-            List<SearchViewDto> result = new ArrayList<>(flightPairs);
+            List<SearchDto> result = new ArrayList<>(flightPairs);
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
@@ -125,7 +125,7 @@ public class FlightController {
     /**
      * Возвращает список всех рейсов.
      *
-     * @return ResponseEntity со списком объектов FlightDto и статусом OK
+     * @return ResponseEntity со списком объектов FlightClientViewDto и статусом OK
      */
     @GetMapping("/all")
     public ResponseEntity<List<FlightDto>> getAllFlights() {

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.*;
 
 /**
@@ -16,7 +17,7 @@ import java.time.*;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class CreateFlightDto {
+public class CreateFlightDto implements Serializable {
     private String departurePoint;
     private String destinationPoint;
     private LocalTime departureTime;

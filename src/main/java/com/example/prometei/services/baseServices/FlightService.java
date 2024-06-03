@@ -245,7 +245,6 @@ public class FlightService implements BasicService<Flight> {
         log.info("Get list of sorted flights");
         List<Flight> flights;
 
-
         if (!withPet) {
             flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic);
         } else {
