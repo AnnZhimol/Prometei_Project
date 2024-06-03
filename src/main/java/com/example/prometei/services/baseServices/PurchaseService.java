@@ -1,5 +1,6 @@
 package com.example.prometei.services.baseServices;
 
+import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.PurchaseRepository;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.prometei.utils.CipherUtil.decryptId;
 
 @Service
 public class PurchaseService implements BasicService<Purchase> {
@@ -45,38 +48,39 @@ public class PurchaseService implements BasicService<Purchase> {
         throw new NullPointerException();
     }
 
-    /**
-     * Создает покупку в базе данных с авторизированным пользователем и списком билетов.
-     *
-     * @param purchase объект покупки для добавления
-     * @param ticketIds перечень билетов
-     * @param user пользователь
-     */
-    @Transactional
-    public void createPurchase(Purchase purchase,
-                               long[] ticketIds,
-                               User user,
-                               @Nullable List<UnauthUser> passengers) {
-        if (purchase == null) {
-            log.error("Error create purchase. Purchase = null");
-            throw new NullPointerException();
+    private long[] decryptTicketIds(String[] ticketIds) {
+        List<Long> ids = new ArrayList<>();
+
+        for (String id : ticketIds) {
+            ids.add(decryptId(id));
         }
 
-        if (ticketIds == null) {
-            log.error("Error create purchase. ticketIds = null");
-            throw new NullPointerException();
+        long[] result = new long[ids.size()];
+        for (int i = 0; i < ids.size(); i++) {
+            result[i] = ids.get(i);
         }
 
-        if (user == null) {
-            log.error("Error create purchase. userEmail = null");
-            throw new NullPointerException();
+        return result;
+    }
+
+    private List<UnauthUser> listPassengerDtoToUnAuthUser(List<PassengerDto> passengers) {
+        List<UnauthUser> list = new ArrayList<>();
+
+        for (PassengerDto dto : passengers) {
+            list.add(dto.dtoToUnAuth());
         }
 
+        return list;
+    }
+
+    private List<Ticket> getTicketsAndEditPurchase(Purchase purchase,
+                                                   String[] ticketIds) {
         List<Ticket> tickets = new ArrayList<>();
+
         purchase = purchaseRepository.save(purchase);
         purchase.setCreateDate(LocalDateTime.now());
 
-        for (long id : ticketIds) {
+        for (long id : decryptTicketIds(ticketIds)) {
             Ticket ticket = ticketService.getById(id);
 
             if (ticket.getPurchase() == null) {
@@ -94,9 +98,41 @@ public class PurchaseService implements BasicService<Purchase> {
             }
         }
 
+        return tickets;
+    }
+
+    /**
+     * Создает покупку в базе данных с авторизированным пользователем и списком билетов.
+     *
+     * @param purchase объект покупки для добавления
+     * @param ticketIds перечень билетов
+     * @param user пользователь
+     */
+    @Transactional
+    public void createPurchase(Purchase purchase,
+                               String[] ticketIds,
+                               User user,
+                               @Nullable List<PassengerDto> passengers) {
+        if (purchase == null) {
+            log.error("Error create purchase. Purchase = null");
+            throw new NullPointerException();
+        }
+
+        if (ticketIds == null) {
+            log.error("Error create purchase. ticketIds = null");
+            throw new NullPointerException();
+        }
+
+        if (user == null) {
+            log.error("Error create purchase. userEmail = null");
+            throw new NullPointerException();
+        }
+
+        List<Ticket> tickets = getTicketsAndEditPurchase(purchase,ticketIds);
         userService.edit(userService.getByEmail(user.getEmail()).getId(), user);
 
         if (passengers != null) {
+            List<UnauthUser> unauthUserList = listPassengerDtoToUnAuthUser(passengers);
             int totalParticipants = passengers.size() + 1;
             int groupSize = tickets.size() / totalParticipants;
 
@@ -113,7 +149,7 @@ public class PurchaseService implements BasicService<Purchase> {
                     int passengerIndex = (i / groupSize) - 1;
 
                     if (passengerIndex < passengers.size()) {
-                        UnauthUser passenger = passengers.get(passengerIndex);
+                        UnauthUser passenger = unauthUserList.get(passengerIndex);
                         userService.add(passenger);
                         ticket.setUnauthUser(passenger);
                     } else {
@@ -143,9 +179,9 @@ public class PurchaseService implements BasicService<Purchase> {
      */
     @Transactional
     public void createPurchaseByUnauthUser(Purchase purchase,
-                                           long[] ticketIds,
+                                           String[] ticketIds,
                                            UnauthUser unauthUser,
-                                           @Nullable List<UnauthUser> passengers) {
+                                           @Nullable List<PassengerDto> passengers) {
         if (purchase == null) {
             log.error("Error create purchase. Purchase = null");
             throw new NullPointerException();
@@ -161,31 +197,12 @@ public class PurchaseService implements BasicService<Purchase> {
             throw new NullPointerException();
         }
 
-        List<Ticket> tickets = new ArrayList<>();
-        purchase = purchaseRepository.save(purchase);
-        purchase.setCreateDate(LocalDateTime.now());
-
-        for (long id : ticketIds) {
-            Ticket ticket = ticketService.getById(id);
-
-            if (ticket.getPurchase() == null) {
-                tickets.add(ticket);
-                Flight flight = ticket.getFlight();
-
-                if (ticket.getTicketType() == TicketType.BUSINESS) {
-                    flight.setBusinessSeats(flight.getBusinessSeats() - 1);
-                } else if (ticket.getTicketType() == TicketType.ECONOMIC) {
-                    flight.setEconomSeats(flight.getEconomSeats() - 1);
-                }
-            } else {
-                log.error("Error create purchase. Ticket already bought.");
-                throw new IllegalArgumentException("Ticket already bought.");
-            }
-        }
+        List<Ticket> tickets = getTicketsAndEditPurchase(purchase, ticketIds);
 
         userService.add(unauthUser);
 
         if (passengers != null) {
+            List<UnauthUser> unauthUserList = listPassengerDtoToUnAuthUser(passengers);
             int totalParticipants = passengers.size() + 1;
             int groupSize = tickets.size() / totalParticipants;
 
@@ -202,7 +219,7 @@ public class PurchaseService implements BasicService<Purchase> {
                     int passengerIndex = (i / groupSize) - 1;
 
                     if (passengerIndex < passengers.size()) {
-                        UnauthUser passenger = passengers.get(passengerIndex);
+                        UnauthUser passenger = unauthUserList.get(passengerIndex);
                         userService.add(passenger);
                         ticket.setUnauthUser(passenger);
                     } else {

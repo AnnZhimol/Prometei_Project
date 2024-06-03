@@ -1,6 +1,7 @@
 package com.example.prometei.services;
 
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
+import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.dto.UserDtos.SignUpUser;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
@@ -22,6 +23,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.example.prometei.utils.CipherUtil.encryptId;
 
 @Service
 public class GenerateService {
@@ -102,6 +105,41 @@ public class GenerateService {
         userService.add(user);
     }
 
+    private String[] encryptTicketIds(List<Long> ticketIds) {
+        List<String> ids = new ArrayList<>();
+
+        for (Long id : ticketIds) {
+            ids.add(encryptId(id));
+        }
+
+        String[] result = new String[ids.size()];
+        for (int i = 0; i < ids.size(); i++) {
+            result[i] = ids.get(i);
+        }
+
+        return result;
+    }
+
+    private List<PassengerDto> listEntityToDto(List<UnauthUser> list) {
+        List<PassengerDto> passengerDtos = new ArrayList<>();
+
+        for (UnauthUser user : list) {
+            passengerDtos.add(PassengerDto.builder()
+                                            .internationalPassportNum(user.getInternationalPassportNum())
+                                            .gender(user.getGender())
+                                            .internationalPassportDate(user.getInternationalPassportDate())
+                                            .lastName(user.getLastName())
+                                            .phoneNumber(user.getPhoneNumber())
+                                            .firstName(user.getFirstName())
+                                            .email(user.getEmail())
+                                            .birthDate(user.getBirthDate())
+                                            .passport(user.getPassport())
+                                            .build());
+        }
+
+        return passengerDtos;
+    }
+
     @Transactional
     public void generatePurchase() {
         List<User> users = userService.getAll();
@@ -135,11 +173,9 @@ public class GenerateService {
         if (random.nextBoolean()) {
             User randomUser = users.get(random.nextInt(users.size()));
             purchaseService.createPurchase(purchase,
-                    ticketIds.stream()
-                            .mapToLong(Long::longValue)
-                            .toArray(),
+                    encryptTicketIds(ticketIds),
                     randomUser,
-                    passengers);
+                    listEntityToDto(passengers));
         } else {
             UnauthUser randomUnAuthUser = unauthUsers.get(random.nextInt(unauthUsers.size()));
 
@@ -149,11 +185,9 @@ public class GenerateService {
             }
 
             purchaseService.createPurchaseByUnauthUser(purchase,
-                    ticketIds.stream()
-                            .mapToLong(Long::longValue)
-                            .toArray(),
+                    encryptTicketIds(ticketIds),
                     randomUnAuthUser,
-                    passengers);
+                    listEntityToDto(passengers));
         }
     }
 

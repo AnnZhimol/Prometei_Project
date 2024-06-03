@@ -70,9 +70,9 @@ public class PurchaseController {
     @PostMapping("/createAuthUser")
     public void addPurchase(@RequestBody CreatePurchaseDto purchaseDto) {
         purchaseService.createPurchase(purchaseDto.dtoToEntity(),
-                                       purchaseDto.decryptTicketIds(),
+                                       purchaseDto.getTicketIds(),
                                        purchaseDto.getUser().dtoToUser(),
-                                       purchaseDto.getPassengers() == null ? null : purchaseDto.listDtoToEntity());
+                                       purchaseDto.getPassengers() == null ? null : purchaseDto.getPassengers());
     }
 
     /**
@@ -83,9 +83,9 @@ public class PurchaseController {
     @PostMapping("/createUnAuthUser")
     public void addPurchaseByUnauthUser(@RequestBody CreatePurchaseDto purchaseDto) {
         purchaseService.createPurchaseByUnauthUser(purchaseDto.dtoToEntity(),
-                                                   purchaseDto.decryptTicketIds(),
+                                                   purchaseDto.getTicketIds(),
                                                    purchaseDto.getUnauthUser().dtoToUnAuth(),
-                                                   purchaseDto.getPassengers() == null ? null : purchaseDto.listDtoToEntity());
+                                                   purchaseDto.getPassengers() == null ? null : purchaseDto.getPassengers());
     }
 
     @Deprecated

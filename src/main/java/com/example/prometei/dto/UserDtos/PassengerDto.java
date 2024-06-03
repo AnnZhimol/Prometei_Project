@@ -5,6 +5,8 @@ import com.example.prometei.models.User;
 import com.example.prometei.models.enums.UserGender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +14,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class PassengerDto implements Serializable {
     @Size(min = 5, max = 256)
