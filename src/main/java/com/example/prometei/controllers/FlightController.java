@@ -97,21 +97,29 @@ public class FlightController {
      */
     @GetMapping("/searchFlight")
     public ResponseEntity<List<SearchViewDto>> searchFlights(@RequestParam String departurePoint,
-                                                                          @RequestParam String destinationPoint,
-                                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-                                                                          @RequestParam @Nullable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
-                                                                          @RequestParam Integer countBusiness,
-                                                                          @RequestParam Integer countEconomic) {
-        List<SearchViewDto> flightPairs = flightService.getSearchResult(departurePoint,
-                                                                        destinationPoint,
-                                                                        departureDate,
-                                                                        returnDate,
-                                                                        countBusiness,
-                                                                        countEconomic).stream().map(SearchViewDto::new).toList();
+                                                             @RequestParam String destinationPoint,
+                                                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+                                                             @RequestParam @Nullable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
+                                                             @RequestParam Integer countBusiness,
+                                                             @RequestParam Integer countEconomic,
+                                                             @RequestParam Boolean withPet,
+                                                             @RequestParam Boolean useGeneticAlg) {
+        if (!useGeneticAlg) {
+            List<SearchViewDto> flightPairs = flightService.getSearchResult(departurePoint,
+                    destinationPoint,
+                    departureDate,
+                    returnDate,
+                    countBusiness,
+                    countEconomic,
+                    withPet).stream().map(SearchViewDto::new).toList();
 
-        List<SearchViewDto> result = new ArrayList<>(flightPairs);
+            List<SearchViewDto> result = new ArrayList<>(flightPairs);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else {
+            //TODO
+            throw new NullPointerException("Function not exist");
+        }
     }
 
     /**

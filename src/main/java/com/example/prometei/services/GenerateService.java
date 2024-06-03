@@ -207,8 +207,6 @@ public class GenerateService {
                 .destinationPoint(destination.getLabel())
                 .departureTime(departureTime)
                 .departureDate(departureDate)
-                .economyCost(1000 + (random.nextDouble() * 4000))
-                .businessCost(5000 + (random.nextDouble() * 10000))
                 .airplaneNumber(random.nextInt(9999))
                 .airplaneModel(random.nextBoolean() ? AirplaneModel.AIRBUS320 : AirplaneModel.AIRBUS330)
                 .build().dtoToEntity();

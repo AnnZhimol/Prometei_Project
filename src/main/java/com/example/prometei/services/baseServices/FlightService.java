@@ -181,7 +181,10 @@ public class FlightService implements BasicService<Flight> {
             throw new IllegalArgumentException();
         }
 
-        entity.setDistance(getDistance(new Pair<>(departureAirport.getLatitude(), departureAirport.getLongitude()),new Pair<>(destinationAirport.getLatitude(), destinationAirport.getLongitude())));
+        double scale = Math.pow(10, 2);
+        double distance = getDistance(new Pair<>(departureAirport.getLatitude(), departureAirport.getLongitude()),new Pair<>(destinationAirport.getLatitude(), destinationAirport.getLongitude()));
+
+        entity.setDistance(Math.ceil(distance * scale) / scale);
         entity.setFlightTime(entity.getDistance() / 450.0);
 
         entity.setDestinationTime(departure
@@ -197,6 +200,9 @@ public class FlightService implements BasicService<Flight> {
                 .plusHours(Integer.parseInt(
                         destinationAirport.getTimezone()
                 )).toLocalDate());
+
+        entity.setEconomyCost(Math.ceil((distance * 10) * scale) / scale);
+        entity.setBusinessCost(Math.ceil((distance * 30) * scale) / scale);
 
         log.info("Search Airport complete. Airport was found.");
     }
@@ -234,9 +240,21 @@ public class FlightService implements BasicService<Flight> {
                                         LocalDate departureDate,
                                         @Nullable LocalDate returnDate,
                                         Integer countBusiness,
-                                        Integer countEconomic) {
+                                        Integer countEconomic,
+                                        Boolean withPet) {
         log.info("Get list of sorted flights");
-        List<Flight> flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic);
+        List<Flight> flights;
+
+        if (!withPet) {
+            flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic);
+        } else {
+            flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic).stream()
+                    .filter(x -> x.getFlightFavors().stream()
+                            .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
+                                    Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
+                    .toList();
+        }
+
         List<Pair<Flight, Flight>> combinations = new ArrayList<>();
 
         if (returnDate != null) {
