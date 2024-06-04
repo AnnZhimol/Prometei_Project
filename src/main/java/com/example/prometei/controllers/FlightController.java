@@ -8,6 +8,7 @@ import com.example.prometei.dto.GeneticAlg.FlightGeneticDto;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
+import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.FlightService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -25,9 +26,11 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 @RequestMapping("/flight")
 public class FlightController {
     private final FlightService flightService;
+    private final TransformDataService transformDataService;
 
-    public FlightController(FlightService flightService) {
+    public FlightController(FlightService flightService, TransformDataService transformDataService) {
         this.flightService = flightService;
+        this.transformDataService = transformDataService;
     }
 
     /**
@@ -71,7 +74,7 @@ public class FlightController {
         Flight flight = flightService.getById(decryptId(flightId));
         return flight == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(new FlightDto(flight), HttpStatus.OK);
+                : new ResponseEntity<>(transformDataService.transformToFlightDto(flight), HttpStatus.OK);
     }
 
     /**
@@ -111,7 +114,7 @@ public class FlightController {
                     returnDate,
                     countBusiness,
                     countEconomic,
-                    withPet).stream().map(SearchDto::new).toList();
+                    withPet).stream().map(transformDataService::transformToSearchDto).toList();
 
             List<SearchDto> result = new ArrayList<>(flightPairs);
 
@@ -131,7 +134,7 @@ public class FlightController {
     public ResponseEntity<List<FlightDto>> getAllFlights() {
         return new ResponseEntity<>(flightService.getAll()
                                     .stream()
-                                    .map(FlightDto::new)
+                                    .map(transformDataService::transformToFlightDto)
                                     .toList(),
                                     HttpStatus.OK);
     }
@@ -158,7 +161,7 @@ public class FlightController {
      */
     @PostMapping("/create")
     public void addFlight(@RequestBody CreateFlightDto createFlightDto) {
-        flightService.add(createFlightDto.dtoToEntity());
+        flightService.add(transformDataService.transformToFlight(createFlightDto));
     }
 
     /**
@@ -190,12 +193,6 @@ public class FlightController {
     @PatchMapping("/edit")
     public void editFlight(@RequestParam String flightId,
                            @RequestBody CreateFlightDto createFlightDto) {
-        flightService.edit(decryptId(flightId), createFlightDto.dtoToEntity());
-    }
-
-    @Deprecated
-    @DeleteMapping("/delete")
-    public void deleteFlight(@RequestBody CreateFlightDto createFlightDto) {
-        flightService.delete(createFlightDto.dtoToEntity());
+        flightService.edit(decryptId(flightId), transformDataService.transformToFlight(createFlightDto));
     }
 }

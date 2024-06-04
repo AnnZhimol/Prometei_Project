@@ -31,15 +31,17 @@ public class GenerateService {
     private final PurchaseService purchaseService;
     private final Random random;
     private final AuthenticationService authenticationService;
+    private final TransformDataService transformDataService;
     private final Logger log = LoggerFactory.getLogger(FlightService.class);
     private static final Faker faker = new Faker(new Locale("ru"));
 
-    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AuthenticationService authenticationService){
+    public GenerateService(FlightService flightService, TicketService ticketService, UserService userService, PurchaseService purchaseService, AuthenticationService authenticationService, TransformDataService transformDataService){
         this.flightService = flightService;
         this.ticketService = ticketService;
         this.userService = userService;
         this.purchaseService = purchaseService;
         this.authenticationService = authenticationService;
+        this.transformDataService = transformDataService;
         this.random = new Random();
     }
 
@@ -198,14 +200,14 @@ public class GenerateService {
         LocalTime departureTime = LocalTime.of(random.nextInt(24), random.nextInt(60));
         LocalDate departureDate = LocalDate.now().plusDays(random.nextInt(120));
 
-        Flight randomFlight = CreateFlightDto.builder()
+        Flight randomFlight = transformDataService.transformToFlight(CreateFlightDto.builder()
                 .departurePoint(departure.getLabel())
                 .destinationPoint(destination.getLabel())
                 .departureTime(departureTime)
                 .departureDate(departureDate)
                 .airplaneNumber(random.nextInt(9999))
                 .airplaneModel(random.nextBoolean() ? AirplaneModel.AIRBUS320 : AirplaneModel.AIRBUS330)
-                .build().dtoToEntity();
+                .build());
 
         flightService.add(randomFlight);
     }
