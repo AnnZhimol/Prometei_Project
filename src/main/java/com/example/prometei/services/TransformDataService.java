@@ -6,6 +6,7 @@ import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.FlightDtos.FlightDto;
 import com.example.prometei.dto.FlightDtos.SearchDto;
+import com.example.prometei.dto.GeneticAlg.FlightGeneticDto;
 import com.example.prometei.dto.PurchaseDtos.CreatePurchaseDto;
 import com.example.prometei.dto.PurchaseDtos.PurchaseDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
@@ -53,6 +54,19 @@ public class TransformDataService {
 
     private Integer FlightTimeParser(Double duration) {
         return (int) Math.round(duration * 60);
+    }
+
+    public FlightGeneticDto transformToFlightGeneticDto(Flight flight) {
+        return FlightGeneticDto.builder()
+                .id(flight.getId())
+                .destinationPoint(flight.getDestinationPoint())
+                .departurePoint(flight.getDeparturePoint())
+                .destinationTime(flight.getDestinationDate().atTime(flight.getDestinationTime()))
+                .departureTime(flight.getDepartureDate().atTime(flight.getDepartureTime()))
+                .distance(flight.getDistance())
+                .countBusiness(flight.getBusinessSeats())
+                .countEconomic(flight.getEconomSeats())
+                .build();
     }
 
     public AdditionalFavorDto transformToAdditionalFavorDto(AdditionalFavor additionalFavor) {

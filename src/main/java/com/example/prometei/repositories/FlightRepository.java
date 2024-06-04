@@ -31,10 +31,33 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
     @Query("SELECT f FROM Flight f " +
             "WHERE f.departureDate >= :departureDate " +
+            "AND f.departureDate <= :departureMaxDate " +
+            "AND f.departureDate <= :returnDate " +
             "AND f.economSeats >= :countEconomic " +
             "AND f.businessSeats >= :countBusiness")
-    List<Flight> findFlightsByInput(LocalDate departureDate,
+    List<Flight> findFlightsToWithReturn(LocalDate departureDate,
+                                    LocalDate departureMaxDate,
+                                    LocalDate returnDate,
                                     Integer countBusiness,
                                     Integer countEconomic);
 
+    @Query("SELECT f FROM Flight f " +
+            "WHERE f.departureDate >= :departureDate " +
+            "AND f.departureDate <= :departureMaxDate " +
+            "AND f.economSeats >= :countEconomic " +
+            "AND f.businessSeats >= :countBusiness")
+    List<Flight> findFlightsToWithoutReturn(LocalDate departureDate,
+                                    LocalDate departureMaxDate,
+                                    Integer countBusiness,
+                                    Integer countEconomic);
+
+    @Query("SELECT f FROM Flight f " +
+            "WHERE f.departureDate >= :returnDate " +
+            "AND f.departureDate <= :returnMaxDate " +
+            "AND f.economSeats >= :countEconomic " +
+            "AND f.businessSeats >= :countBusiness")
+    List<Flight> findFlightsFromWithReturn(LocalDate returnDate,
+                                           LocalDate returnMaxDate,
+                                           Integer countBusiness,
+                                           Integer countEconomic);
 }

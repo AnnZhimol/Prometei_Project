@@ -15,5 +15,6 @@ public class DataGenetic {
     private Integer countEconomic;
     private LocalDate departureDate;
     private LocalDate returnDate;
-    private List<FlightGeneticDto> flights;
+    private List<FlightGeneticDto> flightsTo;
+    private List<FlightGeneticDto> flightsBack;
 }

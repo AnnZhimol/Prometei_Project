@@ -198,7 +198,7 @@ public class GenerateService {
         } while (departure.equals(destination));
 
         LocalTime departureTime = LocalTime.of(random.nextInt(24), random.nextInt(60));
-        LocalDate departureDate = LocalDate.now().plusDays(random.nextInt(120));
+        LocalDate departureDate = LocalDate.now().plusDays(random.nextInt(30));
 
         Flight randomFlight = transformDataService.transformToFlight(CreateFlightDto.builder()
                 .departurePoint(departure.getLabel())

@@ -274,11 +274,57 @@ public class FlightService implements BasicService<Flight> {
         return result;
     }
 
-    public List<Flight> getFlightData(LocalDate departureDate,
-                                      Integer countBusiness,
-                                      Integer countEconomic) {
+    public List<Flight> getDataGeneticTo(LocalDate departureDate,
+                                         @Nullable LocalDate returnDate,
+                                         Integer countBusiness,
+                                         Integer countEconomic,
+                                         Boolean withPet) {
         log.info("Get list of data flights");
-        return flightRepository.findFlightsByInput(departureDate, countBusiness, countEconomic);
+        if (!withPet) {
+            if (returnDate != null) {
+                return flightRepository.findFlightsToWithReturn(departureDate, departureDate.plusDays(3), returnDate, countBusiness, countEconomic);
+            } else {
+                return flightRepository.findFlightsToWithoutReturn(departureDate, departureDate.plusDays(3), countBusiness, countEconomic);
+            }
+        } else {
+            if (returnDate != null) {
+                return flightRepository.findFlightsToWithReturn(departureDate, departureDate.plusDays(3), returnDate, countBusiness, countEconomic).stream()
+                        .filter(x -> x.getFlightFavors().stream()
+                                .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
+                                        Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
+                        .toList();
+            } else {
+                return flightRepository.findFlightsToWithoutReturn(departureDate, departureDate.plusDays(3), countBusiness, countEconomic).stream()
+                        .filter(x -> x.getFlightFavors().stream()
+                                .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
+                                        Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
+                        .toList();
+            }
+        }
+    }
+
+    public List<Flight> getDataGeneticFrom(@Nullable LocalDate returnDate,
+                                           Integer countBusiness,
+                                           Integer countEconomic,
+                                           Boolean withPet) {
+        log.info("Get list of data flights");
+        if (!withPet) {
+            if (returnDate != null) {
+                return flightRepository.findFlightsFromWithReturn(returnDate, returnDate.plusDays(3), countBusiness, countEconomic);
+            } else {
+                return new ArrayList<>();
+            }
+        } else {
+            if (returnDate != null) {
+                return flightRepository.findFlightsFromWithReturn(returnDate, returnDate.plusDays(3), countBusiness, countEconomic).stream()
+                        .filter(x -> x.getFlightFavors().stream()
+                                .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
+                                        Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
+                        .toList();
+            } else {
+                return new ArrayList<>();
+            }
+        }
     }
 
     public List<FlightFavor> getFlightFavors(Long id) {

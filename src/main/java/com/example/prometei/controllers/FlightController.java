@@ -4,7 +4,6 @@ import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
 import com.example.prometei.dto.FlightDtos.*;
 import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.GeneticAlg.DataGenetic;
-import com.example.prometei.dto.GeneticAlg.FlightGeneticDto;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
@@ -50,17 +49,25 @@ public class FlightController {
                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate returnDate,
                                                         @RequestParam Integer countBusiness,
-                                                        @RequestParam Integer countEconomic) {
+                                                        @RequestParam Integer countEconomic,
+                                                        @RequestParam Boolean withPet) {
         return new ResponseEntity<>(new DataGenetic(departurePoint,
                                                     destinationPoint,
                                                     countBusiness,
                                                     countEconomic,
                                                     departureDate,
                                                     returnDate,
-                flightService.getFlightData(departureDate,
-                                            countBusiness,
-                                            countEconomic)
-                        .stream().map(FlightGeneticDto::new).toList()), HttpStatus.OK);
+                flightService.getDataGeneticTo(departureDate,
+                                               returnDate,
+                                               countBusiness,
+                                               countEconomic,
+                                               withPet)
+                        .stream().map(transformDataService::transformToFlightGeneticDto).toList(),
+                flightService.getDataGeneticFrom(returnDate,
+                                                 countBusiness,
+                                                 countEconomic,
+                                                 withPet)
+                        .stream().map(transformDataService::transformToFlightGeneticDto).toList()), HttpStatus.OK);
     }
 
     /**
