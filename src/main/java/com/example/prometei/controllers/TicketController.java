@@ -111,12 +111,6 @@ public class TicketController {
         return new ResponseEntity<>(ticketService.getAdditionalFavorsByTicket(decryptId(ticketId)).stream().map(AdditionalFavorDto::new).toList(), HttpStatus.OK);
     }
 
-    @Deprecated
-    @PostMapping("/create")
-    public void addTicket(@RequestBody TicketDto ticketDto) {
-        ticketService.add(transformDataService.transformToTicket(ticketDto));
-    }
-
      /**
      * Добавляет дополнительные услуги к билету. Старые услуги также сохраняются.
      *
@@ -136,6 +130,11 @@ public class TicketController {
         ticketService.addAdditionalFavorsToTicket(decryptId(ticketId), ticketService.createAdditionalFavorsByFlightFavor(decryptId(ticketId), listFavors));
     }
 
+    /**
+     * Обрабатывает запрос на возврат билета.
+     *
+     * @param ticketId Зашифрованный идентификатор билета, который необходимо вернуть.
+     */
     @PatchMapping("/returnTicket")
     public void returnTicket(@RequestParam @NonNull String ticketId) {
         ticketService.returnTicket(decryptId(ticketId));
