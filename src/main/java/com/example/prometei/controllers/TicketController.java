@@ -4,6 +4,7 @@ import com.example.prometei.dto.FavorDto.CreateAdditionalFavorDto;
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
+import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.TicketService;
 import lombok.NonNull;
 import org.springframework.http.HttpStatus;
@@ -20,9 +21,11 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 @RequestMapping("/ticket")
 public class TicketController {
     private final TicketService ticketService;
+    private final TransformDataService transformDataService;
 
-    public TicketController(TicketService ticketService) {
+    public TicketController(TicketService ticketService, TransformDataService transformDataService) {
         this.ticketService = ticketService;
+        this.transformDataService = transformDataService;
     }
 
     /**
@@ -37,7 +40,7 @@ public class TicketController {
         Ticket ticket = ticketService.getById(decryptId(ticketId));
         return ticket == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(new TicketDto(ticket), HttpStatus.OK);
+                : new ResponseEntity<>(transformDataService.transformToTicketDto(ticket), HttpStatus.OK);
     }
 
     /**
@@ -49,7 +52,7 @@ public class TicketController {
     public ResponseEntity<List<TicketDto>> getAllTickets() {
         return new ResponseEntity<>(ticketService.getAll()
                                     .stream()
-                                    .map(TicketDto::new)
+                                    .map(transformDataService::transformToTicketDto)
                                     .toList(),
                                     HttpStatus.OK);
     }
@@ -64,7 +67,7 @@ public class TicketController {
     public ResponseEntity<List<TicketDto>> getTicketsByFlight(@RequestParam String flightId) {
         return new ResponseEntity<>(ticketService.getTicketsByFlight(decryptId(flightId))
                                     .stream()
-                                    .map(TicketDto::new)
+                                    .map(transformDataService::transformToTicketDto)
                                     .toList(),
                                     HttpStatus.OK);
     }
@@ -77,7 +80,10 @@ public class TicketController {
      */
     @GetMapping("/getByPurchase")
     public ResponseEntity<List<TicketDto>> getTicketsByPurchase(@RequestParam String purchaseId) {
-        return new ResponseEntity<>(ticketService.getTicketsByPurchase(decryptId(purchaseId)).stream().map(TicketDto::new).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(ticketService.getTicketsByPurchase(decryptId(purchaseId)).stream()
+                                    .map(transformDataService::transformToTicketDto)
+                                    .toList(),
+                                    HttpStatus.OK);
     }
 
     /**
@@ -88,7 +94,10 @@ public class TicketController {
      */
     @GetMapping("/getByUser")
     public ResponseEntity<List<TicketDto>> getTicketsByUser(@RequestParam String userId) {
-        return new ResponseEntity<>(ticketService.getTicketsByUser(decryptId(userId)).stream().map(TicketDto::new).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(ticketService.getTicketsByUser(decryptId(userId)).stream()
+                                    .map(transformDataService::transformToTicketDto)
+                                    .toList(),
+                                    HttpStatus.OK);
     }
 
     /**
@@ -105,7 +114,7 @@ public class TicketController {
     @Deprecated
     @PostMapping("/create")
     public void addTicket(@RequestBody TicketDto ticketDto) {
-        ticketService.add(ticketDto.dtoToEntity());
+        ticketService.add(transformDataService.transformToTicket(ticketDto));
     }
 
      /**
@@ -130,18 +139,5 @@ public class TicketController {
     @PatchMapping("/returnTicket")
     public void returnTicket(@RequestParam @NonNull String ticketId) {
         ticketService.returnTicket(decryptId(ticketId));
-    }
-
-    @Deprecated
-    @PatchMapping("/edit")
-    public void editTicket(@RequestParam String ticketId,
-                           @RequestBody TicketDto ticketDto) {
-        ticketService.edit(decryptId(ticketId), ticketDto.dtoToEntity());
-    }
-
-    @Deprecated
-    @DeleteMapping("/delete")
-    public void deleteTicket(@RequestBody TicketDto ticketDto) {
-        ticketService.delete(ticketDto.dtoToEntity());
     }
 }

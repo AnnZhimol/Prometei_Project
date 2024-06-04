@@ -2,17 +2,13 @@ package com.example.prometei.controllers;
 
 import com.example.prometei.dto.PurchaseDtos.CreatePurchaseDto;
 import com.example.prometei.dto.PurchaseDtos.PurchaseDto;
-import com.example.prometei.dto.TicketDtos.TicketDto;
-import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.models.Purchase;
-import com.example.prometei.models.Ticket;
 import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
@@ -94,38 +90,5 @@ public class PurchaseController {
                                                                    null :
                                                                    transformDataService.listPassengerDtoToUnAuthUser(purchaseDto.getPassengers())
                                                            );
-    }
-
-    @Deprecated
-    @PostMapping("/addTickets")
-    public void addTickets(@RequestParam String purchaseId,
-                           @RequestBody List<TicketDto> ticketDtos) {
-        List<Ticket> tickets = new ArrayList<>();
-
-        for(TicketDto ticketDto : ticketDtos) {
-            tickets.add(ticketDto.dtoToEntity());
-        }
-
-        purchaseService.addTicketsToPurchase(decryptId(purchaseId), tickets);
-    }
-
-    @Deprecated
-    @PostMapping("/addUser")
-    public void addUser(@RequestParam String purchaseId,
-                        @RequestBody EditUserDto editUserDto) {
-        purchaseService.addUserToPurchase(decryptId(purchaseId), transformDataService.transformToUser(editUserDto));
-    }
-
-    @Deprecated
-    @PatchMapping("/edit")
-    public void editPurchase(@RequestParam String purchaseId,
-                             @RequestBody PurchaseDto purchaseDto) {
-        purchaseService.edit(decryptId(purchaseId), purchaseDto.dtoToEntity());
-    }
-
-    @Deprecated
-    @DeleteMapping("/delete")
-    public void deletePurchase(@RequestBody PurchaseDto purchaseDto) {
-        purchaseService.delete(purchaseDto.dtoToEntity());
     }
 }

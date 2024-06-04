@@ -1,10 +1,14 @@
 package com.example.prometei.services;
 
+import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
+import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.dto.UserDtos.UserDto;
+import com.example.prometei.models.Ticket;
 import com.example.prometei.models.UnauthUser;
 import com.example.prometei.models.User;
+import com.example.prometei.models.enums.TicketType;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,6 +19,31 @@ import static com.example.prometei.utils.CipherUtil.encryptId;
 
 @Service
 public class TransformDataService {
+    public TicketDto transformToTicketDto(Ticket ticket) {
+        return TicketDto.builder()
+                .id(encryptId(ticket.getId()))
+                .costFavors(ticket.getAdditionalFavors()
+                        .stream()
+                        .map(AdditionalFavorDto::new)
+                        .mapToDouble(AdditionalFavorDto::getCost)
+                        .sum())
+                .seatNumber(ticket.getSeatNumber())
+                .ticketType(ticket.getTicketType())
+                .flightId(encryptId(ticket.getFlight().getId()))
+                .costFlight(ticket.getTicketType() == TicketType.BUSINESS ?
+                        ticket.getFlight().getBusinessCost() :
+                        ticket.getFlight().getEconomyCost())
+                .build();
+    }
+
+    public Ticket transformToTicket(TicketDto ticketDto) {
+        return Ticket.builder()
+                .id(decryptId(ticketDto.getId()))
+                .seatNumber(ticketDto.getSeatNumber())
+                .ticketType(ticketDto.getTicketType())
+                .build();
+    }
+
     public UserDto transformToUserDto(User user) {
         return UserDto.builder()
                 .id(encryptId(user.getId()))
