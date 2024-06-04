@@ -1,6 +1,8 @@
 package com.example.prometei.services;
 
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
+import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
+import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.FlightDtos.FlightDto;
 import com.example.prometei.dto.FlightDtos.SearchDto;
@@ -51,6 +53,39 @@ public class TransformDataService {
 
     private Integer FlightTimeParser(Double duration) {
         return (int) Math.round(duration * 60);
+    }
+
+    public AdditionalFavorDto transformToAdditionalFavorDto(AdditionalFavor additionalFavor) {
+        return AdditionalFavorDto.builder()
+                .id(encryptId(additionalFavor.getId()))
+                .name(additionalFavor.getFlightFavor().getName())
+                .cost(additionalFavor.getFlightFavor().getCost())
+                .seatNum(additionalFavor.getTicket().getSeatNumber())
+                .ticketId(encryptId(additionalFavor.getTicket().getId()))
+                .build();
+    }
+
+    public FlightFavor transformToFlightFavor(CreateFlightFavorDto createFlightFavorDto) {
+        return FlightFavor.builder()
+                .name(createFlightFavorDto.getName())
+                .cost(createFlightFavorDto.getCost())
+                .build();
+    }
+
+    public FlightFavorDto transformToFlightFavorDto(FlightFavor flightFavor) {
+        return FlightFavorDto.builder()
+                .id(encryptId(flightFavor.getId()))
+                .name(flightFavor.getName())
+                .cost(flightFavor.getCost())
+                .build();
+    }
+
+    public FlightFavor transformToFlightFavor(FlightFavorDto flightFavorDto) {
+        return FlightFavor.builder()
+                .id(decryptId(flightFavorDto.getId()))
+                .name(flightFavorDto.getName())
+                .cost(flightFavorDto.getCost())
+                .build();
     }
 
     public Flight transformToFlight(CreateFlightDto createFlightDto) {
@@ -108,7 +143,7 @@ public class TransformDataService {
                 .id(encryptId(ticket.getId()))
                 .costFavors(ticket.getAdditionalFavors()
                         .stream()
-                        .map(AdditionalFavorDto::new)
+                        .map(this::transformToAdditionalFavorDto)
                         .mapToDouble(AdditionalFavorDto::getCost)
                         .sum())
                 .seatNumber(ticket.getSeatNumber())

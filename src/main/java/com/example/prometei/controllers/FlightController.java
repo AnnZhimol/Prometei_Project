@@ -149,7 +149,7 @@ public class FlightController {
     public ResponseEntity<List<FlightFavorDto>> getFlightFavors(@RequestParam String flightId) {
         return new ResponseEntity<>(flightService.getFlightFavors(decryptId(flightId))
                 .stream()
-                .map(FlightFavorDto::new)
+                .map(transformDataService::transformToFlightFavorDto)
                 .toList(),
                 HttpStatus.OK);
     }
@@ -176,7 +176,7 @@ public class FlightController {
         List<FlightFavor> listFavors = new ArrayList<>();
 
         for(CreateFlightFavorDto createFlightFavorDto : createFlightFavorDtos) {
-            listFavors.add(createFlightFavorDto.dtoToEntity());
+            listFavors.add(transformDataService.transformToFlightFavor(createFlightFavorDto));
         }
 
         flightService.addFlightFavorsToFlight(decryptId(flightId), listFavors);

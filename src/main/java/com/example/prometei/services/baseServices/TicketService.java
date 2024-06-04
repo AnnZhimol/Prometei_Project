@@ -5,6 +5,7 @@ import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
+import com.example.prometei.services.TransformDataService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,11 +21,13 @@ import java.util.stream.Collectors;
 public class TicketService implements BasicService<Ticket> {
     private final TicketRepository ticketRepository;
     private final AdditionalFavorRepository additionalFavorRepository;
+    private final TransformDataService transformDataService;
     private final Logger log = LoggerFactory.getLogger(TicketService.class);
 
-    public TicketService(TicketRepository ticketRepository, AdditionalFavorRepository additionalFavorRepository){
+    public TicketService(TicketRepository ticketRepository, AdditionalFavorRepository additionalFavorRepository, TransformDataService transformDataService){
         this.ticketRepository = ticketRepository;
         this.additionalFavorRepository = additionalFavorRepository;
+        this.transformDataService = transformDataService;
     }
 
     /**
@@ -71,23 +73,6 @@ public class TicketService implements BasicService<Ticket> {
     public List<Ticket> getAll() {
         log.info("Get list of tickets");
         return ticketRepository.findAll();
-    }
-
-    /**
-     * Получает отсортированный список билетов по заданным критериям.
-     *
-     * @param departurePoint точка отправления
-     * @param destinationPoint точка назначения
-     * @param departureDate время отправления
-     * @param ticketType тип билета
-     * @return отсортированный список билетов
-     */
-    public List<Ticket> getSearchResult(String departurePoint,
-                                        String destinationPoint,
-                                        LocalDate departureDate,
-                                        TicketType ticketType) {
-        log.info("Get list of sorted tickets");
-        return ticketRepository.findTicketsForSearch(departurePoint, destinationPoint, departureDate, ticketType);
     }
 
     /**
@@ -287,9 +272,10 @@ public class TicketService implements BasicService<Ticket> {
 
             Double costFavors = ticket.getAdditionalFavors()
                     .stream()
-                    .map(AdditionalFavorDto::new)
+                    .map(transformDataService::transformToAdditionalFavorDto)
                     .mapToDouble(AdditionalFavorDto::getCost)
                     .sum();
+
             Double costFlight = ticket.getTicketType() == TicketType.BUSINESS ?
                     ticket.getFlight().getBusinessCost() :
                     ticket.getFlight().getEconomyCost();

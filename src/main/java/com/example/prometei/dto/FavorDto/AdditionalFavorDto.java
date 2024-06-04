@@ -1,6 +1,7 @@
 package com.example.prometei.dto.FavorDto;
 
-import com.example.prometei.models.AdditionalFavor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,19 +11,13 @@ import java.io.Serializable;
  * DTO for {@link com.example.prometei.models.AdditionalFavor}
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class AdditionalFavorDto implements Serializable {
-    private long id;
+    private String id;
     private String name;
     private Double cost;
     private String seatNum;
-    private Long ticketId;
-
-    public AdditionalFavorDto(AdditionalFavor additionalFavor) {
-        id = additionalFavor.getId();
-        this.name = additionalFavor.getFlightFavor().getName();
-        this.cost = additionalFavor.getFlightFavor().getCost();
-        this.seatNum = additionalFavor.getTicket().getSeatNumber();
-        this.ticketId = additionalFavor.getTicket().getId();
-    }
+    private String ticketId;
 }

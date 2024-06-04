@@ -4,6 +4,7 @@ import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.models.enums.TicketType;
+import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -33,11 +34,13 @@ public class DefaultEmailService implements EmailService {
     public JavaMailSender emailSender;
     final private SpringTemplateEngine templateEngine;
     final private PurchaseService purchaseService;
+    final private TransformDataService transformDataService;
     private final Logger log = LoggerFactory.getLogger(PurchaseService.class);
 
-    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService) {
+    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService, TransformDataService transformDataService) {
         this.templateEngine = templateEngine;
         this.purchaseService = purchaseService;
+        this.transformDataService = transformDataService;
     }
 
     @Override
@@ -73,8 +76,8 @@ public class DefaultEmailService implements EmailService {
             emailContentMap.put("destinationPoint", ticket.getFlight().getDestinationPoint());
             emailContentMap.put("departureTime", ticket.getFlight().getDepartureDate().toString()+" "+ticket.getFlight().getDepartureTime().toString());
             emailContentMap.put("destinationTime",ticket.getFlight().getDestinationDate().toString()+" "+ticket.getFlight().getDestinationTime().toString());
-            emailContentMap.put("additionalFavors", ticket.getAdditionalFavors().stream().map(AdditionalFavorDto::new).toList());
-            emailContentMap.put("totalFavorCost", ticket.getAdditionalFavors().stream().map(AdditionalFavorDto::new).mapToDouble(AdditionalFavorDto::getCost).sum());
+            emailContentMap.put("additionalFavors", ticket.getAdditionalFavors().stream().map(transformDataService::transformToAdditionalFavorDto).toList());
+            emailContentMap.put("totalFavorCost", ticket.getAdditionalFavors().stream().map(transformDataService::transformToAdditionalFavorDto).mapToDouble(AdditionalFavorDto::getCost).sum());
 
             emailContentList.add(emailContentMap);
         }

@@ -1,7 +1,7 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.FavorDto.CreateAdditionalFavorDto;
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
+import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
 import com.example.prometei.services.TransformDataService;
@@ -108,23 +108,23 @@ public class TicketController {
      */
     @GetMapping("/getAdditionalFavors")
     public ResponseEntity<List<AdditionalFavorDto>> getAdditionalFavorsByTicket(@RequestParam String ticketId) {
-        return new ResponseEntity<>(ticketService.getAdditionalFavorsByTicket(decryptId(ticketId)).stream().map(AdditionalFavorDto::new).toList(), HttpStatus.OK);
+        return new ResponseEntity<>(ticketService.getAdditionalFavorsByTicket(decryptId(ticketId)).stream().map(transformDataService::transformToAdditionalFavorDto).toList(), HttpStatus.OK);
     }
 
      /**
      * Добавляет дополнительные услуги к билету. Старые услуги также сохраняются.
      *
      * @param ticketId идентификатор билета
-     * @param createAdditionalFavorDtos список DTO дополнительных услуг для создания
+     * @param flightFavorDtos список DTO дополнительных услуг для создания
      */
     @Transactional
     @PostMapping("/addAdditionalFavors")
     public void addAdditionalFavors(@RequestParam String ticketId,
-                                    @RequestBody List<CreateAdditionalFavorDto> createAdditionalFavorDtos) {
+                                    @RequestBody List<FlightFavorDto> flightFavorDtos) {
         List<FlightFavor> listFavors = new ArrayList<>();
 
-        for(CreateAdditionalFavorDto createFlightFavorDto : createAdditionalFavorDtos) {
-            listFavors.add(createFlightFavorDto.dtoToEntity());
+        for(FlightFavorDto flightFavorDto : flightFavorDtos) {
+            listFavors.add(transformDataService.transformToFlightFavor(flightFavorDto));
         }
 
         ticketService.addAdditionalFavorsToTicket(decryptId(ticketId), ticketService.createAdditionalFavorsByFlightFavor(decryptId(ticketId), listFavors));
