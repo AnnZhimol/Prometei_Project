@@ -2,7 +2,6 @@ package com.example.prometei.dto.PurchaseDtos;
 
 import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.models.enums.PaymentMethod;
-import com.example.prometei.models.Purchase;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,10 +19,4 @@ public class CreatePurchaseDto implements Serializable {
     private PassengerDto unauthUser;
     private String[] ticketIds;
     private List<PassengerDto> passengers;
-
-    public Purchase dtoToEntity() {
-        return Purchase.builder()
-                .paymentMethod(this.paymentMethod)
-                .build();
-    }
 }

@@ -1,10 +1,13 @@
 package com.example.prometei.services;
 
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
+import com.example.prometei.dto.PurchaseDtos.CreatePurchaseDto;
+import com.example.prometei.dto.PurchaseDtos.PurchaseDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.dto.UserDtos.UserDto;
+import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.models.UnauthUser;
 import com.example.prometei.models.User;
@@ -19,6 +22,24 @@ import static com.example.prometei.utils.CipherUtil.encryptId;
 
 @Service
 public class TransformDataService {
+    public Purchase transformToPurchase(CreatePurchaseDto createPurchaseDto) {
+        return Purchase.builder()
+                .paymentMethod(createPurchaseDto.getPaymentMethod())
+                .build();
+    }
+
+    public PurchaseDto transformToPurchaseDto(Purchase purchase) {
+        return PurchaseDto.builder()
+                .id(encryptId(purchase.getId()))
+                .totalCost(purchase.getTotalCost())
+                .paymentMethod(purchase.getPaymentMethod())
+                .createDate(purchase.getCreateDate())
+                .userEmail(purchase.getUser() != null ?
+                        purchase.getUser().getEmail() :
+                        purchase.getUnauthUser().getEmail())
+                .build();
+    }
+
     public TicketDto transformToTicketDto(Ticket ticket) {
         return TicketDto.builder()
                 .id(encryptId(ticket.getId()))
