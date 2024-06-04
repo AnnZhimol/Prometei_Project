@@ -1,23 +1,24 @@
 package com.example.prometei.dto.UserDtos;
 
-import com.example.prometei.models.User;
 import com.example.prometei.models.enums.UserGender;
 import com.example.prometei.models.enums.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 
-import static com.example.prometei.utils.CipherUtil.encryptId;
-
 /**
  * DTO for {@link com.example.prometei.models.User}
  */
 @Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class UserDto implements Serializable {
     private String id;
@@ -39,20 +40,4 @@ public class UserDto implements Serializable {
     private String internationalPassportNum;
     private LocalDate internationalPassportDate;
     private UserRole role;
-
-    public UserDto(User user) {
-        id = encryptId(user.getId());
-        this.birthDate = user.getBirthDate();
-        this.email = user.getEmail();
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
-        this.gender = user.getGender();
-        this.internationalPassportDate = user.getInternationalPassportDate();
-        this.internationalPassportNum = user.getInternationalPassportNum();
-        this.passport = user.getPassport();
-        this.password = user.getPassword();
-        this.phoneNumber = user.getPhoneNumber();
-        this.residenceCity = user.getResidenceCity();
-        this.role = user.getRole();
-    }
 }

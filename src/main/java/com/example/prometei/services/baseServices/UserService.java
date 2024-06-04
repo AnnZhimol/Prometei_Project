@@ -152,8 +152,6 @@ public class UserService implements BasicService<User> {
 
         entity.setId(id);
         entity.setRole(currentUser.getRole());
-        entity.setFirstName(currentUser.getFirstName());
-        entity.setLastName(currentUser.getLastName());
         entity.setPassword(currentUser.getPassword());
         entity.setEmail(currentUser.getEmail());
 
@@ -177,24 +175,6 @@ public class UserService implements BasicService<User> {
         }
 
         log.error("Search user with id = {} failed", id);
-        return null;
-    }
-
-    /**
-     * Получает неавторизированного пользователя по идентификатору.
-     *
-     * @param id идентификатор пользователя
-     * @return найденный пользователь или null, если пользователь не найден
-     */
-    public UnauthUser getUnauthUserById(Long id) {
-        UnauthUser unauthUser = unauthUserRepository.findById(id).orElse(null);
-
-        if(unauthUser != null) {
-            log.info("UnauthUser with id = {} successfully find", id);
-            return unauthUser;
-        }
-
-        log.error("Search UnauthUser with id = {} failed", id);
         return null;
     }
 

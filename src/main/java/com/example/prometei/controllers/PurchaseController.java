@@ -6,6 +6,7 @@ import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
+import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,11 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 @RequestMapping("/purchase")
 public class PurchaseController {
     private final PurchaseService purchaseService;
+    private final TransformDataService transformDataService;
 
-    public PurchaseController(PurchaseService purchaseService){
+    public PurchaseController(PurchaseService purchaseService, TransformDataService transformDataService){
         this.purchaseService = purchaseService;
+        this.transformDataService = transformDataService;
     }
 
     /**
@@ -70,9 +73,11 @@ public class PurchaseController {
     @PostMapping("/createAuthUser")
     public void addPurchase(@RequestBody CreatePurchaseDto purchaseDto) {
         purchaseService.createPurchase(purchaseDto.dtoToEntity(),
-                                       purchaseDto.getTicketIds(),
-                                       purchaseDto.getUser().dtoToUser(),
-                                       purchaseDto.getPassengers() == null ? null : purchaseDto.getPassengers());
+                                       transformDataService.decryptTicketIds(purchaseDto.getTicketIds()),
+                                       transformDataService.transformToUser(purchaseDto.getUser()),
+                                       purchaseDto.getPassengers() == null ?
+                                               null :
+                                               transformDataService.listPassengerDtoToUnAuthUser(purchaseDto.getPassengers()));
     }
 
     /**
@@ -82,10 +87,13 @@ public class PurchaseController {
      */
     @PostMapping("/createUnAuthUser")
     public void addPurchaseByUnauthUser(@RequestBody CreatePurchaseDto purchaseDto) {
-        purchaseService.createPurchaseByUnauthUser(purchaseDto.dtoToEntity(),
-                                                   purchaseDto.getTicketIds(),
-                                                   purchaseDto.getUnauthUser().dtoToUnAuth(),
-                                                   purchaseDto.getPassengers() == null ? null : purchaseDto.getPassengers());
+                purchaseService.createPurchaseByUnauthUser(purchaseDto.dtoToEntity(),
+                                                           transformDataService.decryptTicketIds(purchaseDto.getTicketIds()),
+                                                           transformDataService.transformToUnAuthUser(purchaseDto.getUnauthUser()),
+                                                           purchaseDto.getPassengers() == null ?
+                                                                   null :
+                                                                   transformDataService.listPassengerDtoToUnAuthUser(purchaseDto.getPassengers())
+                                                           );
     }
 
     @Deprecated
@@ -104,8 +112,8 @@ public class PurchaseController {
     @Deprecated
     @PostMapping("/addUser")
     public void addUser(@RequestParam String purchaseId,
-                        @RequestBody EditUserDto userDto) {
-        purchaseService.addUserToPurchase(decryptId(purchaseId), userDto.dtoToEntity());
+                        @RequestBody EditUserDto editUserDto) {
+        purchaseService.addUserToPurchase(decryptId(purchaseId), transformDataService.transformToUser(editUserDto));
     }
 
     @Deprecated

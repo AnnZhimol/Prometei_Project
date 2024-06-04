@@ -1,7 +1,5 @@
 package com.example.prometei.dto.UserDtos;
 
-import com.example.prometei.models.UnauthUser;
-import com.example.prometei.models.User;
 import com.example.prometei.models.enums.UserGender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -30,32 +28,4 @@ public class PassengerDto implements Serializable {
     private String passport;
     private String internationalPassportNum;
     private LocalDate internationalPassportDate;
-
-    public UnauthUser dtoToUnAuth() {
-        return UnauthUser.builder()
-                .email(this.getEmail())
-                .birthDate(this.getBirthDate())
-                .firstName(this.getFirstName())
-                .lastName(this.getLastName())
-                .gender(this.getGender())
-                .internationalPassportNum(this.getInternationalPassportNum())
-                .internationalPassportDate(this.getInternationalPassportDate())
-                .passport(this.getPassport())
-                .phoneNumber(this.getPhoneNumber())
-                .build();
-    }
-
-    public User dtoToUser() {
-        return User.builder()
-                .email(this.getEmail())
-                .birthDate(this.getBirthDate())
-                .firstName(this.getFirstName())
-                .lastName(this.getLastName())
-                .gender(this.getGender())
-                .internationalPassportNum(this.getInternationalPassportNum())
-                .internationalPassportDate(this.getInternationalPassportDate())
-                .passport(this.getPassport())
-                .phoneNumber(this.getPhoneNumber())
-                .build();
-    }
 }

@@ -1,6 +1,5 @@
 package com.example.prometei.services.baseServices;
 
-import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.PurchaseRepository;
@@ -14,8 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.example.prometei.utils.CipherUtil.decryptId;
 
 @Service
 public class PurchaseService implements BasicService<Purchase> {
@@ -48,39 +45,14 @@ public class PurchaseService implements BasicService<Purchase> {
         throw new NullPointerException();
     }
 
-    private long[] decryptTicketIds(String[] ticketIds) {
-        List<Long> ids = new ArrayList<>();
-
-        for (String id : ticketIds) {
-            ids.add(decryptId(id));
-        }
-
-        long[] result = new long[ids.size()];
-        for (int i = 0; i < ids.size(); i++) {
-            result[i] = ids.get(i);
-        }
-
-        return result;
-    }
-
-    private List<UnauthUser> listPassengerDtoToUnAuthUser(List<PassengerDto> passengers) {
-        List<UnauthUser> list = new ArrayList<>();
-
-        for (PassengerDto dto : passengers) {
-            list.add(dto.dtoToUnAuth());
-        }
-
-        return list;
-    }
-
     private List<Ticket> getTicketsAndEditPurchase(Purchase purchase,
-                                                   String[] ticketIds) {
+                                                   long[] ticketIds) {
         List<Ticket> tickets = new ArrayList<>();
 
         purchase = purchaseRepository.save(purchase);
         purchase.setCreateDate(LocalDateTime.now());
 
-        for (long id : decryptTicketIds(ticketIds)) {
+        for (long id : ticketIds) {
             Ticket ticket = ticketService.getById(id);
 
             if (ticket.getPurchase() == null) {
@@ -110,9 +82,9 @@ public class PurchaseService implements BasicService<Purchase> {
      */
     @Transactional
     public void createPurchase(Purchase purchase,
-                               String[] ticketIds,
+                               long[] ticketIds,
                                User user,
-                               @Nullable List<PassengerDto> passengers) {
+                               @Nullable List<UnauthUser> passengers) {
         if (purchase == null) {
             log.error("Error create purchase. Purchase = null");
             throw new NullPointerException();
@@ -132,7 +104,6 @@ public class PurchaseService implements BasicService<Purchase> {
         userService.edit(userService.getByEmail(user.getEmail()).getId(), user);
 
         if (passengers != null) {
-            List<UnauthUser> unauthUserList = listPassengerDtoToUnAuthUser(passengers);
             int totalParticipants = passengers.size() + 1;
             int groupSize = tickets.size() / totalParticipants;
 
@@ -149,7 +120,7 @@ public class PurchaseService implements BasicService<Purchase> {
                     int passengerIndex = (i / groupSize) - 1;
 
                     if (passengerIndex < passengers.size()) {
-                        UnauthUser passenger = unauthUserList.get(passengerIndex);
+                        UnauthUser passenger = passengers.get(passengerIndex);
                         userService.add(passenger);
                         ticket.setUnauthUser(passenger);
                     } else {
@@ -179,9 +150,9 @@ public class PurchaseService implements BasicService<Purchase> {
      */
     @Transactional
     public void createPurchaseByUnauthUser(Purchase purchase,
-                                           String[] ticketIds,
+                                           long[] ticketIds,
                                            UnauthUser unauthUser,
-                                           @Nullable List<PassengerDto> passengers) {
+                                           @Nullable List<UnauthUser> passengers) {
         if (purchase == null) {
             log.error("Error create purchase. Purchase = null");
             throw new NullPointerException();
@@ -202,7 +173,6 @@ public class PurchaseService implements BasicService<Purchase> {
         userService.add(unauthUser);
 
         if (passengers != null) {
-            List<UnauthUser> unauthUserList = listPassengerDtoToUnAuthUser(passengers);
             int totalParticipants = passengers.size() + 1;
             int groupSize = tickets.size() / totalParticipants;
 
@@ -219,7 +189,7 @@ public class PurchaseService implements BasicService<Purchase> {
                     int passengerIndex = (i / groupSize) - 1;
 
                     if (passengerIndex < passengers.size()) {
-                        UnauthUser passenger = unauthUserList.get(passengerIndex);
+                        UnauthUser passenger = passengers.get(passengerIndex);
                         userService.add(passenger);
                         ticket.setUnauthUser(passenger);
                     } else {

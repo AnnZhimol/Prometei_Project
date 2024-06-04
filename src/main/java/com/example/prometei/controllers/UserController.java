@@ -3,6 +3,7 @@ package com.example.prometei.controllers;
 import com.example.prometei.dto.UserDtos.EditUserDto;
 import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.User;
+import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,11 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final TransformDataService transformDataService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, TransformDataService transformDataService) {
         this.userService = userService;
+        this.transformDataService = transformDataService;
     }
 
     @GetMapping("/getCurrent")
@@ -26,7 +29,7 @@ public class UserController {
         User user = userService.getCurrentUser();
         return user == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(new UserDto(user), HttpStatus.OK);
+                : new ResponseEntity<>(transformDataService.transformToUserDto(user), HttpStatus.OK);
     }
 
     /**
@@ -40,7 +43,7 @@ public class UserController {
         User user = userService.getById(decryptId(userId));
         return user == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(new UserDto(user), HttpStatus.OK);
+                : new ResponseEntity<>(transformDataService.transformToUserDto(user), HttpStatus.OK);
     }
 
     /**
@@ -52,32 +55,20 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllUsers() {
         return new ResponseEntity<>(userService.getAll()
                                     .stream()
-                                    .map(UserDto::new)
+                                    .map(transformDataService::transformToUserDto)
                                     .toList(),
                                     HttpStatus.OK);
-    }
-
-    @Deprecated
-    @PostMapping("/create")
-    public void addUser(@RequestBody EditUserDto userDto) {
-        userService.add(userDto.dtoToEntity());
     }
 
     /**
      * Редактирует информацию о пользователе.
      *
      * @param userId идентификатор пользователя
-     * @param userDto объект UserDto, содержащий обновленную информацию о пользователе
+     * @param editUserDto объект UserDto, содержащий обновленную информацию о пользователе
      */
     @PatchMapping("/edit")
     public void editUser(@RequestParam String userId,
-                         @RequestBody EditUserDto userDto) {
-        userService.edit(decryptId(userId), userDto.dtoToEntity());
-    }
-
-    @Deprecated
-    @DeleteMapping("/delete")
-    public void deleteUser(@RequestBody EditUserDto userDto) {
-        userService.delete(userDto.dtoToEntity());
+                         @RequestBody EditUserDto editUserDto) {
+        userService.edit(decryptId(userId), transformDataService.transformToUser(editUserDto));
     }
 }

@@ -1,6 +1,5 @@
 package com.example.prometei.dto.UserDtos;
 
-import com.example.prometei.models.User;
 import com.example.prometei.models.enums.UserGender;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -24,18 +23,4 @@ public class EditUserDto {
     private String residenceCity;
     private String internationalPassportNum;
     private LocalDate internationalPassportDate;
-
-    public User dtoToEntity() {
-        return User.builder()
-                .birthDate(this.getBirthDate())
-                .firstName(this.getFirstName())
-                .lastName(this.getLastName())
-                .gender(this.getGender())
-                .internationalPassportNum(this.getInternationalPassportNum())
-                .internationalPassportDate(this.getInternationalPassportDate())
-                .passport(this.getPassport())
-                .phoneNumber(this.getPhoneNumber())
-                .residenceCity(this.getResidenceCity())
-                .build();
-    }
 }
