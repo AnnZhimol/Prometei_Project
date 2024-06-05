@@ -256,6 +256,12 @@ public class TicketService implements BasicService<Ticket> {
     @Transactional
     public void returnTicket(Long ticketId) {
         Ticket ticket = getById(ticketId);
+
+        if (ticket == null) {
+            log.error("Return the ticket failed. Ticket == null");
+            throw new NullPointerException();
+        }
+
         LocalDateTime dateNow = LocalDateTime.now();
         Duration duration =Duration.between(dateNow, ticket.getFlight().getDepartureDate().atTime(ticket.getFlight().getDepartureTime()));
         boolean favorExist = false;
@@ -268,30 +274,60 @@ public class TicketService implements BasicService<Ticket> {
         }
 
         if (duration.toHours() >= 24 && favorExist) {
-            Purchase purchase = ticket.getPurchase();
-
-            Double costFavors = ticket.getAdditionalFavors()
-                    .stream()
-                    .map(transformDataService::transformToAdditionalFavorDto)
-                    .mapToDouble(AdditionalFavorDto::getCost)
-                    .sum();
-
-            Double costFlight = ticket.getTicketType() == TicketType.BUSINESS ?
-                    ticket.getFlight().getBusinessCost() :
-                    ticket.getFlight().getEconomyCost();
-
-            purchase.setTotalCost(purchase.getTotalCost() - costFavors - costFlight);
-            ticket.setUnauthUser(null);
-            ticket.setUser(null);
-            ticket.setAdditionalFavors(new ArrayList<>());
-            ticket.setPurchase(purchase);
-            ticketRepository.save(ticket);
-            ticket.setPurchase(null);
-            ticketRepository.save(ticket);
+            returnTicket(ticket);
             log.info("Ticket with id = {} returned successfully", ticket.getId());
         } else {
             log.error("Ticket with id = {} returning failed. See conditions.", ticket.getId());
             throw new IllegalArgumentException();
+        }
+    }
+
+    private void returnTicket(Ticket ticket) {
+        Purchase purchase = ticket.getPurchase();
+        double scale = Math.pow(10, 2);
+
+        double costFavors = ticket.getAdditionalFavors()
+                .stream()
+                .map(transformDataService::transformToAdditionalFavorDto)
+                .mapToDouble(AdditionalFavorDto::getCost)
+                .sum();
+
+        Double costFlight = ticket.getTicketType() == TicketType.BUSINESS ?
+                ticket.getFlight().getBusinessCost() :
+                ticket.getFlight().getEconomyCost();
+
+        double totalCost = (Math.ceil(purchase.getTotalCost() * scale) / scale) - (Math.ceil(costFavors * scale) / scale) - (Math.ceil(costFlight * scale) / scale);
+        if (totalCost < 1)
+            totalCost =0.0;
+
+        purchase.setTotalCost(totalCost);
+
+        ticket.setUnauthUser(null);
+        ticket.setUser(null);
+
+        for (AdditionalFavor additionalFavor : ticket.getAdditionalFavors()) {
+            additionalFavor.setTicket(null);
+            additionalFavor.setFlightFavor(null);
+            additionalFavorRepository.deleteNull();
+        }
+        ticket.setAdditionalFavors(Collections.emptyList());
+
+        ticket.setPurchase(purchase);
+        ticketRepository.save(ticket);
+
+        ticket.setPurchase(null);
+        ticketRepository.save(ticket);
+    }
+
+    @Transactional
+    public void returnTickets(List<Ticket> tickets) {
+        if (tickets == null) {
+            log.error("Return the tickets failed. Tickets == null");
+            throw new NullPointerException();
+        }
+
+        for (Ticket ticket : tickets) {
+            returnTicket(ticket);
         }
     }
 

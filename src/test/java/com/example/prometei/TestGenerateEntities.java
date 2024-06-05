@@ -48,7 +48,7 @@ public class TestGenerateEntities {
 
     @Test
     public void FlightGenerate() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 2; i++) {
             generateService.generateRandomFlight();
         }
     }

@@ -16,7 +16,6 @@ import java.util.List;
 public class CreatePurchaseDto implements Serializable {
     private PaymentMethod paymentMethod;
     private PassengerDto user;
-    private PassengerDto unauthUser;
-    private String[] ticketIds;
+    private String[] tickets;
     private List<PassengerDto> passengers;
 }

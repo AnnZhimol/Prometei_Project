@@ -66,28 +66,13 @@ public class PurchaseController {
      *
      * @param createPurchaseDto объект CreatePurchaseDto, содержащий информацию о новой покупке
      */
-    @PostMapping("/createAuthUser")
-    public void addPurchaseByAuthUser(@RequestBody CreatePurchaseDto createPurchaseDto) {
-        purchaseService.createPurchase(transformDataService.transformToPurchase(createPurchaseDto),
-                                       transformDataService.decryptTicketIds(createPurchaseDto.getTicketIds()),
-                                       transformDataService.transformToUser(createPurchaseDto.getUser()),
+    @PostMapping("/create")
+    public ResponseEntity<String> addPurchase(@RequestBody CreatePurchaseDto createPurchaseDto) {
+        return new ResponseEntity<>(purchaseService.createPurchase(transformDataService.transformToPurchase(createPurchaseDto),
+                                       transformDataService.decryptTicketIds(createPurchaseDto.getTickets()),
+                                       createPurchaseDto.getUser(),
                                        createPurchaseDto.getPassengers() == null ?
                                                null :
-                                               transformDataService.listPassengerDtoToUnAuthUser(createPurchaseDto.getPassengers()));
-    }
-
-    /**
-     * Создает новую покупку на основе переданных данных (неавторизированный пользователь).
-     *
-     * @param createPurchaseDto объект CreatePurchaseDto, содержащий информацию о новой покупке
-     */
-    @PostMapping("/createUnAuthUser")
-    public void addPurchaseByUnAuthUser(@RequestBody CreatePurchaseDto createPurchaseDto) {
-                purchaseService.createPurchaseByUnauthUser(transformDataService.transformToPurchase(createPurchaseDto),
-                                                           transformDataService.decryptTicketIds(createPurchaseDto.getTicketIds()),
-                                                           transformDataService.transformToUnAuthUser(createPurchaseDto.getUnauthUser()),
-                                                           createPurchaseDto.getPassengers() == null ?
-                                                                   null :
-                                                                   transformDataService.listPassengerDtoToUnAuthUser(createPurchaseDto.getPassengers()));
+                                               transformDataService.listPassengerDtoToUnAuthUser(createPurchaseDto.getPassengers())), HttpStatus.OK);
     }
 }

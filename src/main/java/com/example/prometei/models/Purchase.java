@@ -23,6 +23,9 @@ public class Purchase {
     private PaymentMethod paymentMethod;
     private LocalDateTime createDate;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    private Payment payment;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 

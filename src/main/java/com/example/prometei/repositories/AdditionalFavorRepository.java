@@ -2,8 +2,10 @@ package com.example.prometei.repositories;
 
 import com.example.prometei.models.AdditionalFavor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -12,4 +14,9 @@ public interface AdditionalFavorRepository extends JpaRepository<AdditionalFavor
     @Query("SELECT af FROM AdditionalFavor af " +
             "WHERE af.ticket.id = :id ")
     List<AdditionalFavor> findAdditionalFavorsByTicket(Long id);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM AdditionalFavor af WHERE af.ticket.id IS NULL")
+    void deleteNull();
 }

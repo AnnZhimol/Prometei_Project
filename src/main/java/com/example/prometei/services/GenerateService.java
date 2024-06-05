@@ -136,7 +136,7 @@ public class GenerateService {
 
         if (random.nextBoolean()) {
             User randomUser = users.get(random.nextInt(users.size()));
-            purchaseService.createPurchase(purchase,
+            purchaseService.createPurchaseByAuthUser(purchase,
                     ticketIds.stream().mapToLong(Long::longValue).toArray(),
                     randomUser,
                     passengers);
