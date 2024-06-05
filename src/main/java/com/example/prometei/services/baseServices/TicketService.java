@@ -319,6 +319,12 @@ public class TicketService implements BasicService<Ticket> {
         ticketRepository.save(ticket);
     }
 
+    /**
+     * Осуществляет возврат билетов.
+     *
+     * @param tickets список билетов для возврата
+     * @throws NullPointerException если список билетов равен null
+     */
     @Transactional
     public void returnTickets(List<Ticket> tickets) {
         if (tickets == null) {

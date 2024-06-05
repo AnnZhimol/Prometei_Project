@@ -80,6 +80,15 @@ public class PurchaseService implements BasicService<Purchase> {
         return findTickets;
     }
 
+    /**
+     * Создает покупку на основе переданных данных о покупке, билетах и пассажирах.
+     *
+     * @param purchase объект покупки
+     * @param tickets массив идентификаторов билетов
+     * @param user данные авторизованного или неавторизованного пользователя
+     * @param passengers список данных пассажиров (может быть null)
+     * @return строка с результатом создания покупки
+     */
     public String createPurchase(Purchase purchase,
                                long[] tickets,
                                PassengerDto user,

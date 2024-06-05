@@ -31,6 +31,12 @@ public class PaymentService {
         this.ticketService = ticketService;
     }
 
+    /**
+     * Генерирует уникальный хеш для платежа.
+     *
+     * @param payment объект платежа
+     * @return уникальный хеш платежа
+     */
     private String generateUniqueHash(Payment payment) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -42,6 +48,12 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Создает новый платеж для покупки.
+     *
+     * @param purchase объект покупки
+     * @throws NullPointerException если покупка равна null
+     */
     @Transactional
     public void createPayment(Purchase purchase) {
         if (purchase == null) {
@@ -65,6 +77,12 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
+    /**
+     * Отменяет платеж по его уникальному хешу.
+     *
+     * @param paymentHash уникальный хеш платежа
+     * @throws NullPointerException если платеж с указанным хешем не найден
+     */
     public void cancelPayment(String paymentHash) {
         Payment payment = paymentRepository.findByHash(paymentHash);
 
@@ -82,6 +100,13 @@ public class PaymentService {
         paymentRepository.save(payment);
     }
 
+    /**
+     * Осуществляет оплату платежа по его уникальному хешу.
+     *
+     * @param paymentHash уникальный хеш платежа
+     * @return true, если платеж был успешно оплачен, иначе - false
+     * @throws NullPointerException если платеж с указанным хешем не найден
+     */
     @Transactional
     public Boolean payPayment(String paymentHash) {
         LocalDateTime moment = LocalDateTime.now();

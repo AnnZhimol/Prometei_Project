@@ -24,6 +24,11 @@ public class UserController {
         this.transformDataService = transformDataService;
     }
 
+    /**
+     * Выдает данные текущего пользователя.
+     *
+     * @return ответ с данными текущего пользователя в виде UserDto, либо статус NO_CONTENT, если пользователь не найден
+     */
     @GetMapping("/getCurrent")
     public ResponseEntity<UserDto> getCurrentUser() {
         User user = userService.getCurrentUser();

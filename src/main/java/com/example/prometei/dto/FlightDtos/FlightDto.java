@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * DTO for {@link com.example.prometei.models.Flight}
+ */
 @Data
 @Builder
 @AllArgsConstructor

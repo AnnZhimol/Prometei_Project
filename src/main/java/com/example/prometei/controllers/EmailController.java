@@ -30,6 +30,13 @@ public class EmailController {
         return new ResponseEntity<>("Please check your inbox", HttpStatus.OK);
     }
 
+    /**
+     * Отправляет простое HTML письмо на указанный email с информацией о покупке.
+     *
+     * @param email адрес электронной почты получателя
+     * @param purchaseId идентификатор покупки
+     * @return ответ с сообщением о статусе отправки письма
+     */
     @GetMapping("/simple-html-email")
     public @ResponseBody ResponseEntity<String> sendHtmlEmail(@RequestParam @NonNull String email,
                                                               @RequestParam @NonNull String purchaseId) {

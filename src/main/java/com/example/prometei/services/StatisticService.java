@@ -19,7 +19,7 @@ public class StatisticService {
         this.ticketService = ticketService;
     }
 
-    public List<AirplaneSeats.SeatOccupancy> getAllPercent(AirplaneModel airplaneModel) {
+    private List<AirplaneSeats.SeatOccupancy> getAllPercent(AirplaneModel airplaneModel) {
         List<Ticket> tickets = ticketService.getAll();
 
         Map<String, Long> seatPurchaseCount = tickets.stream()
@@ -35,7 +35,7 @@ public class StatisticService {
         return getSeatOccupancies(seatPurchaseCount);
     }
 
-    public List<AirplaneSeats.SeatOccupancy> getPercentByUser(AirplaneModel airplaneModel,
+    private List<AirplaneSeats.SeatOccupancy> getPercentByUser(AirplaneModel airplaneModel,
                                                               Long userId) {
         List<Ticket> tickets = ticketService.getAll();
 

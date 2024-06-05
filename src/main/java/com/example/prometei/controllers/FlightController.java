@@ -41,6 +41,7 @@ public class FlightController {
      * @param returnDate дата возврата (в формате ISO.DATE) указанная пользователем
      * @param countBusiness количество билетов бизнес-класса, которое необходимо пользователю
      * @param countEconomic количество билетов эконом-класса, которое необходимо пользователю
+     * @param withPet найти полеты с возможностью перевозки животных
      * @return ResponseEntity с объектом DataGenetic, содержащим данные для поиска рейсов
      */
     @GetMapping("/getFlightData")

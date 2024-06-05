@@ -235,6 +235,18 @@ public class FlightService implements BasicService<Flight> {
         return flightRepository.findAll();
     }
 
+    /**
+     * Получает список отсортированных рейсов по заданным параметрам.
+     *
+     * @param departurePoint точка отправления
+     * @param destinationPoint точка назначения
+     * @param departureDate дата отправления
+     * @param returnDate дата возвращения (может быть null, если поиск только в одну сторону)
+     * @param countBusiness количество мест бизнес-класса
+     * @param countEconomic количество мест эконом-класса
+     * @param withPet учитывать ли рейсы с возможностью перевозки домашних животных
+     * @return список пар списков рейсов, где первая часть пары - рейсы в пункт назначения, а вторая часть - рейсы обратно
+     */
     public List<Pair<List<Flight>, List<Flight>>> getSearchResult(String departurePoint,
                                         String destinationPoint,
                                         LocalDate departureDate,
@@ -274,6 +286,16 @@ public class FlightService implements BasicService<Flight> {
         return result;
     }
 
+    /**
+     * Получает список рейсов для указанной даты отправления и возможной даты возвращения.
+     *
+     * @param departureDate дата отправления
+     * @param returnDate дата возвращения (может быть null)
+     * @param countBusiness количество мест бизнес-класса
+     * @param countEconomic количество мест эконом-класса
+     * @param withPet учитывать ли рейсы с возможностью перевозки домашних животных
+     * @return список рейсов, соответствующих заданным параметрам
+     */
     public List<Flight> getDataGeneticTo(LocalDate departureDate,
                                          @Nullable LocalDate returnDate,
                                          Integer countBusiness,
@@ -303,6 +325,15 @@ public class FlightService implements BasicService<Flight> {
         }
     }
 
+    /**
+     * Получает список рейсов для указанной даты возвращения.
+     *
+     * @param returnDate дата возвращения (может быть null)
+     * @param countBusiness количество мест бизнес-класса
+     * @param countEconomic количество мест эконом-класса
+     * @param withPet учитывать ли рейсы с возможностью перевозки домашних животных
+     * @return список рейсов, соответствующих заданным параметрам
+     */
     public List<Flight> getDataGeneticFrom(@Nullable LocalDate returnDate,
                                            Integer countBusiness,
                                            Integer countEconomic,
@@ -327,6 +358,12 @@ public class FlightService implements BasicService<Flight> {
         }
     }
 
+    /**
+     * Получает список услуг рейса по его идентификатору.
+     *
+     * @param id идентификатор рейса
+     * @return список услуг рейса
+     */
     public List<FlightFavor> getFlightFavors(Long id) {
         log.info("Get list of sorted Flight Favors");
         return flightFavorRepository.findFlightFavorsByFlight(id);

@@ -19,11 +19,23 @@ public class AuthController {
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * Обрабатывает запрос на регистрацию нового пользователя.
+     *
+     * @param request данные пользователя для регистрации
+     * @return ответ с JWT токеном для аутентифицированного пользователя
+     */
     @PostMapping("/sign-up")
     public JwtAuthenticationResponse signUp(@RequestBody @Valid SignUpUser request) {
         return authenticationService.signUp(request);
     }
 
+    /**
+     * Обрабатывает запрос на вход пользователя в систему.
+     *
+     * @param request данные пользователя для входа
+     * @return ответ с JWT токеном для аутентифицированного пользователя
+     */
     @PostMapping("/sign-in")
     public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInUser request) {
         return authenticationService.signIn(request);

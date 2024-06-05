@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * DTO for {@link com.example.prometei.models.Flight}
+ */
 @Data
 @AllArgsConstructor
 @Builder

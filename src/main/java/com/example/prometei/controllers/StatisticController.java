@@ -22,6 +22,12 @@ public class StatisticController {
         this.statisticService = statisticService;
     }
 
+    /**
+     * Выдает данные для тепловой карты мест в самолете.
+     *
+     * @param userId зашифрованный идентификатор пользователя
+     * @return ответ с данными для тепловой карты мест в самолете
+     */
     @GetMapping("/heatMap")
     public ResponseEntity<List<AirplaneSeats>> getDataForHeatMap(@RequestParam String userId) {
         return new ResponseEntity<>(statisticService.getDataForHeatMap(decryptId(userId)), HttpStatus.OK);
