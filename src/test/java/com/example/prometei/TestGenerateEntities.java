@@ -41,14 +41,14 @@ public class TestGenerateEntities {
 
     @Test
     public void UnAuthUserGenerate() {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 20; i++) {
             generateService.generateUnAuthUser();
         }
     }
 
     @Test
     public void FlightGenerate() {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 10; i++) {
             generateService.generateRandomFlight();
         }
     }
@@ -65,16 +65,14 @@ public class TestGenerateEntities {
 
     @Test
     public void UserGenerate() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 20; i++) {
             generateService.generateUser();
         }
     }
 
     @Test
     public void PurchaseGenerate() {
-        for (int i = 0; i < 10; i++) {
-            generateService.generatePurchase();
-        }
+        generateService.generatePurchase();
     }
 }
 

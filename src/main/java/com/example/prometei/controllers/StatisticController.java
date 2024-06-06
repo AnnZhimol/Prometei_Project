@@ -1,6 +1,7 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.dto.HeatMap.AirplaneSeats;
+import com.example.prometei.dto.Statistic.AgeTicketDto;
 import com.example.prometei.services.StatisticService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,10 @@ public class StatisticController {
     @GetMapping("/heatMap")
     public ResponseEntity<List<AirplaneSeats>> getDataForHeatMap(@RequestParam String userId) {
         return new ResponseEntity<>(statisticService.getDataForHeatMap(decryptId(userId)), HttpStatus.OK);
+    }
+
+    @GetMapping("/ageTicket")
+    public ResponseEntity<AgeTicketDto> getDataForAgeMap() {
+        return new ResponseEntity<>(statisticService.getDataForAgeMap(), HttpStatus.OK);
     }
 }

@@ -1,22 +1,32 @@
 package com.example.prometei.services;
 
 import com.example.prometei.dto.HeatMap.AirplaneSeats;
+import com.example.prometei.dto.Statistic.AgeCategory;
+import com.example.prometei.dto.Statistic.AgeTicketDto;
+import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
+import com.example.prometei.models.UnauthUser;
+import com.example.prometei.models.User;
 import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.models.enums.PaymentState;
+import com.example.prometei.models.enums.TicketType;
+import com.example.prometei.models.enums.UserGender;
+import com.example.prometei.services.baseServices.PurchaseService;
 import com.example.prometei.services.baseServices.TicketService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class StatisticService {
     private final TicketService ticketService;
-    public StatisticService(TicketService ticketService) {
+    private final PurchaseService purchaseService;
+    public StatisticService(TicketService ticketService, PurchaseService purchaseService) {
         this.ticketService = ticketService;
+        this.purchaseService = purchaseService;
     }
 
     private List<AirplaneSeats.SeatOccupancy> getAllPercent(AirplaneModel airplaneModel) {
@@ -83,5 +93,66 @@ public class StatisticService {
         }
 
         return airplaneSeatsList;
+    }
+
+    private static List<AgeTicketDto.TicketStats> createTicketStatsList(Map<TicketType, Long> ticketTypeCounts) {
+        long total = ticketTypeCounts.values().stream().mapToLong(Long::longValue).sum();
+
+        return ticketTypeCounts.entrySet().stream()
+                .map(entry -> {
+                    AgeTicketDto.TicketStats ticketStats = new AgeTicketDto.TicketStats();
+                    ticketStats.setTicketType(entry.getKey(), (double) entry.getValue() / total * 100);
+                    return ticketStats;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private AgeCategory categorizeAge(Ticket ticket) {
+        LocalDate birthDate = (ticket.getUser() != null) ?
+                ticket.getUser().getBirthDate() :
+                ticket.getUnauthUser().getBirthDate();
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+
+        if (age < 22 && age >= 18) {
+            return AgeCategory.YOUNG;
+        } else if (age >= 22 && age < 35) {
+            return AgeCategory.MIDDLE_AGE_LOW;
+        } else if (age >= 35 && age < 60) {
+            return AgeCategory.MIDDLE_AGE_HIGH;
+        } else {
+            return AgeCategory.ELDERLY;
+        }
+    }
+
+    public AgeTicketDto getDataForAgeMap() {
+        List<Purchase> purchases = purchaseService.getAll()
+                .stream().filter(x -> x.getPayment().getState() == PaymentState.PAID).toList();
+
+        List<Ticket> tickets = purchases.stream()
+                .flatMap(purchase -> purchase.getTickets().stream()).toList();
+
+        AgeTicketDto ageTicketDto = new AgeTicketDto();
+
+        Map<AgeCategory, Map<UserGender, Map<TicketType, Long>>> stats = tickets.stream()
+                .collect(Collectors.groupingBy(
+                        this::categorizeAge,
+                        Collectors.groupingBy(
+                                ticket -> {
+                                    User user = ticket.getUser();
+                                    UnauthUser unauthUser = ticket.getUnauthUser();
+                                    return user != null ? user.getGender() : unauthUser.getGender();
+                                },
+                                Collectors.groupingBy(Ticket::getTicketType, Collectors.counting())
+                        )
+                ));
+
+        stats.forEach((ageCategory, genderMap) -> {
+            AgeTicketDto.StatByGender statByGender = new AgeTicketDto.StatByGender();
+            statByGender.setMale(createTicketStatsList(genderMap.getOrDefault(UserGender.MALE, Collections.emptyMap())));
+            statByGender.setFemale(createTicketStatsList(genderMap.getOrDefault(UserGender.FEMALE, Collections.emptyMap())));
+            ageTicketDto.getCategories().put(ageCategory, statByGender);
+        });
+
+        return ageTicketDto;
     }
 }

@@ -60,6 +60,11 @@ public class TestServices {
     }
 
     @Test
+    void getData() {
+        statisticService.getDataForAgeMap();
+    }
+
+    @Test
     void editUser(){
         User user = User.builder()
                 .birthDate(LocalDate.of(1945,6,25))

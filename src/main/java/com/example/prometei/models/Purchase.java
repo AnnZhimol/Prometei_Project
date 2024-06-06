@@ -23,7 +23,7 @@ public class Purchase {
     private PaymentMethod paymentMethod;
     private LocalDateTime createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,6 +32,6 @@ public class Purchase {
     @ManyToOne(fetch = FetchType.LAZY)
     private UnauthUser unauthUser;
 
-    @OneToMany(mappedBy = "purchase", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "purchase", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private List<Ticket> tickets;
 }

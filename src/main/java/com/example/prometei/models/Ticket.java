@@ -22,10 +22,10 @@ public class Ticket {
     @Column(nullable = false)
     private String seatNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private UnauthUser unauthUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
