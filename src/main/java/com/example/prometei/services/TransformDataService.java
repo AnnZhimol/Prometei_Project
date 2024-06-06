@@ -25,16 +25,17 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
 import static com.example.prometei.utils.CipherUtil.encryptId;
 
 @Service
 public class TransformDataService {
-    public SearchDto transformToSearchDto(Pair<List<Flight>, List<Flight>> pairFlight) {
+    public SearchDto transformToSearchDto(Pair<List<Flight>, List<Flight>> pairFlight, Boolean withPet) {
         return SearchDto.builder()
-                .to(pairFlight.a.stream().map(this::transformToFlightDto).toList())
-                .back(pairFlight.b == null ? null : pairFlight.b.stream().map(this::transformToFlightDto).toList())
+                .to(pairFlight.a.stream().map(flight -> transformToFlightDto(flight, withPet)).toList())
+                .back(pairFlight.b == null ? null : pairFlight.b.stream().map(flight -> transformToFlightDto(flight, withPet)).toList())
                 .build();
     }
 
@@ -118,7 +119,7 @@ public class TransformDataService {
                 .build();
     }
 
-    public FlightDto transformToFlightDto(Flight flight) {
+    public FlightDto transformToFlightDto(Flight flight, Boolean withPet) {
         return FlightDto.builder()
                 .id(encryptId(flight.getId()))
                 .departurePoint(flight.getDeparturePoint())
@@ -131,6 +132,17 @@ public class TransformDataService {
                 .economyCost(flight.getEconomyCost())
                 .businessCost(flight.getBusinessCost())
                 .model(flight.getAirplaneModel())
+                .flightFavorDtos(withPet ?
+                        flight.getFlightFavors().stream()
+                                .filter(x -> (Objects.equals(x.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
+                                              Objects.equals(x.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")) ||
+                                              Objects.equals(x.getName(), "Питание на борту (стандартное меню)") ||
+                                              Objects.equals(x.getName(), "Дополнительный багаж (20 кг)"))
+                                .map(this::transformToFlightFavorDto).toList() :
+                        flight.getFlightFavors().stream()
+                                .filter(x -> Objects.equals(x.getName(), "Питание на борту (стандартное меню)") ||
+                                             Objects.equals(x.getName(), "Дополнительный багаж (20 кг)"))
+                                .map(this::transformToFlightFavorDto).toList())
                 .build();
     }
 

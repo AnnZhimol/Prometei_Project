@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +84,7 @@ public class FlightController {
         Flight flight = flightService.getById(decryptId(flightId));
         return flight == null
                 ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(transformDataService.transformToFlightDto(flight), HttpStatus.OK);
+                : new ResponseEntity<>(transformDataService.transformToFlightDto(flight, true), HttpStatus.OK);
     }
 
     /**
@@ -106,23 +108,27 @@ public class FlightController {
      * @param countEconomic количество эконом-мест
      * @return список пар полетов, где destinationPoint одного полета совпадает с departurePoint другого полета
      */
-    @GetMapping("/searchFlight")
+    @GetMapping("/search")
     public ResponseEntity<List<SearchDto>> searchFlights(@RequestParam String departurePoint,
-                                                             @RequestParam String destinationPoint,
-                                                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-                                                             @RequestParam @Nullable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate,
-                                                             @RequestParam Integer countBusiness,
-                                                             @RequestParam Integer countEconomic,
-                                                             @RequestParam Boolean withPet,
-                                                             @RequestParam Boolean useGeneticAlg) {
+                                                         @RequestParam String destinationPoint,
+                                                         @RequestParam Long departureDate,
+                                                         @RequestParam @Nullable Long returnDate,
+                                                         @RequestParam Integer countBusiness,
+                                                         @RequestParam Integer countEconomic,
+                                                         @RequestParam Boolean withPet,
+                                                         @RequestParam Boolean useGeneticAlg) {
+        LocalDate departureLocalDate = Instant.ofEpochSecond(departureDate).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate returnLocalDate = (returnDate != null) ? Instant.ofEpochSecond(returnDate).atZone(ZoneId.systemDefault()).toLocalDate() : null;
+
+
         if (!useGeneticAlg) {
             List<SearchDto> flightPairs = flightService.getSearchResult(departurePoint,
                     destinationPoint,
-                    departureDate,
-                    returnDate,
+                    departureLocalDate,
+                    returnLocalDate,
                     countBusiness,
                     countEconomic,
-                    withPet).stream().map(transformDataService::transformToSearchDto).toList();
+                    withPet).stream().map(pair -> transformDataService.transformToSearchDto(pair,withPet)).toList();
 
             List<SearchDto> result = new ArrayList<>(flightPairs);
 
@@ -142,7 +148,7 @@ public class FlightController {
     public ResponseEntity<List<FlightDto>> getAllFlights() {
         return new ResponseEntity<>(flightService.getAll()
                                     .stream()
-                                    .map(transformDataService::transformToFlightDto)
+                                    .map(flight -> transformDataService.transformToFlightDto(flight, true))
                                     .toList(),
                                     HttpStatus.OK);
     }

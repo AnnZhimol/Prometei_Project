@@ -1,5 +1,6 @@
 package com.example.prometei.dto.FlightDtos;
 
+import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.models.enums.AirplaneModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO for {@link com.example.prometei.models.Flight}
@@ -27,4 +29,5 @@ public class FlightDto implements Serializable {
     private Double businessCost;
     private Integer flightTime;
     private AirplaneModel model;
+    private List<FlightFavorDto> flightFavorDtos;
 }

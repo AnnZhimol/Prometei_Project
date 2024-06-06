@@ -284,6 +284,7 @@ public class TicketService implements BasicService<Ticket> {
 
     private void returnTicket(Ticket ticket) {
         Purchase purchase = ticket.getPurchase();
+        Flight flight = ticket.getFlight();
         double scale = Math.pow(10, 2);
 
         double costFavors = ticket.getAdditionalFavors()
@@ -298,7 +299,16 @@ public class TicketService implements BasicService<Ticket> {
 
         double totalCost = (Math.ceil(purchase.getTotalCost() * scale) / scale) - (Math.ceil(costFavors * scale) / scale) - (Math.ceil(costFlight * scale) / scale);
         if (totalCost < 1)
-            totalCost =0.0;
+            totalCost = 0.0;
+
+
+        if (ticket.getTicketType() == TicketType.BUSINESS) {
+            flight.setBusinessSeats(flight.getBusinessSeats() + 1);
+        } else if (ticket.getTicketType() == TicketType.ECONOMIC) {
+            flight.setEconomSeats(flight.getEconomSeats() + 1);
+        }
+
+        ticket.setFlight(flight);
 
         purchase.setTotalCost(totalCost);
 
