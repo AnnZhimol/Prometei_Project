@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/purchase")
 public class PurchaseController {

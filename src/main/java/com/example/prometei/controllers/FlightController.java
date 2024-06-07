@@ -23,6 +23,7 @@ import java.util.List;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/flight")
 public class FlightController {
@@ -117,7 +118,7 @@ public class FlightController {
                                                          @RequestParam Integer countEconomic,
                                                          @RequestParam Boolean withPet,
                                                          @RequestParam Boolean useGeneticAlg) {
-        LocalDate departureLocalDate = Instant.ofEpochSecond(departureDate).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate departureLocalDate = Instant.ofEpochMilli(departureDate).atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate returnLocalDate = (returnDate != null) ? Instant.ofEpochSecond(returnDate).atZone(ZoneId.systemDefault()).toLocalDate() : null;
 
 

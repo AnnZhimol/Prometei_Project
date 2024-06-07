@@ -17,6 +17,7 @@ import java.util.List;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/ticket")
 public class TicketController {

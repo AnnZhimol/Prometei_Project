@@ -1,5 +1,6 @@
 package com.example.prometei;
 
+import com.example.prometei.api.NeuralApi;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.PaymentMethod;
 import com.example.prometei.models.enums.TicketType;
@@ -39,6 +40,9 @@ public class TestServices {
 
     @Autowired
     StatisticService statisticService;
+
+    @Autowired
+    NeuralApi neuralApi;
 
     @Test
     void createUser() {

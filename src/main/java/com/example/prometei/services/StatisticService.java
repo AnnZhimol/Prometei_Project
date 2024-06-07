@@ -3,10 +3,8 @@ package com.example.prometei.services;
 import com.example.prometei.dto.HeatMap.AirplaneSeats;
 import com.example.prometei.dto.Statistic.AgeCategory;
 import com.example.prometei.dto.Statistic.AgeTicketDto;
-import com.example.prometei.models.Purchase;
-import com.example.prometei.models.Ticket;
-import com.example.prometei.models.UnauthUser;
-import com.example.prometei.models.User;
+import com.example.prometei.dto.Statistic.PopularFavors;
+import com.example.prometei.models.*;
 import com.example.prometei.models.enums.AirplaneModel;
 import com.example.prometei.models.enums.PaymentState;
 import com.example.prometei.models.enums.TicketType;
@@ -16,6 +14,7 @@ import com.example.prometei.services.baseServices.TicketService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -154,5 +153,27 @@ public class StatisticService {
         });
 
         return ageTicketDto;
+    }
+
+    public PopularFavors getPopularFavorsByMonth(Month month) {
+        List<AdditionalFavor> additionalFavors = ticketService.getAllAdFavors();
+
+        Map<String, Long> groupedFavors = additionalFavors.stream()
+                .filter(favor -> {
+                    Ticket ticket = favor.getTicket();
+                    Purchase purchase = ticket.getPurchase();
+                    return purchase != null && purchase.getCreateDate().getMonth() == month;
+                })
+                .collect(Collectors.groupingBy(
+                        favor -> favor.getFlightFavor().getName(),
+                        Collectors.counting()
+                ));
+
+        PopularFavors popularFavors = new PopularFavors();
+        PopularFavors.FavorCount favorCount = new PopularFavors.FavorCount();
+        groupedFavors.forEach(favorCount::setFavorCountMap);
+        popularFavors.setList(Collections.singletonList(favorCount));
+
+        return popularFavors;
     }
 }

@@ -471,4 +471,8 @@ public class TicketService implements BasicService<Ticket> {
 
         return additionalFavorRepository.findAdditionalFavorsByTicket(id);
     }
+
+    public List<AdditionalFavor> getAllAdFavors() {
+        return additionalFavorRepository.findAll();
+    }
 }

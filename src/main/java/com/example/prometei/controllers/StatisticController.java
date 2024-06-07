@@ -2,18 +2,18 @@ package com.example.prometei.controllers;
 
 import com.example.prometei.dto.HeatMap.AirplaneSeats;
 import com.example.prometei.dto.Statistic.AgeTicketDto;
+import com.example.prometei.dto.Statistic.PopularFavors;
 import com.example.prometei.services.StatisticService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.Month;
 import java.util.List;
 
 import static com.example.prometei.utils.CipherUtil.decryptId;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/statistic")
 public class StatisticController {
@@ -37,5 +37,10 @@ public class StatisticController {
     @GetMapping("/ageTicket")
     public ResponseEntity<AgeTicketDto> getDataForAgeMap() {
         return new ResponseEntity<>(statisticService.getDataForAgeMap(), HttpStatus.OK);
+    }
+
+    @GetMapping("/popularFavor")
+    public ResponseEntity<PopularFavors> getDataForAgeMap(@RequestParam Month month) {
+        return new ResponseEntity<>(statisticService.getPopularFavorsByMonth(month), HttpStatus.OK);
     }
 }
