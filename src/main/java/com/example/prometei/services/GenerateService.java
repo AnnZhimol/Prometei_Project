@@ -233,8 +233,8 @@ public class GenerateService {
         LocalDate departureDate = LocalDate.now().plusDays(random.nextInt(30));
 
         Flight randomFlight = transformDataService.transformToFlight(CreateFlightDto.builder()
-                .departurePoint(departure.getLabel())
-                .destinationPoint(destination.getLabel())
+                .departurePoint("Уфа, Уфа, UFA")
+                .destinationPoint("Казань, Казань, KZN")
                 .departureTime(departureTime)
                 .departureDate(departureDate)
                 .airplaneNumber(random.nextInt(9999))

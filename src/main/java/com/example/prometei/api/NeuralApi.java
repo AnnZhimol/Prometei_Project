@@ -29,7 +29,7 @@ public class NeuralApi {
 
     private void setHeaders() {
         headers = new HttpHeaders();
-        headers.add("accept", "application.json");
+        headers.add("accept", "application/json");
         headers.setContentType(MediaType.valueOf("text/csv; charset=UTF-8"));
     }
 

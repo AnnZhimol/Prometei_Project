@@ -3,13 +3,13 @@ package com.example.prometei.controllers;
 import com.example.prometei.dto.FavorDto.CreateFlightFavorDto;
 import com.example.prometei.dto.FlightDtos.*;
 import com.example.prometei.dto.FavorDto.FlightFavorDto;
-import com.example.prometei.dto.GeneticAlg.DataGenetic;
 import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
+import com.example.prometei.models.enums.AirplaneModel;
+import com.example.prometei.services.GeneticService;
 import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.FlightService;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -29,49 +29,12 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 public class FlightController {
     private final FlightService flightService;
     private final TransformDataService transformDataService;
+    private final GeneticService geneticService;
 
-    public FlightController(FlightService flightService, TransformDataService transformDataService) {
+    public FlightController(FlightService flightService, TransformDataService transformDataService, GeneticService geneticService) {
         this.flightService = flightService;
         this.transformDataService = transformDataService;
-    }
-
-    /**
-     * Возвращает данные (рейсы), которые подаются на вход ГА.
-     *
-     * @param departurePoint точка отправления указанная пользователем
-     * @param destinationPoint точка назначения указанная пользователем
-     * @param departureDate дата отправления (в формате ISO.DATE) указанная пользователем
-     * @param returnDate дата возврата (в формате ISO.DATE) указанная пользователем
-     * @param countBusiness количество билетов бизнес-класса, которое необходимо пользователю
-     * @param countEconomic количество билетов эконом-класса, которое необходимо пользователю
-     * @param withPet найти полеты с возможностью перевозки животных
-     * @return ResponseEntity с объектом DataGenetic, содержащим данные для поиска рейсов
-     */
-    @GetMapping("/getFlightData")
-    public ResponseEntity<DataGenetic> getDataForSearch(@RequestParam String departurePoint,
-                                                        @RequestParam String destinationPoint,
-                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate returnDate,
-                                                        @RequestParam Integer countBusiness,
-                                                        @RequestParam Integer countEconomic,
-                                                        @RequestParam Boolean withPet) {
-        return new ResponseEntity<>(new DataGenetic(departurePoint,
-                                                    destinationPoint,
-                                                    countBusiness,
-                                                    countEconomic,
-                                                    departureDate,
-                                                    returnDate,
-                flightService.getDataGeneticTo(departureDate,
-                                               returnDate,
-                                               countBusiness,
-                                               countEconomic,
-                                               withPet)
-                        .stream().map(transformDataService::transformToFlightGeneticDto).toList(),
-                flightService.getDataGeneticFrom(returnDate,
-                                                 countBusiness,
-                                                 countEconomic,
-                                                 withPet)
-                        .stream().map(transformDataService::transformToFlightGeneticDto).toList()), HttpStatus.OK);
+        this.geneticService = geneticService;
     }
 
     /**
@@ -117,9 +80,10 @@ public class FlightController {
                                                          @RequestParam Integer countBusiness,
                                                          @RequestParam Integer countEconomic,
                                                          @RequestParam Boolean withPet,
-                                                         @RequestParam Boolean useGeneticAlg) {
+                                                         @RequestParam Boolean useGeneticAlg,
+                                                         @RequestParam @Nullable AirplaneModel model) {
         LocalDate departureLocalDate = Instant.ofEpochMilli(departureDate).atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate returnLocalDate = (returnDate != null) ? Instant.ofEpochSecond(returnDate).atZone(ZoneId.systemDefault()).toLocalDate() : null;
+        LocalDate returnLocalDate = (returnDate != null) ? Instant.ofEpochMilli(returnDate).atZone(ZoneId.systemDefault()).toLocalDate() : null;
 
 
         if (!useGeneticAlg) {
@@ -129,14 +93,15 @@ public class FlightController {
                     returnLocalDate,
                     countBusiness,
                     countEconomic,
-                    withPet).stream().map(pair -> transformDataService.transformToSearchDto(pair,withPet)).toList();
+                    withPet,
+                    model).stream().map(pair -> transformDataService.transformToSearchDto(pair,withPet)).toList();
 
             List<SearchDto> result = new ArrayList<>(flightPairs);
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
-            //TODO
-            throw new NullPointerException("Function not exist");
+            return new ResponseEntity<>(geneticService.getRoutes(departurePoint, destinationPoint, departureLocalDate,
+                    returnLocalDate, countBusiness, countEconomic, withPet, model), HttpStatus.OK);
         }
     }
 

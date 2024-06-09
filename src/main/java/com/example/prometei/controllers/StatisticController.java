@@ -1,6 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.HeatMap.AirplaneSeats;
+import com.example.prometei.dto.Statistic.AirplaneSeats;
 import com.example.prometei.dto.Statistic.AgeTicketDto;
 import com.example.prometei.dto.Statistic.PopularFavors;
 import com.example.prometei.services.StatisticService;

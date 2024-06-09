@@ -1,4 +1,4 @@
-package com.example.prometei.dto.HeatMap;
+package com.example.prometei.dto.Statistic;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

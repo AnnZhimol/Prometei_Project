@@ -6,7 +6,7 @@ import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.FlightDtos.CreateFlightDto;
 import com.example.prometei.dto.FlightDtos.FlightDto;
 import com.example.prometei.dto.FlightDtos.SearchDto;
-import com.example.prometei.dto.GeneticAlg.FlightGeneticDto;
+import com.example.prometei.api.request.FlightGeneticDto;
 import com.example.prometei.dto.PurchaseDtos.CreatePurchaseDto;
 import com.example.prometei.dto.PurchaseDtos.PurchaseDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;

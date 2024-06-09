@@ -1,4 +1,4 @@
-package com.example.prometei.dto.GeneticAlg;
+package com.example.prometei.api.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

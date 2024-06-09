@@ -248,12 +248,13 @@ public class FlightService implements BasicService<Flight> {
      * @return список пар списков рейсов, где первая часть пары - рейсы в пункт назначения, а вторая часть - рейсы обратно
      */
     public List<Pair<List<Flight>, List<Flight>>> getSearchResult(String departurePoint,
-                                        String destinationPoint,
-                                        LocalDate departureDate,
-                                        @Nullable LocalDate returnDate,
-                                        Integer countBusiness,
-                                        Integer countEconomic,
-                                        Boolean withPet) {
+                                                                  String destinationPoint,
+                                                                  LocalDate departureDate,
+                                                                  @Nullable LocalDate returnDate,
+                                                                  Integer countBusiness,
+                                                                  Integer countEconomic,
+                                                                  Boolean withPet,
+                                                                  @Nullable AirplaneModel model) {
         log.info("Get list of sorted flights");
         List<Flight> flights;
 
@@ -263,27 +264,35 @@ public class FlightService implements BasicService<Flight> {
             flights = flightRepository.findFlightsByPointsAndTime(departurePoint, destinationPoint, departureDate, returnDate, countBusiness, countEconomic).stream()
                     .filter(x -> x.getFlightFavors().stream()
                             .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
-                                               Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
+                                    Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
                     .toList();
         }
 
-        List<Pair<List<Flight>, List<Flight>>> result = new ArrayList<>();
+        if (model == AirplaneModel.AIRBUS320) {
+            flights = flights.stream().filter(flight -> flight.getAirplaneModel() == AirplaneModel.AIRBUS320).toList();
+        } else if (model == AirplaneModel.AIRBUS330) {
+            flights = flights.stream().filter(flight -> flight.getAirplaneModel() == AirplaneModel.AIRBUS330).toList();
+        }
+
+        List<Pair<List<Flight>, List<Flight>>> combinations = new ArrayList<>();
 
         if (returnDate != null) {
-            List<Flight> departureFlights = flights.stream()
-                    .filter(flight -> flight.getDeparturePoint().equals(departurePoint))
-                    .toList();
-
-            List<Flight> returnFlights = flights.stream()
-                    .filter(flight -> flight.getDeparturePoint().equals(destinationPoint))
-                    .toList();
-
-            result.add(new Pair<>(departureFlights, returnFlights));
+            for (Flight flight1 : flights) {
+                for (Flight flight2 : flights) {
+                    if (!flight1.equals(flight2) &&
+                            flight1.getDeparturePoint().equals(departurePoint) &&
+                            flight2.getDeparturePoint().equals(destinationPoint)) {
+                        combinations.add(new Pair<>(List.of(flight1), List.of(flight2)));
+                    }
+                }
+            }
         } else {
-            result.add(new Pair<>(flights, Collections.emptyList()));
+            for (Flight flight1 : flights) {
+                combinations.add(new Pair<>(List.of(flight1), null));
+            }
         }
 
-        return result;
+        return combinations;
     }
 
     /**
@@ -300,29 +309,34 @@ public class FlightService implements BasicService<Flight> {
                                          @Nullable LocalDate returnDate,
                                          Integer countBusiness,
                                          Integer countEconomic,
-                                         Boolean withPet) {
+                                         Boolean withPet,
+                                         @Nullable AirplaneModel model) {
         log.info("Get list of data flights");
+        List<Flight> flights;
+
         if (!withPet) {
             if (returnDate != null) {
-                return flightRepository.findFlightsToWithReturn(departureDate, departureDate.plusDays(3), returnDate, countBusiness, countEconomic);
+                flights = flightRepository.findFlightsToWithReturn(departureDate, departureDate.plusDays(3), returnDate, countBusiness, countEconomic);
             } else {
-                return flightRepository.findFlightsToWithoutReturn(departureDate, departureDate.plusDays(3), countBusiness, countEconomic);
+                flights = flightRepository.findFlightsToWithoutReturn(departureDate, departureDate.plusDays(3), countBusiness, countEconomic);
             }
         } else {
             if (returnDate != null) {
-                return flightRepository.findFlightsToWithReturn(departureDate, departureDate.plusDays(3), returnDate, countBusiness, countEconomic).stream()
+                flights = flightRepository.findFlightsToWithReturn(departureDate, departureDate.plusDays(3), returnDate, countBusiness, countEconomic).stream()
                         .filter(x -> x.getFlightFavors().stream()
                                 .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
                                         Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
                         .toList();
             } else {
-                return flightRepository.findFlightsToWithoutReturn(departureDate, departureDate.plusDays(3), countBusiness, countEconomic).stream()
+                flights = flightRepository.findFlightsToWithoutReturn(departureDate, departureDate.plusDays(3), countBusiness, countEconomic).stream()
                         .filter(x -> x.getFlightFavors().stream()
                                 .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
                                         Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
                         .toList();
             }
         }
+
+        return getFlightsByModel(model, flights);
     }
 
     /**
@@ -337,25 +351,40 @@ public class FlightService implements BasicService<Flight> {
     public List<Flight> getDataGeneticFrom(@Nullable LocalDate returnDate,
                                            Integer countBusiness,
                                            Integer countEconomic,
-                                           Boolean withPet) {
+                                           Boolean withPet,
+                                           @Nullable AirplaneModel model) {
         log.info("Get list of data flights");
+        List<Flight> flights;
+
         if (!withPet) {
             if (returnDate != null) {
-                return flightRepository.findFlightsFromWithReturn(returnDate, returnDate.plusDays(3), countBusiness, countEconomic);
+                flights = flightRepository.findFlightsFromWithReturn(returnDate, returnDate.plusDays(3), countBusiness, countEconomic);
             } else {
-                return new ArrayList<>();
+                flights = new ArrayList<>();
             }
         } else {
             if (returnDate != null) {
-                return flightRepository.findFlightsFromWithReturn(returnDate, returnDate.plusDays(3), countBusiness, countEconomic).stream()
+                flights = flightRepository.findFlightsFromWithReturn(returnDate, returnDate.plusDays(3), countBusiness, countEconomic).stream()
                         .filter(x -> x.getFlightFavors().stream()
                                 .anyMatch(favor -> Objects.equals(favor.getName(), "Перевозка домашних животных менее 10 кг (в салоне)") ||
                                         Objects.equals(favor.getName(), "Перевозка домашних животных более 10 кг (в багажном отделении)")))
                         .toList();
             } else {
-                return new ArrayList<>();
+                flights = new ArrayList<>();
             }
         }
+
+        return getFlightsByModel(model, flights);
+    }
+
+    private List<Flight> getFlightsByModel(@Nullable AirplaneModel model, List<Flight> flights) {
+        if (model == AirplaneModel.AIRBUS320) {
+            flights = flights.stream().filter(flight -> flight.getAirplaneModel() == AirplaneModel.AIRBUS320).toList();
+        } else if (model == AirplaneModel.AIRBUS330) {
+            flights = flights.stream().filter(flight -> flight.getAirplaneModel() == AirplaneModel.AIRBUS330).toList();
+        }
+
+        return flights;
     }
 
     /**

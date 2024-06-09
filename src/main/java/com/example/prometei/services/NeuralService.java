@@ -1,10 +1,9 @@
 package com.example.prometei.services;
 
 import com.example.prometei.api.NeuralApi;
-import com.example.prometei.api.enums.ModelType;
 import com.example.prometei.api.enums.MoodType;
 import com.example.prometei.api.response.PlacesByNeural;
-import jakarta.validation.constraints.Email;
+import com.example.prometei.api.request.ClassificationParams;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,20 +12,17 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ApiService {
+public class NeuralService {
     private final NeuralApi neuralApi;
-    private final Logger log = LoggerFactory.getLogger(ApiService.class);
+    private final Logger log = LoggerFactory.getLogger(NeuralService.class);
 
-    public ApiService(NeuralApi neuralApi) {
+    public NeuralService(NeuralApi neuralApi) {
         this.neuralApi = neuralApi;
     }
 
-    public String getClassification(@NotNull MoodType mood,
-                                    @NotNull ModelType model,
-                                    @NotNull @Email String email,
-                                    @NotNull String question) {
+    public String getClassification(ClassificationParams classificationParams) {
         log.info("Message from neural network received.");
-        return neuralApi.getClassOfQuestion(mood, model, email, question).getAnswer();
+        return neuralApi.getClassOfQuestion(classificationParams.getMoodType(), classificationParams.getModelType(), classificationParams.getEmail(), classificationParams.getQuestion()).getAnswer();
     }
 
     public List<PlacesByNeural> getTopPlaces(@NotNull MoodType mood,
