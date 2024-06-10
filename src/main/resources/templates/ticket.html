@@ -4,101 +4,179 @@
     <meta charset="UTF-8">
     <title>Boarding Pass</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
         .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #005b96;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+        }
+        .header img {
+            width: 30px;
+            margin-right: 10px;
+        }
+        .header .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .header .contact-info {
             text-align: right;
-            color: red;
+            margin-left: auto;
         }
         .section {
             margin-bottom: 20px;
+            padding: 20px;
+            border-bottom: 1px solid #ccc;
         }
         .section-title {
             font-weight: bold;
+            color: #005b96;
+            margin-bottom: 10px;
         }
         .section-content {
             margin-left: 10px;
+            color: #555;
         }
-        .passenger-info, .flight-info, .class-info {
+        .info-group {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 10px;
         }
-        .class-info {
-            border-top: 1px solid green;
-            padding-top: 10px;
-        }
-        .footer {
-            border-top: 1px solid green;
-            padding-top: 10px;
+        .info-group .info-item {
+            width: 48%;
         }
         .additional-favors {
             margin-top: 20px;
         }
-        .favor {
-            display: flex;
-            justify-content: space-between;
+        .additional-favors table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
         }
-        .favor-title {
+        .additional-favors th, .additional-favors td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .additional-favors th {
+            background-color: #e0e7ef;
+            color: #005b96;
             font-weight: bold;
+        }
+        .additional-favors table tr:first-child th:first-child {
+            border-top-left-radius: 10px;
+        }
+        .additional-favors table tr:first-child th:last-child {
+            border-top-right-radius: 10px;
+        }
+        .additional-favors table tr:last-child td:first-child {
+            border-bottom-left-radius: 10px;
+        }
+        .additional-favors table tr:last-child td:last-child {
+            border-bottom-right-radius: 10px;
         }
     </style>
 </head>
 <body>
+<div class="container">
     <div class="header">
-        <span>8-800-200-0007</span>
-        <span>003</span>
-    </div>
-    <div class="section passenger-info">
-        <div>
-            <div class="section-title">ИМЯ ПАССАЖИРА / PASSENGER NAME</div>
-            <div class="section-content" th:text="${passengerName}"></div>
+        <div class="company-name">
+            <img src="https://img.icons8.com/emoji/48/000000/fire.png" alt="fire icon"/>
+            <span>Прометей</span>
+        </div>
+        <div class="contact-info">
+            <div>8-800-200-0007</div>
         </div>
     </div>
-    <div class="section flight-info">
-        <div>
-            <div class="section-title">ОТ / FROM</div>
-            <div class="section-content">
-                <span th:text="${departurePoint}"></span>
+    <div class="section">
+        <div class="section-title">ИМЯ ПАССАЖИРА / PASSENGER NAME</div>
+        <div class="section-content" th:text="${passengerName}"></div>
+    </div>
+    <div class="section">
+        <div class="info-group">
+            <div class="info-item">
+                <div class="section-title">ОТ / FROM</div>
+                <div class="section-content" th:text="${departurePoint}"></div>
+            </div>
+            <div class="info-item">
+                <div class="section-title">ДО / TO</div>
+                <div class="section-content" th:text="${destinationPoint}"></div>
             </div>
         </div>
-        <div>
-            <div class="section-title">ДО / TO</div>
-            <div class="section-content">
-                <span th:text="${destinationPoint}"></span>
+        <div class="info-group">
+            <div class="info-item">
+                <div class="section-title">САМОЛЕТ / AIRPLANE</div>
+                <div class="section-content" th:text="${airplaneModel}"></div>
+            </div>
+            <div class="info-item">
+                <div class="section-title">ВЫЛЕТ / DEPARTURE</div>
+                <div class="section-content" th:text="${departureTime}"></div>
+            </div>
+            <div class="info-item">
+                <div class="section-title">ПРИБЫТИЕ / DESTINATION</div>
+                <div class="section-content" th:text="${destinationTime}"></div>
             </div>
         </div>
     </div>
-    <div class="section flight-info">
-        <div>
-            <div class="section-title">САМОЛЕТ / AIRPLANE</div>
-            <div class="section-content" th:text="${airplaneModel}"></div>
-        </div>
-        <div>
-            <div class="section-title">ДАТА И ВРЕМЯ ВЫЛЕТА / DATE & TIME DEPARTURE</div>
-            <div class="section-content" th:text="${departureTime}"></div>
-        </div>
-        <div>
-            <div class="section-title">ДАТА И ВРЕМЯ ПРИЛЕТА / DATE & TIME DESTINATION</div>
-            <div class="section-content" th:text="${destinationTime}"></div>
+    <div class="section">
+        <div class="info-group">
+            <div class="info-item">
+                <div class="section-title">КЛАСС / CLASS</div>
+                <div class="section-content" th:text="${ticketType}"></div>
+            </div>
+            <div class="info-item">
+                <div class="section-title">МЕСТО / SEAT</div>
+                <div class="section-content" th:text="${seatNum}"></div>
+            </div>
         </div>
     </div>
-    <div class="section class-info">
-        <div>
-            <div class="section-title">КЛАСС / CLASS</div>
-            <div class="section-content" th:text="${ticketType}"></div>
-        </div>
-        <div>
-            <div class="section-title">МЕСТО / SEAT</div>
-            <div class="section-content" th:text="${seatNum}"></div>
-        </div>
+    <div class="section">
+        <div class="section-title">СТОИМОСТЬ БИЛЕТА / TICKET PRICE</div>
+        <div class="section-content" th:text="${ticketTotalCost}"></div>
     </div>
-    <div class="additional-favors">
+    <div class="section additional-favors">
         <div class="section-title">ДОПОЛНИТЕЛЬНЫЕ УСЛУГИ / ADDITIONAL FAVORS</div>
-        <div th:each="favor : ${additionalFavors}" class="favor">
-            <div class="favor-title" th:text="${favor.name}"> </div>
-            <div class="favor-cost" th:text="${favor.cost}"> </div>
-        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>Услуга / Favor</th>
+                <th>Стоимость / Cost</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="favor : ${additionalFavors}">
+                <td th:text="${favor.name}"></td>
+                <td th:text="${favor.cost}"></td>
+            </tr>
+            <tr>
+                <td><strong>ИТОГО / TOTAL</strong></td>
+                <td th:text="${totalFavorCost}"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="footer">
-        <div th:text="'ИТОГОВАЯ СТОИМОСТЬ: ' + ${ticketTotalCost} + ' СТОИМОСТЬ УСЛУГ: ' + ${totalFavorCost}"></div>
-    </div>
+</div>
 </body>
 </html>

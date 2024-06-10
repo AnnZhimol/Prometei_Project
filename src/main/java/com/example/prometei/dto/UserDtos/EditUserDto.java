@@ -1,6 +1,7 @@
 package com.example.prometei.dto.UserDtos;
 
 import com.example.prometei.models.enums.UserGender;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,8 @@ public class EditUserDto {
     private String lastName;
     @Size(min = 11)
     private String phoneNumber;
+    @Email
+    private String email;
     private LocalDate birthDate;
     private String passport;
     private String residenceCity;

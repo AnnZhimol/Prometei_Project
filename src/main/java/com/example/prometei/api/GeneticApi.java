@@ -68,6 +68,8 @@ public class GeneticApi {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .serializeNulls()
+                .setPrettyPrinting()
                 .create();
 
         List<FlightGeneticDto> flightTo = flightService.getDataGeneticTo(departureDate, returnDate,

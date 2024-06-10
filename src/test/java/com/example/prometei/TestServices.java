@@ -45,6 +45,13 @@ public class TestServices {
     NeuralApi neuralApi;
 
     @Test
+    void getClassNeural() {
+        System.out.println(neuralApi.getNegative());
+        System.out.println(neuralApi.getPositive());
+        System.out.println(neuralApi.getQuestionCount());
+    }
+
+    @Test
     void createUser() {
         User user = User.builder()
                 .birthDate(LocalDate.of(1995,6,25))

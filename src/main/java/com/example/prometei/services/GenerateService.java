@@ -92,6 +92,8 @@ public class GenerateService {
             User userTemp = userService.getByEmail(user.getEmail());
             userService.edit(userTemp.getId(), User.builder()
                     .gender(faker.options().option(UserGender.class))
+                    .firstName(user.getFirstName())
+                    .lastName(userTemp.getLastName())
                     .birthDate(randomDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
                     .passport(faker.idNumber().valid())
                     .build());
@@ -163,7 +165,11 @@ public class GenerateService {
                 if (random.nextBoolean()) {
                     paymentService.payPayment(hash);
                 } else {
-                    paymentService.cancelPayment(hash);
+                    if (random.nextBoolean()) {
+                        paymentService.cancelPayment(hash);
+                    } else {
+                        log.info("Processing.");
+                    }
                 }
             } else {
                 UnauthUser randomUnAuthUser = unauthUsers.get(random.nextInt(unauthUsers.size()));
@@ -181,7 +187,11 @@ public class GenerateService {
                 if (random.nextBoolean()) {
                     paymentService.payPayment(hash);
                 } else {
-                    paymentService.cancelPayment(hash);
+                    if (random.nextBoolean()) {
+                        paymentService.cancelPayment(hash);
+                    } else {
+                        log.info("Processing.");
+                    }
                 }
             }
         }
@@ -233,8 +243,8 @@ public class GenerateService {
         LocalDate departureDate = LocalDate.now().plusDays(random.nextInt(30));
 
         Flight randomFlight = transformDataService.transformToFlight(CreateFlightDto.builder()
-                .departurePoint("Уфа, Уфа, UFA")
-                .destinationPoint("Казань, Казань, KZN")
+                .departurePoint(departure.getLabel())
+                .destinationPoint(destination.getLabel())
                 .departureTime(departureTime)
                 .departureDate(departureDate)
                 .airplaneNumber(random.nextInt(9999))

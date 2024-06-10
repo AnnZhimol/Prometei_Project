@@ -72,7 +72,7 @@ public class UserController {
      * @param userId идентификатор пользователя
      * @param editUserDto объект UserDto, содержащий обновленную информацию о пользователе
      */
-    @PatchMapping("/edit")
+    @PatchMapping("/editUser")
     public void editUser(@RequestParam String userId,
                          @RequestBody EditUserDto editUserDto) {
         userService.edit(decryptId(userId), transformDataService.transformToUser(editUserDto));

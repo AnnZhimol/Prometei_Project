@@ -43,6 +43,9 @@ public class User implements UserDetails {
     private LocalDate internationalPassportDate;
     private UserRole role;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    private ConfirmationCode confirmationCode;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<Purchase> purchases;
 

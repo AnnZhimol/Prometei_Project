@@ -7,7 +7,7 @@ import com.example.prometei.models.Airport;
 import com.example.prometei.models.Flight;
 import com.example.prometei.models.FlightFavor;
 import com.example.prometei.models.enums.AirplaneModel;
-import com.example.prometei.services.GeneticService;
+import com.example.prometei.services.apiServices.GeneticService;
 import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.FlightService;
 import org.springframework.http.HttpStatus;

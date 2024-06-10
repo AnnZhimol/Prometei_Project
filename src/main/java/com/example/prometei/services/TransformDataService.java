@@ -158,6 +158,7 @@ public class TransformDataService {
                 .totalCost(purchase.getTotalCost())
                 .paymentMethod(purchase.getPaymentMethod())
                 .createDate(purchase.getCreateDate())
+                .state(purchase.getPayment().getState())
                 .userEmail(purchase.getUser() != null ?
                         purchase.getUser().getEmail() :
                         purchase.getUnauthUser().getEmail())

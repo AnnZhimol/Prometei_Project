@@ -4,6 +4,7 @@ import com.example.prometei.api.enums.ModelType;
 import com.example.prometei.api.enums.MoodType;
 import com.example.prometei.api.response.NeuralClassResponse;
 import com.example.prometei.api.response.PlacesByNeural;
+import com.example.prometei.dto.Statistic.QuestionCount;
 import com.google.gson.Gson;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -57,6 +58,58 @@ public class NeuralApi {
 
         if (response.getStatusCode() == HttpStatus.OK) {
             return new Gson().fromJson(response.getBody(), NeuralClassResponse.class);
+        } else {
+            return null;
+        }
+    }
+
+    public List<String> getNegative() {
+        String url  = "http://127.0.0.1:8000/class/negative";
+
+        setHeaders();
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                request,
+                String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return List.of(new Gson().fromJson(response.getBody(), String[].class));
+        } else {
+            return null;
+        }
+    }
+
+    public List<String> getPositive() {
+        String url  = "http://127.0.0.1:8000/class/positive";
+
+        setHeaders();
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                request,
+                String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return List.of(new Gson().fromJson(response.getBody(), String[].class));
+        } else {
+            return null;
+        }
+    }
+
+    public QuestionCount getQuestionCount() {
+        String url  = "http://127.0.0.1:8000/statistics/";
+
+        ResponseEntity<QuestionCount> response = restTemplate.getForEntity(url, QuestionCount.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return ResponseEntity.ok(response.getBody()).getBody();
         } else {
             return null;
         }

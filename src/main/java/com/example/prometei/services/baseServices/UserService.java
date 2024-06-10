@@ -44,6 +44,16 @@ public class UserService implements BasicService<User> {
     }
 
     /**
+     * Сохраняет новые данные пользователя.
+     *
+     * @param entity пользователь, которого необходимо изменить
+     */
+    public void save(User entity) {
+        userRepository.save(entity);
+        log.info("User with id = {} successfully saved", entity.getId());
+    }
+
+    /**
      * Добавляет нового неавторизованного пользователя в систему.
      *
      * @param entity новый пользователь, которого необходимо добавить
@@ -150,12 +160,18 @@ public class UserService implements BasicService<User> {
             throw new EntityNotFoundException();
         }
 
-        entity.setId(id);
-        entity.setRole(currentUser.getRole());
-        entity.setPassword(currentUser.getPassword());
-        entity.setEmail(currentUser.getEmail());
+        currentUser.setLastName(entity.getLastName() == null ? currentUser.getLastName() : entity.getLastName());
+        currentUser.setFirstName(entity.getFirstName() == null ? currentUser.getFirstName() : entity.getFirstName());
+        currentUser.setResidenceCity(entity.getResidenceCity() == null ? currentUser.getResidenceCity() : entity.getResidenceCity());
+        currentUser.setGender(entity.getGender() == null ? currentUser.getGender() : entity.getGender());
+        currentUser.setEmail(entity.getEmail() == null ? currentUser.getEmail() : entity.getEmail());
+        currentUser.setPhoneNumber(entity.getPhoneNumber() == null ? currentUser.getPhoneNumber() : entity.getPhoneNumber());
+        currentUser.setBirthDate(entity.getBirthDate() == null ? currentUser.getBirthDate() : entity.getBirthDate());
+        currentUser.setPassport(entity.getPassport() == null ? currentUser.getPassport() : entity.getPassport());
+        currentUser.setInternationalPassportNum(entity.getInternationalPassportNum() == null ? currentUser.getInternationalPassportNum() : entity.getInternationalPassportNum());
+        currentUser.setInternationalPassportDate(entity.getInternationalPassportDate() == null ? currentUser.getInternationalPassportDate() : entity.getInternationalPassportDate());
 
-        userRepository.save(entity);
+        userRepository.save(currentUser);
         log.info("User with id = {} successfully edit", id);
     }
 

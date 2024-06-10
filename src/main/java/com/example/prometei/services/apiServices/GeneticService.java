@@ -1,4 +1,4 @@
-package com.example.prometei.services;
+package com.example.prometei.services.apiServices;
 
 import com.example.prometei.api.GeneticApi;
 import com.example.prometei.api.response.GeneticSearch;
@@ -25,6 +25,19 @@ public class GeneticService {
         this.geneticApi = geneticApi;
     }
 
+    /**
+     * Возвращает список маршрутов (SearchDto) на основе заданных параметров.
+     *
+     * @param departurePoint Точка отправления.
+     * @param destinationPoint Пункт назначения.
+     * @param departureDate Дата отправления.
+     * @param returnDate Дата возвращения (может быть null).
+     * @param countBusiness Количество билетов бизнес-класса.
+     * @param countEconomic Количество билетов эконом-класса.
+     * @param withPet Указание, можно ли путешествовать с питомцем.
+     * @param model Модель самолета.
+     * @return Список объектов SearchDto, представляющих маршруты, соответствующие заданным параметрам.
+     */
     public List<SearchDto> getRoutes(@RequestParam String departurePoint,
                                      @RequestParam String destinationPoint,
                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,

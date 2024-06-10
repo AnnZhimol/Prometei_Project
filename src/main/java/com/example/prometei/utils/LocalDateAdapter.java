@@ -2,6 +2,7 @@ package com.example.prometei.utils;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 
 public class LocalDateAdapter extends TypeAdapter<LocalDate> implements JsonSerializer<LocalDate> {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+
 
     @Override
     public void write(JsonWriter jsonWriter, LocalDate localDate) throws IOException {
@@ -23,12 +25,16 @@ public class LocalDateAdapter extends TypeAdapter<LocalDate> implements JsonSeri
 
     @Override
     public LocalDate read(JsonReader jsonReader) throws IOException {
+        if (jsonReader.peek() == JsonToken.NULL) {
+            jsonReader.nextNull();
+            return null;
+        }
         String date = jsonReader.nextString();
-        return date == null ? null : LocalDate.parse(date, formatter);
+        return LocalDate.parse(date, formatter);
     }
 
     @Override
     public JsonElement serialize(LocalDate localDate, Type typeOfSrc, JsonSerializationContext context) {
-        return localDate == null ? null : new JsonPrimitive(localDate.format(formatter));
+        return localDate == null ? JsonNull.INSTANCE : new JsonPrimitive(localDate.format(formatter));
     }
 }

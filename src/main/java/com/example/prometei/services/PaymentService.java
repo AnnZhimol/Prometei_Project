@@ -5,9 +5,11 @@ import com.example.prometei.models.Purchase;
 import com.example.prometei.models.enums.PaymentState;
 import com.example.prometei.repositories.PaymentRepository;
 import com.example.prometei.services.baseServices.TicketService;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,19 +18,47 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final TicketService ticketService;
+    private final ScheduledExecutorService scheduler;
     private final Logger log = LoggerFactory.getLogger(PaymentService.class);
     @Value("${hash.salt}")
     private String salt;
 
+    @Autowired
     public PaymentService(PaymentRepository paymentRepository, TicketService ticketService) {
         this.paymentRepository = paymentRepository;
         this.ticketService = ticketService;
+        this.scheduler = Executors.newScheduledThreadPool(1);
+    }
+
+    @PostConstruct
+    public void startScheduledTask() {
+        scheduler.scheduleAtFixedRate(this::updatePayments, 0, 5, TimeUnit.MINUTES);
+    }
+
+    public void stopScheduledTask() {
+        scheduler.shutdown();
+    }
+
+    private void updatePayments() {
+        List<Payment> payments = paymentRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+
+        payments.forEach(payment -> {
+            if (payment.getDeadline().isBefore(now) && payment.getState() == PaymentState.PROCESSING) {
+                cancelPayment(payment.getHash());
+                log.info("Updated payment status to Cancel for payment id: {}", payment.getId());
+            }
+        });
     }
 
     /**
@@ -42,8 +72,10 @@ public class PaymentService {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             String text = payment.getId() + payment.getCreateDate().toString() + salt;
             byte[] hashBytes = digest.digest(text.getBytes(StandardCharsets.UTF_8));
+            log.info("Hash was created.");
             return Base64.getEncoder().encodeToString(hashBytes);
         } catch (NoSuchAlgorithmException e) {
+            log.error("Error generating hash {}", e.getMessage());
             throw new RuntimeException("Error generating hash", e);
         }
     }
@@ -71,10 +103,13 @@ public class PaymentService {
                 .deadline(moment.plusMinutes(10))
                 .build();
 
+        paymentRepository.save(payment);
+
         payment.setHash(generateUniqueHash(payment));
         purchase.setPayment(payment);
 
         paymentRepository.save(payment);
+        log.info("Payment with hash = {} was created", payment.getHash());
     }
 
     /**
@@ -87,7 +122,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findByHash(paymentHash);
 
         if (payment == null) {
-            log.error("Can't cancel payment. Payment = null.");
+            log.error("Can't cancel payment with hash = {}. Payment = null.", paymentHash);
             throw new NullPointerException();
         }
 
@@ -98,6 +133,7 @@ public class PaymentService {
         ticketService.returnTickets(purchase.getTickets());
 
         paymentRepository.save(payment);
+        log.info("Payment with hash = {} was canceled.", paymentHash);
     }
 
     /**
@@ -113,7 +149,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findByHash(paymentHash);
 
         if (payment == null) {
-            log.error("Can't cancel payment. Payment = null.");
+            log.error("Can't pay payment with hash = {}. Payment = null.", paymentHash);
             throw new NullPointerException();
         }
 

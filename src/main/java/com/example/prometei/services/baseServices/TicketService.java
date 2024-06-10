@@ -1,11 +1,9 @@
 package com.example.prometei.services.baseServices;
 
-import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
-import com.example.prometei.services.TransformDataService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -21,13 +19,11 @@ import java.util.stream.Collectors;
 public class TicketService implements BasicService<Ticket> {
     private final TicketRepository ticketRepository;
     private final AdditionalFavorRepository additionalFavorRepository;
-    private final TransformDataService transformDataService;
     private final Logger log = LoggerFactory.getLogger(TicketService.class);
 
-    public TicketService(TicketRepository ticketRepository, AdditionalFavorRepository additionalFavorRepository, TransformDataService transformDataService){
+    public TicketService(TicketRepository ticketRepository, AdditionalFavorRepository additionalFavorRepository){
         this.ticketRepository = ticketRepository;
         this.additionalFavorRepository = additionalFavorRepository;
-        this.transformDataService = transformDataService;
     }
 
     /**
@@ -263,7 +259,7 @@ public class TicketService implements BasicService<Ticket> {
         }
 
         LocalDateTime dateNow = LocalDateTime.now();
-        Duration duration =Duration.between(dateNow, ticket.getFlight().getDepartureDate().atTime(ticket.getFlight().getDepartureTime()));
+        Duration duration = Duration.between(dateNow, ticket.getFlight().getDepartureDate().atTime(ticket.getFlight().getDepartureTime()));
         boolean favorExist = false;
 
         for (AdditionalFavor additionalFavor : ticket.getAdditionalFavors()) {
@@ -285,22 +281,6 @@ public class TicketService implements BasicService<Ticket> {
     private void returnTicket(Ticket ticket) {
         Purchase purchase = ticket.getPurchase();
         Flight flight = ticket.getFlight();
-        double scale = Math.pow(10, 2);
-
-        double costFavors = ticket.getAdditionalFavors()
-                .stream()
-                .map(transformDataService::transformToAdditionalFavorDto)
-                .mapToDouble(AdditionalFavorDto::getCost)
-                .sum();
-
-        Double costFlight = ticket.getTicketType() == TicketType.BUSINESS ?
-                ticket.getFlight().getBusinessCost() :
-                ticket.getFlight().getEconomyCost();
-
-        double totalCost = (Math.ceil(purchase.getTotalCost() * scale) / scale) - (Math.ceil(costFavors * scale) / scale) - (Math.ceil(costFlight * scale) / scale);
-        if (totalCost < 1)
-            totalCost = 0.0;
-
 
         if (ticket.getTicketType() == TicketType.BUSINESS) {
             flight.setBusinessSeats(flight.getBusinessSeats() + 1);
@@ -309,9 +289,6 @@ public class TicketService implements BasicService<Ticket> {
         }
 
         ticket.setFlight(flight);
-
-        purchase.setTotalCost(totalCost);
-
         ticket.setUnauthUser(null);
         ticket.setUser(null);
 
@@ -320,6 +297,7 @@ public class TicketService implements BasicService<Ticket> {
             additionalFavor.setFlightFavor(null);
             additionalFavorRepository.deleteNull();
         }
+
         ticket.setAdditionalFavors(Collections.emptyList());
 
         ticket.setPurchase(purchase);

@@ -1,6 +1,7 @@
 package com.example.prometei.dto.PurchaseDtos;
 
 import com.example.prometei.models.enums.PaymentMethod;
+import com.example.prometei.models.enums.PaymentState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class PurchaseDto implements Serializable {
     private PaymentMethod paymentMethod;
     private LocalDateTime createDate;
     private String userEmail;
+    private PaymentState state;
 }
