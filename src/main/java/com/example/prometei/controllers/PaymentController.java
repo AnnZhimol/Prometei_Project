@@ -1,6 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.services.PaymentService;
+import com.example.prometei.services.codeServices.PaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

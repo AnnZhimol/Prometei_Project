@@ -1,9 +1,12 @@
-package com.example.prometei.services;
+package com.example.prometei.services.codeServices;
 
+import com.example.prometei.models.Flight;
 import com.example.prometei.models.Payment;
 import com.example.prometei.models.Purchase;
+import com.example.prometei.models.Ticket;
 import com.example.prometei.models.enums.PaymentState;
 import com.example.prometei.repositories.PaymentRepository;
+import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.TicketService;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -29,14 +32,16 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final TicketService ticketService;
     private final ScheduledExecutorService scheduler;
+    private final FlightService flightService;
     private final Logger log = LoggerFactory.getLogger(PaymentService.class);
     @Value("${hash.salt}")
     private String salt;
 
     @Autowired
-    public PaymentService(PaymentRepository paymentRepository, TicketService ticketService) {
+    public PaymentService(PaymentRepository paymentRepository, TicketService ticketService, FlightService flightService) {
         this.paymentRepository = paymentRepository;
         this.ticketService = ticketService;
+        this.flightService = flightService;
         this.scheduler = Executors.newScheduledThreadPool(1);
     }
 
@@ -131,6 +136,12 @@ public class PaymentService {
         payment.setState(PaymentState.CANCELED);
         payment.setPaymentDate(LocalDateTime.now());
         ticketService.returnTickets(purchase.getTickets());
+
+        List<Flight> flights = purchase.getTickets().stream().map(Ticket::getFlight).toList();
+
+        for(Flight flight : flights) {
+            flightService.updateSeatsCount(flight.getId());
+        }
 
         paymentRepository.save(payment);
         log.info("Payment with hash = {} was canceled.", paymentHash);

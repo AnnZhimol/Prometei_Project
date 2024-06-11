@@ -109,7 +109,7 @@ public class TestServices {
     void editPurchase(){
         Purchase purchase = Purchase.builder()
                 .createDate(LocalDate.now().atStartOfDay())
-                .paymentMethod(PaymentMethod.CASH)
+                .paymentMethod(PaymentMethod.SBP)
                 .totalCost(2445.0)
                 .build();
 

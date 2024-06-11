@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <title>Boarding Pass</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #f0f4f8;
             color: #333;
             margin: 0;
@@ -97,6 +97,14 @@
         .additional-favors table tr:last-child td:last-child {
             border-bottom-right-radius: 10px;
         }
+        .footer {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #005b96;
+            color: #fff;
+            border-radius: 0 0 10px 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -176,6 +184,9 @@
             </tr>
             </tbody>
         </table>
+    </div>
+    <div class="footer">
+        <div>НОМЕР БИЛЕТА / TICKET NUMBER: <span th:text="${ticketNumber}"></span></div>
     </div>
 </div>
 </body>

@@ -1,11 +1,14 @@
 package com.example.prometei.repositories;
 
 import com.example.prometei.models.*;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
@@ -20,4 +23,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("SELECT t FROM Ticket t " +
             "WHERE t.purchase.id = :id")
     List<Ticket> findTicketsByPurchase(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT t FROM Ticket t WHERE t.id = :id")
+    Optional<Ticket> findByIdWithLock( Long id);
 }

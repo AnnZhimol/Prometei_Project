@@ -1,7 +1,6 @@
 package com.example.prometei.services.baseServices;
 
 import com.example.prometei.models.*;
-import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.AdditionalFavorRepository;
 import com.example.prometei.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -79,7 +78,7 @@ public class TicketService implements BasicService<Ticket> {
      */
     public List<Ticket> getTicketsByFlight(Long id) {
         log.info("Get list of sorted tickets by flight with id = {}", id);
-        return ticketRepository.findTicketsByFlight(id);
+        return ticketRepository.findTicketsByFlight(id).stream().filter(ticket -> ticket.getPurchase() == null).toList();
     }
 
     /**
@@ -280,15 +279,7 @@ public class TicketService implements BasicService<Ticket> {
 
     private void returnTicket(Ticket ticket) {
         Purchase purchase = ticket.getPurchase();
-        Flight flight = ticket.getFlight();
 
-        if (ticket.getTicketType() == TicketType.BUSINESS) {
-            flight.setBusinessSeats(flight.getBusinessSeats() + 1);
-        } else if (ticket.getTicketType() == TicketType.ECONOMIC) {
-            flight.setEconomSeats(flight.getEconomSeats() + 1);
-        }
-
-        ticket.setFlight(flight);
         ticket.setUnauthUser(null);
         ticket.setUser(null);
 
@@ -387,19 +378,27 @@ public class TicketService implements BasicService<Ticket> {
      */
     @Transactional
     public void addAdditionalFavorsToTicket(Long id, List<AdditionalFavor> additionalFavors) {
-        Ticket ticket = ticketRepository.findById(id).orElse(null);
+        Ticket ticket = ticketRepository.findByIdWithLock(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ticket not found for id: " + id));
 
-        if (ticket == null) {
-            log.error("Adding additionalFavors to the ticket failed. Ticket == null");
-            throw new NullPointerException();
+        if (ticket.getPurchase() != null) {
+            log.error("Ticket already bought. Try another ticket.");
+            throw new IllegalArgumentException("Ticket already bought");
         }
+
+        List<AdditionalFavor> existingFavors = ticket.getAdditionalFavors();
+        for (AdditionalFavor favor : existingFavors) {
+            favor.setTicket(null);
+            favor.setFlightFavor(null);
+            additionalFavorRepository.delete(favor);
+        }
+        ticket.getAdditionalFavors().clear();
 
         if (additionalFavors == null) {
             log.error("Adding additionalFavors to the ticket failed. AdditionalFavors == null");
-            throw new NullPointerException();
+            throw new NullPointerException("AdditionalFavors is null");
         }
 
-        List<AdditionalFavor> existingFavors = additionalFavorRepository.findAdditionalFavorsByTicket(id);
         Set<String> existingFavorNames = existingFavors.stream()
                 .map(favor -> favor.getFlightFavor().getName())
                 .collect(Collectors.toSet());
@@ -409,7 +408,7 @@ public class TicketService implements BasicService<Ticket> {
         for (AdditionalFavor additionalFavor : additionalFavors) {
             if (additionalFavor == null) {
                 log.error("Adding additionalFavors to the ticket failed. AdditionalFavor == null");
-                throw new NullPointerException();
+                throw new NullPointerException("AdditionalFavor is null");
             }
 
             String favorName = additionalFavor.getFlightFavor().getName();
@@ -418,11 +417,8 @@ public class TicketService implements BasicService<Ticket> {
                 log.error("Adding additionalFavors to the ticket failed. AdditionalFavor {} duplicates an existing favor or another favor in the list.", favorName);
                 throw new IllegalArgumentException("AdditionalFavor cannot duplicate existing or another favor in the list: " + favorName);
             }
-            
-            newFavorNames.add(favorName);
-        }
 
-        for (AdditionalFavor additionalFavor : additionalFavors) {
+            newFavorNames.add(favorName);
             additionalFavor.setTicket(ticket);
             additionalFavorRepository.save(additionalFavor);
         }

@@ -1,4 +1,4 @@
-package com.example.prometei.services;
+package com.example.prometei.services.codeServices;
 
 import com.example.prometei.models.ConfirmationCode;
 import com.example.prometei.models.User;

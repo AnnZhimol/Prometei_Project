@@ -10,6 +10,7 @@ import com.example.prometei.models.User;
 import com.example.prometei.models.enums.CodeState;
 import com.example.prometei.models.enums.UserRole;
 import com.example.prometei.services.baseServices.UserService;
+import com.example.prometei.services.codeServices.ConfirmationCodeService;
 import com.example.prometei.services.emailServices.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

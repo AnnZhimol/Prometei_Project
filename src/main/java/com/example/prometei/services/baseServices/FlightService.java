@@ -92,6 +92,37 @@ public class FlightService implements BasicService<Flight> {
         favorRepository.saveAll(favors);
     }
 
+    public void updateSeatsCount(Long flightId) {
+        List<Ticket> tickets = ticketService.getTicketsByFlight(flightId);
+
+        if (tickets == null) {
+            log.error("Find tickets failed. Tickets can't be null.");
+            throw new NullPointerException();
+        }
+
+        Flight flight = getById(flightId);
+
+        if (flight == null) {
+            log.error("Find flight failed. Flight can't be null.");
+            throw new NullPointerException();
+        }
+
+        flight.setEconomSeats(0);
+        flight.setBusinessSeats(0);
+
+        flightRepository.save(flight);
+
+        for (Ticket ticket : tickets) {
+            if (ticket.getTicketType() == TicketType.BUSINESS) {
+                flight.setBusinessSeats(flight.getBusinessSeats() + 1);
+            } else if (ticket.getTicketType() == TicketType.ECONOMIC) {
+                flight.setEconomSeats(flight.getEconomSeats() + 1);
+            }
+        }
+
+        flightRepository.save(flight);
+    }
+
     private Double getDistance(Pair<Double,Double> coordinatesB, Pair<Double,Double> coordinatesD) {
         Pair<Double, Double> coordinatesA = new Pair<>(coordinatesD.a, coordinatesB.b);
 

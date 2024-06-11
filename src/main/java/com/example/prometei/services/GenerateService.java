@@ -11,6 +11,7 @@ import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.PurchaseService;
 import com.example.prometei.services.baseServices.TicketService;
 import com.example.prometei.services.baseServices.UserService;
+import com.example.prometei.services.codeServices.PaymentService;
 import com.github.javafaker.Faker;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;

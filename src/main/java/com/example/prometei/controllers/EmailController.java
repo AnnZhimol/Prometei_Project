@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/email")
@@ -44,6 +46,8 @@ public class EmailController {
             emailService.sendHtmlEmail(email, purchaseId);
         } catch (MessagingException mailException) {
             return new ResponseEntity<>("Unable to send email", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return new ResponseEntity<>("Please check your inbox for order confirmation", HttpStatus.OK);

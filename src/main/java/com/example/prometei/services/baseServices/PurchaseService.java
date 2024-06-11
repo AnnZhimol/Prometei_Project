@@ -4,7 +4,7 @@ import com.example.prometei.dto.UserDtos.PassengerDto;
 import com.example.prometei.models.*;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.repositories.PurchaseRepository;
-import com.example.prometei.services.PaymentService;
+import com.example.prometei.services.codeServices.PaymentService;
 import com.example.prometei.services.TransformDataService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

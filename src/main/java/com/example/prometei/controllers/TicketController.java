@@ -5,6 +5,7 @@ import com.example.prometei.dto.FavorDto.FlightFavorDto;
 import com.example.prometei.dto.TicketDtos.TicketDto;
 import com.example.prometei.models.*;
 import com.example.prometei.services.TransformDataService;
+import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.TicketService;
 import lombok.NonNull;
 import org.springframework.http.HttpStatus;
@@ -22,10 +23,12 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 @RequestMapping("/ticket")
 public class TicketController {
     private final TicketService ticketService;
+    private final FlightService flightService;
     private final TransformDataService transformDataService;
 
-    public TicketController(TicketService ticketService, TransformDataService transformDataService) {
+    public TicketController(TicketService ticketService, FlightService flightService, TransformDataService transformDataService) {
         this.ticketService = ticketService;
+        this.flightService = flightService;
         this.transformDataService = transformDataService;
     }
 
@@ -139,5 +142,6 @@ public class TicketController {
     @PatchMapping("/returnTicket")
     public void returnTicket(@RequestParam @NonNull String ticketId) {
         ticketService.returnTicket(decryptId(ticketId));
+        flightService.updateSeatsCount(ticketService.getById(decryptId(ticketId)).getFlight().getId());
     }
 }
