@@ -22,4 +22,5 @@ public class TicketDto implements Serializable {
     private String flightId;
     private Double costFlight;
     private Double costFavors;
+    private Boolean isEmpty;
 }

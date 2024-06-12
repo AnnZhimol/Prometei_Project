@@ -77,6 +77,11 @@ public class AuthController {
         return authenticationService.signUp(request);
     }
 
+    @PostMapping("/sign-up-admin")
+    public JwtAuthenticationResponse signUpAdmin(@RequestBody @Valid SignUpUser request) {
+        return authenticationService.signUpAdmin(request);
+    }
+
     /**
      * Обрабатывает запрос на вход пользователя в систему.
      *

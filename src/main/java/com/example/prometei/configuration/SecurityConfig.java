@@ -34,9 +34,61 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll())
-                //TODO
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((authorize) -> authorize
+                        /*.requestMatchers(
+                                "/auth/getByToken",
+                                "/auth/check",
+                                "/auth/editPasswordRemembered",
+                                "/auth/sendCode",
+                                "/auth/editPasswordEmail",
+                                "/auth/sign-up",
+                                "/auth/sign-in",
+                                "/email/htmlEmail",
+                                "/flight/get",
+                                "/flight/getAirports",
+                                "/flight/search",
+                                "/flight/all",
+                                "/flight/getFlightFavors",
+                                "/chat/classification",
+                                "/chat/places",
+                                "/chat/negative",
+                                "/chat/positive",
+                                "/payment/cancelPay",
+                                "/payment/confirmPay",
+                                "/purchase/get",
+                                "/purchase/all",
+                                "/purchase/create",
+                                "/statistic/heatMap",
+                                "/ticket/get",
+                                "/ticket/all",
+                                "/ticket/getByFlight",
+                                "/ticket/getByPurchase",
+                                "/ticket/getByUser",
+                                "/ticket/getAdditionalFavors",
+                                "/ticket/addAdditionalFavors",
+                                "/user/sendCodeForReturn",
+                                "/user/checkCodeForReturn",
+                                "/user/returnTicket"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/flight/create",
+                                "/flight/addFlightFavors",
+                                "/flight/edit",
+                                "/statistic/ageTicket",
+                                "/statistic/popularFavor",
+                                "/statistic/questionCount",
+                                "/statistic/averageCost",
+                                "/statistic/countSales",
+                                "/statistic/topRoute"
+                        ).hasRole("ADMIN")
+                        .requestMatchers(
+                                "/purchase/getByUser",
+                                "/user/get",
+                                "/user/editUser"
+                        ).authenticated()*/
+                        .anyRequest().permitAll()
+                )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -45,11 +45,6 @@
     "favorType": "REQUIRED"
   },
   {
-    "name": "Интернет на борту (1 час)",
-    "cost": 1000,
-    "favorType": "REQUIRED"
-  },
-  {
     "name": "Интернет на борту (весь полет)",
     "cost": 2500,
     "favorType": "REQUIRED"

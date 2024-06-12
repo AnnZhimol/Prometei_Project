@@ -13,9 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -218,14 +221,14 @@ public class StatisticService {
      * @param month Месяц, за который необходимо получить популярные услуги.
      * @return Объект PopularFavors, содержащий список популярных услуг с их количеством.
      */
-    public PopularFavors getPopularFavorsByMonth(Month month) {
+    public PopularFavors getPopularFavorsByMonth(int year, Month month) {
         List<AdditionalFavor> additionalFavors = ticketService.getAllAdFavors();
 
         Map<String, Long> groupedFavors = additionalFavors.stream()
                 .filter(favor -> {
                     Ticket ticket = favor.getTicket();
                     Purchase purchase = ticket.getPurchase();
-                    return purchase != null && purchase.getCreateDate().getMonth() == month;
+                    return purchase != null && purchase.getCreateDate().getMonth() == month && purchase.getCreateDate().getYear() == year;
                 })
                 .collect(Collectors.groupingBy(
                         favor -> favor.getFlightFavor().getName(),
@@ -239,5 +242,118 @@ public class StatisticService {
 
         log.info("Getting popular bought favors by month.");
         return popularFavors;
+    }
+
+    public AverageCost calculateAverageCost() {
+        AverageCost averageCost = new AverageCost();
+
+        List<Purchase> paidPurchases = purchaseService.getAll().stream()
+                .filter(purchase -> purchase.getPayment() != null && PaymentState.PAID.equals(purchase.getPayment().getState()))
+                .toList();
+
+        Map<AgeCategory, Map<UserGender, List<Purchase>>> groupedPurchases = new HashMap<>();
+        for (Purchase purchase : paidPurchases) {
+            UserGender gender;
+            LocalDate birthDate;
+
+            if (purchase.getUser() != null) {
+                gender = purchase.getUser().getGender();
+                birthDate = purchase.getUser().getBirthDate();
+            } else {
+                gender = purchase.getUnauthUser().getGender();
+                birthDate = purchase.getUnauthUser().getBirthDate();
+            }
+
+            AgeCategory ageCategory = getAgeCategory(birthDate);
+            groupedPurchases
+                    .computeIfAbsent(ageCategory, k -> new HashMap<>())
+                    .computeIfAbsent(gender, k -> new ArrayList<>())
+                    .add(purchase);
+        }
+
+        for (Map.Entry<AgeCategory, Map<UserGender, List<Purchase>>> entry : groupedPurchases.entrySet()) {
+            AgeCategory ageCategory = entry.getKey();
+            Map<UserGender, List<Purchase>> genderMap = entry.getValue();
+
+            AverageCost.StatByGender statByGender = new AverageCost.StatByGender();
+            statByGender.setMale(calculateAverageCostForGender(genderMap.get(UserGender.MALE)));
+            statByGender.setFemale(calculateAverageCostForGender(genderMap.get(UserGender.FEMALE)));
+
+            averageCost.getCategories().put(ageCategory, statByGender);
+        }
+
+        return averageCost;
+    }
+
+    private List<AverageCost.PurchaseStats> calculateAverageCostForGender(List<Purchase> purchases) {
+        List<AverageCost.PurchaseStats> statsList = new ArrayList<>();
+        if (purchases != null && !purchases.isEmpty()) {
+            double totalCost = purchases.stream().mapToDouble(Purchase::getTotalCost).sum();
+            double averageCost = totalCost / purchases.size();
+
+            BigDecimal roundedAverageCost = BigDecimal.valueOf(averageCost).setScale(2, RoundingMode.HALF_UP);
+
+            AverageCost.PurchaseStats stats = new AverageCost.PurchaseStats();
+            stats.setCostMap("averageCost", roundedAverageCost.doubleValue());
+
+            statsList.add(stats);
+        }
+        return statsList;
+    }
+
+    private AgeCategory getAgeCategory(LocalDate birthDate) {
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+
+        if (age < 22 && age >= 18) {
+            return AgeCategory.YOUNG;
+        } else if (age >= 22 && age < 35) {
+            return AgeCategory.MIDDLE_AGE_LOW;
+        } else if (age >= 35 && age < 60) {
+            return AgeCategory.MIDDLE_AGE_HIGH;
+        } else {
+            return AgeCategory.ELDERLY;
+        }
+    }
+
+    public List<RouteStat> calculateTopPopularRoutes() {
+        List<Ticket> paidTickets = ticketService.getAll().stream()
+                .filter(ticket -> ticket.getPurchase() != null && ticket.getPurchase().getPayment() != null)
+                .filter(ticket -> PaymentState.PAID.equals(ticket.getPurchase().getPayment().getState()))
+                .toList();
+
+        Map<String, Long> routeCountMap = paidTickets.stream()
+                .collect(Collectors.groupingBy(ticket -> {
+                    Flight flight = ticket.getFlight();
+                    return flight.getDeparturePoint() + " -> " + flight.getDestinationPoint();
+                }, Collectors.counting()));
+
+        return routeCountMap.entrySet().stream()
+                .map(entry -> new RouteStat(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparingLong(RouteStat::getTicketCount).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+    }
+
+    public List<DailyTicketSales> calculateDailyTicketSales(int year, Month month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        Map<LocalDate, Long> dailySales = ticketService.getAll().stream()
+                .filter(ticket -> ticket.getPurchase() != null && ticket.getPurchase().getPayment() != null)
+                .filter(ticket -> PaymentState.PAID.equals(ticket.getPurchase().getPayment().getState()))
+                .filter(ticket -> {
+                    LocalDate purchaseDate = ticket.getPurchase().getCreateDate().toLocalDate();
+                    return !purchaseDate.isBefore(startDate) && !purchaseDate.isAfter(endDate);
+                })
+                .collect(Collectors.groupingBy(ticket -> ticket.getPurchase().getCreateDate().toLocalDate(), Collectors.counting()));
+
+        // Заполнение списка DTO
+        List<DailyTicketSales> salesDTOList = new ArrayList<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            salesDTOList.add(new DailyTicketSales(date, dailySales.getOrDefault(date, 0L)));
+        }
+
+        return salesDTOList;
     }
 }

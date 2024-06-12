@@ -78,7 +78,7 @@ public class TicketService implements BasicService<Ticket> {
      */
     public List<Ticket> getTicketsByFlight(Long id) {
         log.info("Get list of sorted tickets by flight with id = {}", id);
-        return ticketRepository.findTicketsByFlight(id).stream().filter(ticket -> ticket.getPurchase() == null).toList();
+        return ticketRepository.findTicketsByFlight(id);
     }
 
     /**

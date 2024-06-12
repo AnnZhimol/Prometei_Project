@@ -100,7 +100,7 @@ public class AuthenticationService {
             throw new EntityNotFoundException();
         }
 
-        confirmationCodeService.createConfirmationCode(currentUser);
+        confirmationCodeService.createConfirmationCodeForUser(currentUser);
 
         emailService.sendSimpleEmail(currentUser.getEmail(), "Изменение пароля",
                 "Введите данный код, чтобы изменить пароль: " + currentUser.getConfirmationCode().getHash() + ". Если Вы не делали запрос на изменение пароля, то просто проигнорируйте данное письмо.");
@@ -122,7 +122,7 @@ public class AuthenticationService {
 
         if (currentUser.getConfirmationCode().getState() != CodeState.ACTIVE ||
                 currentUser.getConfirmationCode().getDeadline().isBefore(moment)) {
-            confirmationCodeService.expiredConfirmationCode(currentUser.getConfirmationCode().getHash());
+            confirmationCodeService.expiredConfirmationCodeForUser(currentUser.getConfirmationCode().getId());
             log.error("Confirmation was expired. Try again.");
             return false;
         }
@@ -158,7 +158,7 @@ public class AuthenticationService {
 
         if (currentUser.getConfirmationCode().getState() != CodeState.ACTIVE ||
                 currentUser.getConfirmationCode().getDeadline().isBefore(moment)) {
-            confirmationCodeService.expiredConfirmationCode(currentUser.getConfirmationCode().getHash());
+            confirmationCodeService.expiredConfirmationCodeForUser(currentUser.getConfirmationCode().getId());
             log.error("Confirmation was expired. Try again.");
             throw new IllegalArgumentException();
         }
@@ -174,7 +174,7 @@ public class AuthenticationService {
         }
 
         currentUser.setPassword(bCryptPasswordEncoder.encode(passwords.getNewPassword()));
-        confirmationCodeService.expiredConfirmationCode(currentUser.getConfirmationCode().getHash());
+        confirmationCodeService.expiredConfirmationCodeForUser(currentUser.getConfirmationCode().getId());
 
         userService.save(currentUser);
         log.info("User password with email = {} successfully edit", email);
@@ -194,7 +194,29 @@ public class AuthenticationService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
-                .role(UserRole.CLIENT)
+                .role(UserRole.ROLE_CLIENT)
+                .build();
+
+        if (Objects.equals(request.getPassword(), request.getPasswordConfirm())) {
+            userService.add(user);
+            String jwt = jwtService.generateToken(user);
+            log.info("User with id = {} successfully sign up", user.getId());
+
+            return new JwtAuthenticationResponse(jwt);
+        }
+
+        log.error("Passwords not equals");
+        throw new IllegalArgumentException("Passwords not equals");
+    }
+
+    @Transactional
+    public JwtAuthenticationResponse signUpAdmin(SignUpUser request) {
+        User user = User.builder()
+                .email(request.getEmail())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .password(bCryptPasswordEncoder.encode(request.getPassword()))
+                .role(UserRole.ROLE_ADMIN)
                 .build();
 
         if (Objects.equals(request.getPassword(), request.getPasswordConfirm())) {

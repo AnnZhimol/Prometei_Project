@@ -24,4 +24,7 @@ public class ConfirmationCode {
 
     @OneToOne(mappedBy = "confirmationCode", fetch = FetchType.EAGER)
     private User user;
+
+    @OneToOne(mappedBy = "confirmationCode", fetch = FetchType.EAGER)
+    private Ticket ticket;
 }

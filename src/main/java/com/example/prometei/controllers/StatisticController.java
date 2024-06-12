@@ -1,9 +1,6 @@
 package com.example.prometei.controllers;
 
-import com.example.prometei.dto.Statistic.AirplaneSeats;
-import com.example.prometei.dto.Statistic.AgeTicketDto;
-import com.example.prometei.dto.Statistic.PopularFavors;
-import com.example.prometei.dto.Statistic.QuestionCount;
+import com.example.prometei.dto.Statistic.*;
 import com.example.prometei.services.StatisticService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,12 +38,29 @@ public class StatisticController {
     }
 
     @GetMapping("/popularFavor")
-    public ResponseEntity<PopularFavors> getDataForAgeMap(@RequestParam Month month) {
-        return new ResponseEntity<>(statisticService.getPopularFavorsByMonth(month), HttpStatus.OK);
+    public ResponseEntity<PopularFavors> getDataForPopularFavor(@RequestParam Month month,
+                                                                @RequestParam int year) {
+        return new ResponseEntity<>(statisticService.getPopularFavorsByMonth(year, month), HttpStatus.OK);
     }
 
     @GetMapping("/questionCount")
     public ResponseEntity<QuestionCount> getDataFromNeural() {
         return new ResponseEntity<>(statisticService.getDataFromNeural(), HttpStatus.OK);
+    }
+
+    @GetMapping("/averageCost")
+    public ResponseEntity<AverageCost> getDataForAverageCost() {
+        return new ResponseEntity<>(statisticService.calculateAverageCost(), HttpStatus.OK);
+    }
+
+    @GetMapping("/countSales")
+    public ResponseEntity<List<DailyTicketSales>> getDataForDailyTicketSales(@RequestParam Month month,
+                                                                             @RequestParam int year) {
+        return new ResponseEntity<>(statisticService.calculateDailyTicketSales(year, month), HttpStatus.OK);
+    }
+
+    @GetMapping("/topRoute")
+    public ResponseEntity<List<RouteStat>> getTopRoutes() {
+        return new ResponseEntity<>(statisticService.calculateTopPopularRoutes(), HttpStatus.OK);
     }
 }

@@ -112,7 +112,7 @@ public class FlightService implements BasicService<Flight> {
 
         flightRepository.save(flight);
 
-        for (Ticket ticket : tickets) {
+        for (Ticket ticket : tickets.stream().filter(ticket -> ticket.getPurchase() == null).toList()) {
             if (ticket.getTicketType() == TicketType.BUSINESS) {
                 flight.setBusinessSeats(flight.getBusinessSeats() + 1);
             } else if (ticket.getTicketType() == TicketType.ECONOMIC) {

@@ -41,7 +41,7 @@ public class TestGenerateEntities {
 
     @Test
     public void UnAuthUserGenerate() {
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 25; i++) {
             generateService.generateUnAuthUser();
         }
     }
@@ -65,7 +65,7 @@ public class TestGenerateEntities {
 
     @Test
     public void UserGenerate() {
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 25; i++) {
             generateService.generateUser();
         }
     }

@@ -1,6 +1,7 @@
 package com.example.prometei.services.codeServices;
 
 import com.example.prometei.models.ConfirmationCode;
+import com.example.prometei.models.Ticket;
 import com.example.prometei.models.User;
 import com.example.prometei.models.enums.CodeState;
 import com.example.prometei.repositories.ConfirmationCodeRepository;
@@ -44,11 +45,65 @@ public class ConfirmationCodeService {
     /**
      * Создает новый код для обновления данных.
      *
+     * @param ticket объект пользователя
+     * @throws NullPointerException если покупка равна null
+     */
+    @Transactional
+    public void createConfirmationCodeForTicket(Ticket ticket) {
+        if (ticket == null) {
+            log.error("Can't create confirmationCode. ticket = null.");
+            throw new NullPointerException();
+        }
+
+        LocalDateTime moment = LocalDateTime.now();
+
+        ConfirmationCode confirmationCode = ConfirmationCode.builder()
+                .state(CodeState.ACTIVE)
+                .ticket(ticket)
+                .createDate(moment)
+                .deadline(moment.plusMinutes(3))
+                .build();
+
+        confirmationCodeRepository.save(confirmationCode);
+
+        confirmationCode.setHash(generateUniqueHash());
+        ticket.setConfirmationCode(confirmationCode);
+
+        confirmationCodeRepository.save(confirmationCode);
+        log.info("ConfirmationCode with hash = {} was created", confirmationCode.getHash());
+    }
+
+    /**
+     * Деактивирует код по его уникальному хешу.
+     *
+     * @param confirmationCodeHash уникальный хеш кода
+     * @throws NullPointerException если код с указанным хешем не найден
+     */
+    public void expiredConfirmationCodeForTicket(Long confirmationCodeHash) {
+        ConfirmationCode confirmationCode = confirmationCodeRepository.findById(confirmationCodeHash).orElse(null);
+
+        if (confirmationCode == null) {
+            log.error("Can't deactivate confirmationCode with hash = {}. СonfirmationCode = null.", confirmationCodeHash);
+            throw new NullPointerException();
+        }
+
+        Ticket ticket = confirmationCode.getTicket();
+
+        confirmationCode.setState(CodeState.EXPIRED);
+        ticket.setConfirmationCode(null);
+
+        confirmationCodeRepository.save(confirmationCode);
+        log.info("ConfirmationCode with hash = {} was expired.", confirmationCodeHash);
+    }
+
+    /**
+     * Создает новый код для обновления данных.
+     *
      * @param user объект пользователя
      * @throws NullPointerException если покупка равна null
      */
     @Transactional
-    public void createConfirmationCode(User user) {
+    public void createConfirmationCodeForUser(User user) {
         if (user == null) {
             log.error("Can't create confirmationCode. User = null.");
             throw new NullPointerException();
@@ -78,8 +133,8 @@ public class ConfirmationCodeService {
      * @param confirmationCodeHash уникальный хеш кода
      * @throws NullPointerException если код с указанным хешем не найден
      */
-    public void expiredConfirmationCode(String confirmationCodeHash) {
-        ConfirmationCode confirmationCode = confirmationCodeRepository.findByHash(confirmationCodeHash);
+    public void expiredConfirmationCodeForUser(Long confirmationCodeHash) {
+        ConfirmationCode confirmationCode = confirmationCodeRepository.findById(confirmationCodeHash).orElse(null);
 
         if (confirmationCode == null) {
             log.error("Can't deactivate confirmationCode with hash = {}. СonfirmationCode = null.", confirmationCodeHash);

@@ -7,6 +7,7 @@ import com.example.prometei.dto.FlightDtos.SearchDto;
 import com.example.prometei.models.enums.AirplaneModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class GeneticService {
      * @param model Модель самолета.
      * @return Список объектов SearchDto, представляющих маршруты, соответствующие заданным параметрам.
      */
+    @Cacheable(value = "routesCache", key = "{#departurePoint, #destinationPoint, #departureDate, #returnDate, #countBusiness, #countEconomic, #withPet, #model}", cacheManager = "cacheManager")
     public List<SearchDto> getRoutes(@RequestParam String departurePoint,
                                      @RequestParam String destinationPoint,
                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,

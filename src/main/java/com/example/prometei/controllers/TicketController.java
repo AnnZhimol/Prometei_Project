@@ -139,6 +139,7 @@ public class TicketController {
      *
      * @param ticketId Зашифрованный идентификатор билета, который необходимо вернуть.
      */
+    @Deprecated
     @PatchMapping("/returnTicket")
     public void returnTicket(@RequestParam @NonNull String ticketId) {
         ticketService.returnTicket(decryptId(ticketId));

@@ -244,8 +244,8 @@ public class GenerateService {
         LocalDate departureDate = LocalDate.now().plusDays(random.nextInt(30));
 
         Flight randomFlight = transformDataService.transformToFlight(CreateFlightDto.builder()
-                .departurePoint(departure.getLabel())
-                .destinationPoint(destination.getLabel())
+                .departurePoint("Екатеринбург, Кольцово, SVX")
+                .destinationPoint("Нижневартовск, Нижневартовск, NJC")
                 .departureTime(departureTime)
                 .departureDate(departureDate)
                 .airplaneNumber(random.nextInt(9999))
@@ -260,7 +260,9 @@ public class GenerateService {
                 .filter(x -> x.getFavorType() == FavorType.NON_REQUIRED)
                 .toList();
 
-        List<Flight> flights = flightService.getAll();
+        List<Flight> flights = flightService.getAll().stream()
+                .filter(flight -> flight.getFlightFavors().size() == 0)
+                .toList();
 
         if (flights.isEmpty()) {
             log.error("No flights available for adding flight favors.");

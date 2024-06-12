@@ -1,8 +1,10 @@
 package com.example.prometei.services.baseServices;
 
 import com.example.prometei.models.*;
+import com.example.prometei.models.enums.CodeState;
 import com.example.prometei.repositories.UnauthUserRepository;
 import com.example.prometei.repositories.UserRepository;
+import com.example.prometei.services.codeServices.ConfirmationCodeService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -12,19 +14,112 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+
+import static com.example.prometei.utils.CipherUtil.decryptId;
 
 @Service
 public class UserService implements BasicService<User> {
     private final UserRepository userRepository;
     private final UnauthUserRepository unauthUserRepository;
     private final TicketService ticketService;
+    private final ConfirmationCodeService confirmationCodeService;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository, UnauthUserRepository unauthUserRepository, TicketService ticketService) {
+    public UserService(UserRepository userRepository, UnauthUserRepository unauthUserRepository, TicketService ticketService, ConfirmationCodeService confirmationCodeService) {
         this.userRepository = userRepository;
         this.unauthUserRepository = unauthUserRepository;
         this.ticketService = ticketService;
+        this.confirmationCodeService = confirmationCodeService;
+    }
+
+    /**
+     * Генерирует запрос на получение кода подтверждения для пользователя с указанным идентификатором.
+     *
+     * @param ticketId код для возврата билета
+     * @throws EntityNotFoundException если пользователь с указанным идентификатором не найден
+     */
+    public String getCodeRequestForReturn(String ticketId) {
+        Ticket ticket = ticketService.getById(decryptId(ticketId));
+
+        if (ticket == null) {
+            log.error("Ticket with id = {} not found", decryptId(ticketId));
+            throw new EntityNotFoundException();
+        }
+
+        if (ticket.getAdditionalFavors().stream().noneMatch(additionalFavor -> Objects.equals(additionalFavor.getFlightFavor().getName(), "Возврат билета"))) {
+            log.error("You can not return ticket.");
+            throw new NullPointerException();
+        }
+
+        confirmationCodeService.createConfirmationCodeForTicket(ticket);
+
+        return ticket.getConfirmationCode().getHash();
+    }
+
+    public Boolean checkEmailAndCode(String code, String ticketId) {
+        Ticket ticket = ticketService.getById(decryptId(ticketId));
+
+        LocalDateTime moment = LocalDateTime.now();
+
+        if (ticket == null) {
+            log.error("Ticket with id = {} not found", decryptId(ticketId));
+            throw new EntityNotFoundException();
+        }
+
+        if (ticket.getConfirmationCode().getHash() == null) {
+            log.error("ConfirmationCode with id = {} not found", ticket.getConfirmationCode().getId());
+            return false;
+        }
+
+        if (ticket.getConfirmationCode().getState() != CodeState.ACTIVE ||
+                ticket.getConfirmationCode().getDeadline().isBefore(moment)) {
+            confirmationCodeService.expiredConfirmationCodeForTicket(ticket.getConfirmationCode().getId());
+            log.error("Confirmation was expired. Try again.");
+            return false;
+        }
+
+        if (!Objects.equals(ticket.getConfirmationCode().getHash(), code)) {
+            log.error("Confirmation not equal. Try again.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public void returnTicketAfterConfirm(String ticketId, String code) {
+        Ticket ticket = ticketService.getById(decryptId(ticketId));
+        LocalDateTime moment = LocalDateTime.now();
+
+        if (ticket == null) {
+            log.error("Ticket with id = {} not found", decryptId(ticketId));
+            throw new EntityNotFoundException();
+        }
+
+        if (ticket.getConfirmationCode().getHash() == null) {
+            log.error("ConfirmationCode with id = {} not found", ticket.getConfirmationCode().getId());
+            throw new NullPointerException();
+        }
+
+        if (ticket.getConfirmationCode().getState() != CodeState.ACTIVE ||
+                ticket.getConfirmationCode().getDeadline().isBefore(moment)) {
+            confirmationCodeService.expiredConfirmationCodeForTicket(ticket.getConfirmationCode().getId());
+            log.error("Confirmation was expired. Try again.");
+            throw new IllegalArgumentException();
+        }
+
+        if (!Objects.equals(ticket.getConfirmationCode().getHash(), code)) {
+            log.error("Confirmation not equal. Try again.");
+            throw new IllegalArgumentException();
+        }
+
+        ticketService.returnTicket(decryptId(ticketId));
+        confirmationCodeService.expiredConfirmationCodeForTicket(ticket.getConfirmationCode().getId());
+
+        log.info("Ticket with id = {} successfully return", ticket.getId());
+
     }
 
     /**

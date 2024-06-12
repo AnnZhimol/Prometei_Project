@@ -5,6 +5,7 @@ import com.example.prometei.dto.UserDtos.UserDto;
 import com.example.prometei.models.User;
 import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.UserService;
+import com.example.prometei.services.emailServices.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +19,33 @@ import static com.example.prometei.utils.CipherUtil.decryptId;
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final EmailService emailService;
     private final TransformDataService transformDataService;
 
-    public UserController(UserService userService, TransformDataService transformDataService) {
+    public UserController(UserService userService, EmailService emailService, TransformDataService transformDataService) {
         this.userService = userService;
+        this.emailService = emailService;
         this.transformDataService = transformDataService;
+    }
+
+    @GetMapping("/sendCodeForReturn")
+    public void getCode(@RequestParam String email,
+                        @RequestParam String ticketId) {
+        String code = userService.getCodeRequestForReturn(ticketId);
+        emailService.sendSimpleEmail(email, "Возврат билета",
+                "Введите данный код, чтобы вернуть билет: " + code + ". Если Вы не делали запрос на возврат билета, то просто проигнорируйте данное письмо.");
+    }
+
+    @GetMapping("/checkCodeForReturn")
+    public ResponseEntity<Boolean> getCheck(@RequestParam String code,
+                                            @RequestParam String ticketId) {
+        return new ResponseEntity<>(userService.checkEmailAndCode(code, ticketId), HttpStatus.OK);
+    }
+
+    @PatchMapping("/returnTicket")
+    public void returnTicketAfterConfirm(@RequestParam String code,
+                                         @RequestParam String ticketId) {
+        userService.returnTicketAfterConfirm(ticketId, code);
     }
 
     /**

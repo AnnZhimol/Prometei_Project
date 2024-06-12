@@ -7,7 +7,6 @@ import com.example.prometei.models.Ticket;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.PurchaseService;
-import com.example.prometei.services.baseServices.TicketService;
 import com.example.prometei.services.documentServices.ExcelService;
 import com.example.prometei.services.documentServices.WordService;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -42,16 +41,14 @@ public class DefaultEmailService implements EmailService {
     public JavaMailSender emailSender;
     private final SpringTemplateEngine templateEngine;
     private final PurchaseService purchaseService;
-    private final TicketService ticketService;
     private final TransformDataService transformDataService;
     private final WordService wordService;
     private final ExcelService excelService;
     private final Logger log = LoggerFactory.getLogger(PurchaseService.class);
 
-    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService, TicketService ticketService, TransformDataService transformDataService, WordService wordService, ExcelService excelService) {
+    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService, TransformDataService transformDataService, WordService wordService, ExcelService excelService) {
         this.templateEngine = templateEngine;
         this.purchaseService = purchaseService;
-        this.ticketService = ticketService;
         this.transformDataService = transformDataService;
         this.wordService = wordService;
         this.excelService = excelService;
@@ -67,8 +64,9 @@ public class DefaultEmailService implements EmailService {
         emailSender.send(simpleMailMessage);
     }
 
-    private EmailContent getContentForEmailWord(String ticketId) {
-        Ticket ticket = ticketService.getById(decryptId(ticketId));
+    private EmailContent getContentForEmailWord(String purchaseId, String ticketId) {
+        Purchase purchase = purchaseService.getById(decryptId(purchaseId));
+        Ticket ticket = purchase.getTickets().stream().filter(ticket1 -> ticket1.getId() == decryptId(ticketId)).findFirst().orElse(null);
 
         if (ticket == null) {
             log.error("Error send email. ticket = null");
@@ -146,7 +144,7 @@ public class DefaultEmailService implements EmailService {
             mimeMessageHelper.setSubject("\"Прометей\": Покупка билета. Номер заказа: " + purchaseId);
             mimeMessageHelper.setText(emailContent, true);
             String ticketNumber = (String) map.get("ticketNumber");
-            EmailContent content = getContentForEmailWord(ticketNumber);
+            EmailContent content = getContentForEmailWord(purchaseId, ticketNumber);
             ByteArrayResource pdfAttachment = generatePdfFromHtml(emailContent);
             ByteArrayResource wordAttachment = wordService.generateBoardingPassWordDocument(content);
             ByteArrayResource excelAttachment = excelService.generateBoardingPassExcel(content);

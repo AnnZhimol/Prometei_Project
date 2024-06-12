@@ -175,6 +175,7 @@ public class TransformDataService {
                         .sum())
                 .seatNumber(ticket.getSeatNumber())
                 .ticketType(ticket.getTicketType())
+                .isEmpty(ticket.getPurchase() == null)
                 .flightId(encryptId(ticket.getFlight().getId()))
                 .costFlight(ticket.getTicketType() == TicketType.BUSINESS ?
                         ticket.getFlight().getBusinessCost() :
