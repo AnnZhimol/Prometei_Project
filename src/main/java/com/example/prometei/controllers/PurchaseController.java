@@ -74,6 +74,7 @@ public class PurchaseController {
                                        createPurchaseDto.getUser(),
                                        createPurchaseDto.getPassengers() == null ?
                                                null :
-                                               transformDataService.listPassengerDtoToUnAuthUser(createPurchaseDto.getPassengers())), HttpStatus.OK);
+                                               transformDataService.listPassengerDtoToUnAuthUser(createPurchaseDto.getPassengers()),
+                createPurchaseDto.getIsAuth()), HttpStatus.OK);
     }
 }

@@ -52,6 +52,7 @@ public class PurchaseService implements BasicService<Purchase> {
         throw new NullPointerException();
     }
 
+    @Transactional
     private List<Ticket> getTicketsAndEditPurchase(Purchase purchase,
                                                    long[] tickets) {
         List<Ticket> findTickets = new ArrayList<>();
@@ -92,11 +93,11 @@ public class PurchaseService implements BasicService<Purchase> {
     public String createPurchase(Purchase purchase,
                                long[] tickets,
                                PassengerDto user,
-                               @Nullable List<UnauthUser> passengers) {
-        if (userService.getCurrentUser() != null) {
+                               @Nullable List<UnauthUser> passengers,
+                               Boolean isAuth) {
+        if (isAuth) {
             return createPurchaseByAuthUser(purchase, tickets, transformDataService.transformToUser(user), passengers);
-        }
-        else {
+        } else {
             return createPurchaseByUnauthUser(purchase, tickets, transformDataService.transformToUnAuthUser(user), passengers);
         }
     }
@@ -128,8 +129,16 @@ public class PurchaseService implements BasicService<Purchase> {
             throw new NullPointerException();
         }
 
-        List<Ticket> findTickets = getTicketsAndEditPurchase(purchase,tickets);
-        userService.edit(userService.getByEmail(user.getEmail()).getId(), user);
+        List<Ticket> findTickets = getTicketsAndEditPurchase(purchase, tickets);
+
+        if (passengers != null) {
+            for (UnauthUser passenger : passengers) {
+                userService.add(passenger);
+            }
+        }
+
+        user = userService.getByEmail(user.getEmail());
+        userService.save(user);
 
         if (passengers != null) {
             int totalParticipants = passengers.size() + 1;
@@ -149,7 +158,6 @@ public class PurchaseService implements BasicService<Purchase> {
 
                     if (passengerIndex < passengers.size()) {
                         UnauthUser passenger = passengers.get(passengerIndex);
-                        userService.add(passenger);
                         ticket.setUnauthUser(passenger);
                     } else {
                         ticket.setUser(user);
@@ -201,6 +209,11 @@ public class PurchaseService implements BasicService<Purchase> {
         List<Ticket> findTickets = getTicketsAndEditPurchase(purchase, tickets);
 
         userService.add(unauthUser);
+        if (passengers != null) {
+            for (UnauthUser passenger : passengers) {
+                userService.add(passenger);
+            }
+        }
 
         if (passengers != null) {
             int totalParticipants = passengers.size() + 1;
@@ -220,7 +233,6 @@ public class PurchaseService implements BasicService<Purchase> {
 
                     if (passengerIndex < passengers.size()) {
                         UnauthUser passenger = passengers.get(passengerIndex);
-                        userService.add(passenger);
                         ticket.setUnauthUser(passenger);
                     } else {
                         ticket.setUnauthUser(unauthUser);

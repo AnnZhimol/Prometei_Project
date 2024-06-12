@@ -78,11 +78,15 @@ public class PaymentService {
             String text = payment.getId() + payment.getCreateDate().toString() + salt;
             byte[] hashBytes = digest.digest(text.getBytes(StandardCharsets.UTF_8));
             log.info("Hash was created.");
-            return Base64.getEncoder().encodeToString(hashBytes);
+            return Base64.getUrlEncoder().encodeToString(hashBytes); // Используем URL-safe Base64 encoding
         } catch (NoSuchAlgorithmException e) {
-            log.error("Error generating hash {}", e.getMessage());
+            log.error("Error generating hash " + e.getMessage());
             throw new RuntimeException("Error generating hash", e);
         }
+    }
+
+    public Payment getPaymentByHash(String hash) {
+        return paymentRepository.findByHash(hash);
     }
 
     /**
@@ -161,10 +165,10 @@ public class PaymentService {
 
         if (payment == null) {
             log.error("Can't pay payment with hash = {}. Payment = null.", paymentHash);
-            throw new NullPointerException();
+            return false;
         }
 
-        if (payment.getDeadline().isAfter(moment)) {
+        if (payment.getDeadline().isAfter(moment) || payment.getState() == PaymentState.CANCELED) {
             payment.setState(PaymentState.PAID);
             payment.setPaymentDate(LocalDateTime.now());
 

@@ -18,4 +18,5 @@ public class CreatePurchaseDto implements Serializable {
     private PassengerDto user;
     private String[] tickets;
     private List<PassengerDto> passengers;
+    private Boolean isAuth;
 }

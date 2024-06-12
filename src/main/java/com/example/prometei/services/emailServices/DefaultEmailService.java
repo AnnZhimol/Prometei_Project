@@ -2,11 +2,13 @@ package com.example.prometei.services.emailServices;
 
 import com.example.prometei.dto.EmailDto.EmailContent;
 import com.example.prometei.dto.FavorDto.AdditionalFavorDto;
+import com.example.prometei.models.Payment;
 import com.example.prometei.models.Purchase;
 import com.example.prometei.models.Ticket;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.services.TransformDataService;
 import com.example.prometei.services.baseServices.PurchaseService;
+import com.example.prometei.services.codeServices.PaymentService;
 import com.example.prometei.services.documentServices.ExcelService;
 import com.example.prometei.services.documentServices.WordService;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -41,14 +43,16 @@ public class DefaultEmailService implements EmailService {
     public JavaMailSender emailSender;
     private final SpringTemplateEngine templateEngine;
     private final PurchaseService purchaseService;
+    private final PaymentService paymentService;
     private final TransformDataService transformDataService;
     private final WordService wordService;
     private final ExcelService excelService;
     private final Logger log = LoggerFactory.getLogger(PurchaseService.class);
 
-    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService, TransformDataService transformDataService, WordService wordService, ExcelService excelService) {
+    public DefaultEmailService(SpringTemplateEngine templateEngine, PurchaseService purchaseService, PaymentService paymentService, TransformDataService transformDataService, WordService wordService, ExcelService excelService) {
         this.templateEngine = templateEngine;
         this.purchaseService = purchaseService;
+        this.paymentService = paymentService;
         this.transformDataService = transformDataService;
         this.wordService = wordService;
         this.excelService = excelService;
@@ -129,8 +133,10 @@ public class DefaultEmailService implements EmailService {
     }
 
     @Override
-    public void sendHtmlEmail(String toAddress, String purchaseId) throws MessagingException, IOException {
-        List<Map<String, Object>> maps = getContentForEmail(purchaseId);
+    public void sendHtmlEmail(String toAddress, String hash) throws MessagingException, IOException {
+        Payment payment = paymentService.getPaymentByHash(hash);
+        Purchase purchase = purchaseService.getById(payment.getPurchase().getId());
+        List<Map<String, Object>> maps = getContentForEmail(encryptId(purchase.getId()));
 
         for (Map<String, Object> map : maps) {
             MimeMessage message = emailSender.createMimeMessage();
@@ -141,10 +147,10 @@ public class DefaultEmailService implements EmailService {
             context.setVariables(map);
             String emailContent = templateEngine.process("ticket.html", context);
             mimeMessageHelper.setTo(toAddress);
-            mimeMessageHelper.setSubject("\"Прометей\": Покупка билета. Номер заказа: " + purchaseId);
+            mimeMessageHelper.setSubject("\"Прометей\": Покупка билета. Номер заказа: " + encryptId(purchase.getId()));
             mimeMessageHelper.setText(emailContent, true);
             String ticketNumber = (String) map.get("ticketNumber");
-            EmailContent content = getContentForEmailWord(purchaseId, ticketNumber);
+            EmailContent content = getContentForEmailWord(encryptId(purchase.getId()), ticketNumber);
             ByteArrayResource pdfAttachment = generatePdfFromHtml(emailContent);
             ByteArrayResource wordAttachment = wordService.generateBoardingPassWordDocument(content);
             ByteArrayResource excelAttachment = excelService.generateBoardingPassExcel(content);

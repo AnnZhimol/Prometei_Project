@@ -22,14 +22,14 @@ public class EmailController {
      * Отправляет простое HTML письмо на указанный email с информацией о покупке.
      *
      * @param email адрес электронной почты получателя
-     * @param purchaseId идентификатор покупки
+     * @param hash идентификатор покупки
      * @return ответ с сообщением о статусе отправки письма
      */
     @GetMapping("/htmlEmail")
     public @ResponseBody ResponseEntity<String> sendHtmlEmail(@RequestParam @NonNull String email,
-                                                              @RequestParam @NonNull String purchaseId) {
+                                                              @RequestParam @NonNull String hash) {
         try {
-            emailService.sendHtmlEmail(email, purchaseId);
+            emailService.sendHtmlEmail(email, hash);
         } catch (MessagingException mailException) {
             return new ResponseEntity<>("Unable to send email", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (IOException e) {
