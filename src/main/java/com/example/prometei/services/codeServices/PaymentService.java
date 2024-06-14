@@ -168,7 +168,7 @@ public class PaymentService {
             return false;
         }
 
-        if (payment.getDeadline().isAfter(moment) || payment.getState() == PaymentState.CANCELED) {
+        if (payment.getDeadline().isAfter(moment) || payment.getState() == PaymentState.PROCESSING) {
             payment.setState(PaymentState.PAID);
             payment.setPaymentDate(LocalDateTime.now());
 
@@ -180,5 +180,27 @@ public class PaymentService {
             log.error("Time is up. You can't paid.");
             return false;
         }
+    }
+
+    public String checkPayment(String paymentHash) {
+        Payment payment = paymentRepository.findByHash(paymentHash);
+
+        if (payment == null) {
+            return "Error";
+        }
+
+        if (payment.getState() == PaymentState.CANCELED) {
+            return "Cancel";
+        }
+
+        if (payment.getState() == PaymentState.PAID) {
+            return "Success";
+        }
+
+        if (payment.getState() == PaymentState.PROCESSING) {
+            return "Processing";
+        }
+
+        return "Error";
     }
 }

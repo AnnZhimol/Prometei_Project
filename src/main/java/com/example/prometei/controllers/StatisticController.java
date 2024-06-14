@@ -1,6 +1,7 @@
 package com.example.prometei.controllers;
 
 import com.example.prometei.dto.Statistic.*;
+import com.example.prometei.models.enums.AirplaneModel;
 import com.example.prometei.services.StatisticService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +29,9 @@ public class StatisticController {
      * @return ответ с данными для тепловой карты мест в самолете
      */
     @GetMapping("/heatMap")
-    public ResponseEntity<List<AirplaneSeats>> getDataForHeatMap(@RequestParam String userId) {
-        return new ResponseEntity<>(statisticService.getDataForHeatMap(decryptId(userId)), HttpStatus.OK);
+    public ResponseEntity<List<AirplaneSeats>> getDataForHeatMap(@RequestParam String userId,
+                                                                 @RequestParam AirplaneModel airplaneModel) {
+        return new ResponseEntity<>(statisticService.getDataForHeatMap(decryptId(userId), airplaneModel), HttpStatus.OK);
     }
 
     @GetMapping("/ageTicket")
@@ -38,7 +40,7 @@ public class StatisticController {
     }
 
     @GetMapping("/popularFavor")
-    public ResponseEntity<PopularFavors> getDataForPopularFavor(@RequestParam Month month,
+    public ResponseEntity<FavorCount> getDataForPopularFavor(@RequestParam Month month,
                                                                 @RequestParam int year) {
         return new ResponseEntity<>(statisticService.getPopularFavorsByMonth(year, month), HttpStatus.OK);
     }

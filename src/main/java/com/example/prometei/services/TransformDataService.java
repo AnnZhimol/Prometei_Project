@@ -41,7 +41,7 @@ public class TransformDataService {
 
     private String DateParser(LocalDate localDate) {
         String dayOfMonth = String.valueOf(localDate.getDayOfMonth());
-        String month = localDate.getMonth().getDisplayName(TextStyle.SHORT, new Locale("ru"));
+        String month = localDate.getMonth().getDisplayName(TextStyle.FULL, new Locale("ru"));
         String dayOfWeek = localDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, new Locale("ru"));
 
         return String.format("%s %s, %s", dayOfMonth, month, dayOfWeek);

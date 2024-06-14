@@ -35,4 +35,9 @@ public class PaymentController {
     public ResponseEntity<Boolean> confirmPayment(@RequestParam String paymentHash) {
         return new ResponseEntity<>(paymentService.payPayment(paymentHash), HttpStatus.OK);
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<String> checkPayment(@RequestParam String paymentHash) {
+        return new ResponseEntity<>(paymentService.checkPayment(paymentHash), HttpStatus.OK);
+    }
 }

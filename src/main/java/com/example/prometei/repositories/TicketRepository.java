@@ -24,6 +24,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "WHERE t.purchase.id = :id")
     List<Ticket> findTicketsByPurchase(Long id);
 
+    @Query("SELECT t FROM Ticket t WHERE t.purchase.id IS NOT NULL")
+    List<Ticket> findBoughtTickets();
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT t FROM Ticket t WHERE t.id = :id")
     Optional<Ticket> findByIdWithLock( Long id);

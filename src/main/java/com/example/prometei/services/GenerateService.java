@@ -128,7 +128,7 @@ public class GenerateService {
     public void generatePurchase() {
         List<User> users = userService.getAll();
         List<UnauthUser> unauthUsers = userService.getAllUnauthUser();
-        List<Ticket> tickets = ticketService.getAll();
+        List<Ticket> tickets = ticketService.getTicketsByFlight(2L);
         List<Ticket> availableTickets = tickets.stream()
                 .filter(ticket -> ticket.getPurchase() == null).toList();
 
@@ -199,7 +199,7 @@ public class GenerateService {
     }
 
     public void generateAdditionalFavor() {
-        List<Ticket> tickets = ticketService.getAll();
+        List<Ticket> tickets = ticketService.getTicketsByFlight(2L);
 
         for (Ticket ticket : tickets) {
             List<FlightFavor> flightFavors = ticket.getFlight().getFlightFavors();

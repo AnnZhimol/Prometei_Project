@@ -41,7 +41,7 @@ public class StatisticService {
             throw new NullPointerException();
         }
 
-        List<Ticket> tickets = ticketService.getAll();
+        List<Ticket> tickets = ticketService.getBoughtTickets();
 
         Map<String, Long> seatPurchaseCount = tickets.stream()
                 .filter(ticket -> ticket.getFlight().getAirplaneModel() == airplaneModel &&
@@ -58,22 +58,22 @@ public class StatisticService {
     }
 
     private List<AirplaneSeats.SeatOccupancy> getPercentByUser(AirplaneModel airplaneModel,
-                                                              Long userId) {
+                                                               Long userId) {
         if (airplaneModel == null) {
             log.error("Can not create heat map. AirplaneModel == null.");
             throw new NullPointerException();
         }
 
-        List<Ticket> tickets = ticketService.getAll();
+        List<Ticket> tickets = ticketService.getTicketsByUser(userId);
 
         Map<String, Long> seatPurchaseCount = tickets.stream()
                 .filter(ticket -> ticket.getUser() != null && ticket.getUser().getId() == userId &&
-                                  ticket.getFlight().getAirplaneModel() == airplaneModel &&
-                                  ticket.getAdditionalFavors()
-                                        .stream()
-                                        .anyMatch(favor -> Objects.equals(favor.getFlightFavor().getName(), "Выбор места в салоне") ||
-                                                           Objects.equals(favor.getFlightFavor().getName(), "Выбор места у окна") ||
-                                                           Objects.equals(favor.getFlightFavor().getName(), "Выбор места с увеличенным пространством для ног")))
+                        ticket.getFlight().getAirplaneModel() == airplaneModel &&
+                        ticket.getAdditionalFavors()
+                                .stream()
+                                .anyMatch(favor -> Objects.equals(favor.getFlightFavor().getName(), "Выбор места в салоне") ||
+                                        Objects.equals(favor.getFlightFavor().getName(), "Выбор места у окна") ||
+                                        Objects.equals(favor.getFlightFavor().getName(), "Выбор места с увеличенным пространством для ног")))
                 .collect(Collectors.groupingBy(Ticket::getSeatNumber, Collectors.counting()));
 
         log.info("Finding percent by userId = {} for heat map was complete.", userId);
@@ -111,16 +111,14 @@ public class StatisticService {
      * @param userId Идентификатор пользователя, для которого необходимо получить данные по местам.
      * @return Список объектов AirplaneSeats, содержащих информацию о процентах занятости мест и местах, занятых пользователем.
      */
-    public List<AirplaneSeats> getDataForHeatMap(Long userId) {
+    public List<AirplaneSeats> getDataForHeatMap(Long userId, AirplaneModel airplaneModel) {
         List<AirplaneSeats> airplaneSeatsList = new ArrayList<>();
 
-        for (AirplaneModel airplaneModel : AirplaneModel.values()) {
-            AirplaneSeats airplaneSeats = new AirplaneSeats();
-            airplaneSeats.setAirplane(airplaneModel.name());
-            airplaneSeats.setSeats(getAllPercent(airplaneModel));
-            airplaneSeats.setUserSeats(getPercentByUser(airplaneModel, userId));
-            airplaneSeatsList.add(airplaneSeats);
-        }
+        AirplaneSeats airplaneSeats = new AirplaneSeats();
+        airplaneSeats.setAirplane(airplaneModel.name());
+        airplaneSeats.setSeats(getAllPercent(airplaneModel));
+        airplaneSeats.setUserSeats(getPercentByUser(airplaneModel, userId));
+        airplaneSeatsList.add(airplaneSeats);
 
         log.info("Getting data for heat map complete successfully.");
         return airplaneSeatsList;
@@ -156,23 +154,33 @@ public class StatisticService {
 
     private AgeCategory categorizeAge(Ticket ticket) {
         if (ticket == null) {
-            log.error("Can not create ticket statistic by age. Ticket == null.");
-            throw new NullPointerException();
+            log.error("Cannot create ticket statistic by age. Ticket is null.");
+            throw new NullPointerException("Ticket is null.");
         }
 
-        LocalDate birthDate = (ticket.getUser() != null) ?
-                ticket.getUser().getBirthDate() :
-                ticket.getUnauthUser().getBirthDate();
+        LocalDate birthDate;
+
+        if (ticket.getUser() != null && ticket.getUser().getBirthDate() != null) {
+            birthDate = ticket.getUser().getBirthDate();
+        } else if (ticket.getUnauthUser() != null && ticket.getUnauthUser().getBirthDate() != null) {
+            birthDate = ticket.getUnauthUser().getBirthDate();
+        } else {
+            log.warn("Cannot determine birth date for ticket.");
+            return AgeCategory.UNDEFIND;
+        }
+
         int age = Period.between(birthDate, LocalDate.now()).getYears();
 
-        if (age < 22 && age >= 18) {
+        if (age >= 18 && age < 22) {
             return AgeCategory.YOUNG;
         } else if (age >= 22 && age < 35) {
             return AgeCategory.MIDDLE_AGE_LOW;
         } else if (age >= 35 && age < 60) {
             return AgeCategory.MIDDLE_AGE_HIGH;
-        } else {
+        } else if (age >= 60) {
             return AgeCategory.ELDERLY;
+        } else {
+            return AgeCategory.UNDEFIND;
         }
     }
 
@@ -198,7 +206,12 @@ public class StatisticService {
                                 ticket -> {
                                     User user = ticket.getUser();
                                     UnauthUser unauthUser = ticket.getUnauthUser();
-                                    return user != null ? user.getGender() : unauthUser.getGender();
+                                    if (user != null && user.getBirthDate() != null && user.getGender() != null) {
+                                        return user.getGender();
+                                    } else if (unauthUser != null && unauthUser.getBirthDate() != null && unauthUser.getGender() != null) {
+                                        return unauthUser.getGender();
+                                    }
+                                    return UserGender.UNDEFIND;
                                 },
                                 Collectors.groupingBy(Ticket::getTicketType, Collectors.counting())
                         )
@@ -221,7 +234,7 @@ public class StatisticService {
      * @param month Месяц, за который необходимо получить популярные услуги.
      * @return Объект PopularFavors, содержащий список популярных услуг с их количеством.
      */
-    public PopularFavors getPopularFavorsByMonth(int year, Month month) {
+    public FavorCount getPopularFavorsByMonth(int year, Month month) {
         List<AdditionalFavor> additionalFavors = ticketService.getAllAdFavors();
 
         Map<String, Long> groupedFavors = additionalFavors.stream()
@@ -235,13 +248,11 @@ public class StatisticService {
                         Collectors.counting()
                 ));
 
-        PopularFavors popularFavors = new PopularFavors();
-        PopularFavors.FavorCount favorCount = new PopularFavors.FavorCount();
+        FavorCount favorCount = new FavorCount();
         groupedFavors.forEach(favorCount::setFavorCountMap);
-        popularFavors.setList(Collections.singletonList(favorCount));
 
         log.info("Getting popular bought favors by month.");
-        return popularFavors;
+        return favorCount;
     }
 
     public AverageCost calculateAverageCost() {
@@ -256,19 +267,23 @@ public class StatisticService {
             UserGender gender;
             LocalDate birthDate;
 
-            if (purchase.getUser() != null) {
+            if (purchase.getUser() != null && purchase.getUser().getBirthDate() != null && purchase.getUser().getGender() != null) {
                 gender = purchase.getUser().getGender();
                 birthDate = purchase.getUser().getBirthDate();
-            } else {
+                AgeCategory ageCategory = getAgeCategory(birthDate);
+                groupedPurchases
+                        .computeIfAbsent(ageCategory, k -> new HashMap<>())
+                        .computeIfAbsent(gender, k -> new ArrayList<>())
+                        .add(purchase);
+            } else if (purchase.getUnauthUser() != null && purchase.getUnauthUser().getBirthDate() != null && purchase.getUnauthUser().getGender() != null) {
                 gender = purchase.getUnauthUser().getGender();
                 birthDate = purchase.getUnauthUser().getBirthDate();
+                AgeCategory ageCategory = getAgeCategory(birthDate);
+                groupedPurchases
+                        .computeIfAbsent(ageCategory, k -> new HashMap<>())
+                        .computeIfAbsent(gender, k -> new ArrayList<>())
+                        .add(purchase);
             }
-
-            AgeCategory ageCategory = getAgeCategory(birthDate);
-            groupedPurchases
-                    .computeIfAbsent(ageCategory, k -> new HashMap<>())
-                    .computeIfAbsent(gender, k -> new ArrayList<>())
-                    .add(purchase);
         }
 
         for (Map.Entry<AgeCategory, Map<UserGender, List<Purchase>>> entry : groupedPurchases.entrySet()) {
@@ -310,13 +325,15 @@ public class StatisticService {
             return AgeCategory.MIDDLE_AGE_LOW;
         } else if (age >= 35 && age < 60) {
             return AgeCategory.MIDDLE_AGE_HIGH;
+        } else if (age == 0) {
+            return AgeCategory.UNDEFIND;
         } else {
             return AgeCategory.ELDERLY;
         }
     }
 
     public List<RouteStat> calculateTopPopularRoutes() {
-        List<Ticket> paidTickets = ticketService.getAll().stream()
+        List<Ticket> paidTickets = ticketService.getBoughtTickets().stream()
                 .filter(ticket -> ticket.getPurchase() != null && ticket.getPurchase().getPayment() != null)
                 .filter(ticket -> PaymentState.PAID.equals(ticket.getPurchase().getPayment().getState()))
                 .toList();
@@ -339,7 +356,7 @@ public class StatisticService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        Map<LocalDate, Long> dailySales = ticketService.getAll().stream()
+        Map<LocalDate, Long> dailySales = ticketService.getBoughtTickets().stream()
                 .filter(ticket -> ticket.getPurchase() != null && ticket.getPurchase().getPayment() != null)
                 .filter(ticket -> PaymentState.PAID.equals(ticket.getPurchase().getPayment().getState()))
                 .filter(ticket -> {
@@ -348,7 +365,6 @@ public class StatisticService {
                 })
                 .collect(Collectors.groupingBy(ticket -> ticket.getPurchase().getCreateDate().toLocalDate(), Collectors.counting()));
 
-        // Заполнение списка DTO
         List<DailyTicketSales> salesDTOList = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             salesDTOList.add(new DailyTicketSales(date, dailySales.getOrDefault(date, 0L)));

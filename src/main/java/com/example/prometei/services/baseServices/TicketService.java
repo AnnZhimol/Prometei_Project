@@ -70,6 +70,11 @@ public class TicketService implements BasicService<Ticket> {
         return ticketRepository.findAll();
     }
 
+    public List<Ticket> getBoughtTickets() {
+        log.info("Get list of bought tickets");
+        return ticketRepository.findBoughtTickets();
+    }
+
     /**
      * Получает отсортированный список билетов по заданному рейсу.
      *
