@@ -166,6 +166,9 @@ public class TransformDataService {
     }
 
     public TicketDto transformToTicketDto(Ticket ticket) {
+        LocalDateTime dateNow = LocalDateTime.now();
+        Duration duration = Duration.between(dateNow, ticket.getFlight().getDepartureDate().atTime(ticket.getFlight().getDepartureTime()));
+
         return TicketDto.builder()
                 .id(encryptId(ticket.getId()))
                 .costFavors(ticket.getAdditionalFavors()
@@ -180,6 +183,7 @@ public class TransformDataService {
                 .costFlight(ticket.getTicketType() == TicketType.BUSINESS ?
                         ticket.getFlight().getBusinessCost() :
                         ticket.getFlight().getEconomyCost())
+                .canReturn(duration.toHours() >= 24 && ticket.getAdditionalFavors().stream().anyMatch(t -> Objects.equals(t.getFlightFavor().getName(), "Возврат билета")))
                 .build();
     }
 

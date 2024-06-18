@@ -5,6 +5,7 @@ import com.example.prometei.models.*;
 import com.example.prometei.models.enums.PaymentMethod;
 import com.example.prometei.models.enums.TicketType;
 import com.example.prometei.models.enums.UserGender;
+import com.example.prometei.models.enums.UserRole;
 import com.example.prometei.services.StatisticService;
 import com.example.prometei.services.baseServices.FlightService;
 import com.example.prometei.services.baseServices.PurchaseService;
@@ -68,6 +69,14 @@ public class TestServices {
                 .build();
 
         userService.add(user);
+    }
+
+    @Test
+    void edit() {
+        User user = userService.getByEmail("andrewstyou@gmail.com");
+        userService.edit(user.getId(),User.builder()
+                        .role(UserRole.ROLE_ADMIN)
+                        .build());
     }
 
     @Test

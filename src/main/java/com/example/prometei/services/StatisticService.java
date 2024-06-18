@@ -134,7 +134,7 @@ public class StatisticService {
         return neuralApi.getQuestionCount();
     }
 
-    private List<AgeTicketDto.TicketStats> createTicketStatsList(Map<TicketType, Long> ticketTypeCounts) {
+    private Map<TicketType, Double> createTicketStatsList(Map<TicketType, Long> ticketTypeCounts) {
         if (ticketTypeCounts == null) {
             log.error("Can not create ticket statistic by age. TicketTypeCounts == null.");
             throw new NullPointerException();
@@ -144,12 +144,10 @@ public class StatisticService {
 
         log.info("Creating list for ticket stats complete.");
         return ticketTypeCounts.entrySet().stream()
-                .map(entry -> {
-                    AgeTicketDto.TicketStats ticketStats = new AgeTicketDto.TicketStats();
-                    ticketStats.setTicketType(entry.getKey(), (double) entry.getValue() / total * 100);
-                    return ticketStats;
-                })
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> (double) entry.getValue() / total * 100
+                ));
     }
 
     private AgeCategory categorizeAge(Ticket ticket) {
@@ -300,20 +298,16 @@ public class StatisticService {
         return averageCost;
     }
 
-    private List<AverageCost.PurchaseStats> calculateAverageCostForGender(List<Purchase> purchases) {
-        List<AverageCost.PurchaseStats> statsList = new ArrayList<>();
+    private Double calculateAverageCostForGender(List<Purchase> purchases) {
         if (purchases != null && !purchases.isEmpty()) {
             double totalCost = purchases.stream().mapToDouble(Purchase::getTotalCost).sum();
             double averageCost = totalCost / purchases.size();
 
             BigDecimal roundedAverageCost = BigDecimal.valueOf(averageCost).setScale(2, RoundingMode.HALF_UP);
 
-            AverageCost.PurchaseStats stats = new AverageCost.PurchaseStats();
-            stats.setCostMap("averageCost", roundedAverageCost.doubleValue());
-
-            statsList.add(stats);
+            return roundedAverageCost.doubleValue();
         }
-        return statsList;
+        return null;
     }
 
     private AgeCategory getAgeCategory(LocalDate birthDate) {

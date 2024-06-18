@@ -265,6 +265,7 @@ public class UserService implements BasicService<User> {
         currentUser.setPassport(entity.getPassport() == null ? currentUser.getPassport() : entity.getPassport());
         currentUser.setInternationalPassportNum(entity.getInternationalPassportNum() == null ? currentUser.getInternationalPassportNum() : entity.getInternationalPassportNum());
         currentUser.setInternationalPassportDate(entity.getInternationalPassportDate() == null ? currentUser.getInternationalPassportDate() : entity.getInternationalPassportDate());
+        currentUser.setRole(entity.getRole() == null ? currentUser.getRole() : entity.getRole());
 
         userRepository.save(currentUser);
         log.info("User with id = {} successfully edit", id);

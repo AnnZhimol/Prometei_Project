@@ -23,4 +23,5 @@ public class TicketDto implements Serializable {
     private Double costFlight;
     private Double costFavors;
     private Boolean isEmpty;
+    private Boolean canReturn;
 }
